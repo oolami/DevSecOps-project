@@ -1,0 +1,91 @@
+#!/bin/bash
+
+LOG_FILE="build.log"
+HTML_REPORT="migration_report.html"
+
+# List of services you want to track
+services=(
+  "ACH-API"
+  "Action-Note-API"
+  "Admin-API"
+  "Agent-Rewards-API"
+  "Check-API"
+  "Chorus-Exposed-API"
+  "Document-API"
+  "Email-API"
+  "General-ledger-API"
+  "Intake-API"
+  "Market-Index-API"
+  "Portal-API"
+  "Requirements-API"
+  "Windapi"
+)
+
+# Declare associative array (Bash 4+)
+declare -A migration_counts
+
+# Initialize all services with empty (null) values
+for svc in "${services[@]}"; do
+  migration_counts["$svc"]=""
+done
+
+# Parse logs to count migrations
+while IFS= read -r line; do
+  if [[ $line =~ Successfully\ validated\ ([0-9]+)\ migrations.*schema\ \[([a-zA-Z0-9._-]+)\] ]]; then
+    count="${BASH_REMATCH[1]}"
+    service="${BASH_REMATCH[2]}"
+    migration_counts["$service"]="$count"
+  elif [[ $line =~ Schema\ \[([a-zA-Z0-9._-]+)\]\ is\ up\ to\ date ]]; then
+    service="${BASH_REMATCH[1]}"
+    [[ -z "${migration_counts[$service]}" ]] && migration_counts["$service"]="0"
+  fi
+done < "$LOG_FILE"
+
+# Emit TeamCity buildStatisticValues
+for svc in "${!migration_counts[@]}"; do
+  count="${migration_counts[$svc]}"
+  [[ -z "$count" ]] && count="0"  # Optional: default unknowns to 0
+  echo "##teamcity[buildStatisticValue key='Migrations count: $svc' value='$count']"
+done
+
+# Generate HTML report
+cat <<EOF > "$HTML_REPORT"
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Migration Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { color: #2c3e50; }
+        table { border-collapse: collapse; width: 80%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h2>Database Migration Report</h2>
+    <table>
+        <tr><th>Service</th><th>Migrations Applied</th></tr>
+EOF
+
+for svc in "${services[@]}"; do
+  count="${migration_counts[$svc]}"
+  [[ -z "$count" ]] && count="N/A"
+  echo "        <tr><td>$svc</td><td>$count</td></tr>" >> "$HTML_REPORT"
+done
+
+cat <<EOF >> "$HTML_REPORT"
+    </table>
+</body>
+</html>
+EOF
+
+echo "✅ Migration parsing complete. HTML report saved to $HTML_REPORT"
+
+
+
+./run_migrations.sh 2>&1 | tee build.log
+
+migration_report.html => migration-report.html
+
