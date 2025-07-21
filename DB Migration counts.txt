@@ -1,0 +1,49 @@
+
+
+##teamcity[buildStatisticValue key='<yourKey>' value='<integerOrFloat>']
+
+
+
+#!/usr/bin/env bash
+set -e
+
+# Run the real migration command
+output=$(./gradlew :db:migrate)        # replace with your tool
+echo "$output"
+
+# Extract the number that the tool prints (tweak the grep/awk as needed)
+count=$(echo "$output" | awk '/Successfully applied/{print $NF}')
+
+# Report to TeamCity
+echo "##teamcity[buildStatisticValue key='migration.count' value='${count}']"
+echo "##teamcity[buildStatisticValue key='migration.happened' value='$([[ $count -gt 0 ]] && echo 1 || echo 0)']"
+
+# Optional – show it in the build headline
+echo "##teamcity[buildStatus text='${count} DB migrations applied']"
+
+
+
+$migrateOutput = & dotnet ef database update
+Write-Output $migrateOutput
+
+if ($migrateOutput -match '(\d+)\s+migrations?\s+applied') {
+    $count = $Matches[1]
+    Write-Host "##teamcity[buildStatisticValue key='migration.count' value='$count']"
+    Write-Host "##teamcity[buildStatisticValue key='migration.happened' value='$([int]($count -gt 0))']"
+    Write-Host "##teamcity[buildStatus text='$count DB migrations applied']"
+}
+
+
+
+
+features {
+    projectCustomChart {
+        id = "MigrationCount"
+        title = "DB Migration Count"
+        seriesTitle = "Migrations"
+        format = CustomChart.Format.INTEGER
+        series = listOf(Serie(key = "migration.count"))
+    }
+}
+
+
