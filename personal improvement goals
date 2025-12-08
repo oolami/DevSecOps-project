@@ -1,0 +1,62 @@
+1. Improve Time Management & Task Prioritization
+
+Desired Improvement:
+Consistently deliver tasks on time without over-polishing or missing deadlines.
+
+Plan to Achieve:
+
+Break all assigned work into milestones with internal due dates.
+
+Use daily task prioritization based on impact and urgency.
+
+Provide early check-ins for work that may risk delays.
+
+Metrics for Success:
+
+95–100% of tasks delivered on or before their due dates.
+
+Fewer last-minute deadline extensions.
+
+Positive feedback from leadership on delivery consistency.
+
+2. Strengthen Communication & Ownership
+
+Desired Improvement:
+Improve proactive communication and ownership of tasks from start to completion.
+
+Plan to Achieve:
+
+Provide regular status updates during standups and via Teams/Slack.
+
+Raise risks or blockers immediately when identified.
+
+Take full ownership of assigned tasks, including follow-ups and documentation.
+
+Metrics for Success:
+
+Consistent weekly status reporting without reminders.
+
+Reduced rework due to miscommunication.
+
+Improved feedback from team and manager on clarity and accountability.
+
+3. Enhance Security Alignment & Code Release Readiness
+
+Desired Improvement:
+Improve effectiveness in security alignment, SonarQube handling, and release preparedness.
+
+Plan to Achieve:
+
+Conduct weekly research on security best practices around certificates, encryption, and vulnerabilities.
+
+Ensure SonarQube findings are reviewed promptly and true positives are ticketed on time.
+
+Review release documentation and participate in rollback walkthroughs to improve independent release readiness.
+
+Metrics for Success:
+
+Timely creation of Sonar/SAST tickets within SLA.
+
+Increased confidence handling release processes independently.
+
+Fewer security-related delays during releases.
