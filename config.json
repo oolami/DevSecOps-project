@@ -1,0 +1,49 @@
+{
+  "prod_profile": "prod-sso",
+  "dr_profile": "dr-sso",
+
+  "prod_region": "us-west-2",
+  "dr_region": "us-east-1",
+
+  "vpc_map": {
+    "prod_vpc_id": "vpc-aaaaaaaaaaaaaaaaa",
+    "dr_vpc_id": "vpc-bbbbbbbbbbbbbbbbb",
+    "subnet_map": {
+      "subnet-prod-1": "subnet-dr-1",
+      "subnet-prod-2": "subnet-dr-2"
+    }
+  },
+
+  "filters": {
+    "security_group_name_prefixes": [],
+    "load_balancer_name_prefixes": [],
+    "target_group_name_prefixes": []
+  },
+
+  "cert_map": {},
+  "skip_https_without_cert_map": true
+}
+
+
+
+
+
+
+
+
+
+
+python .\replicate_networking.py --config .\config.json --dry-run --report .\report.json
+
+
+python .\replicate_networking.py --config .\config.json --report .\report.json
+
+
+
+
+
+
+"cert_map": {
+  "arn:aws:acm:us-west-2:111111111111:certificate/aaaa": "arn:aws:acm:us-east-1:222222222222:certificate/bbbb"
+}
+
