@@ -1,677 +1,905 @@
 #!/usr/bin/env python3
+"""
+replicate_networking.py
+
+Replicate (Prod -> DR) networking resources across accounts/regions:
+- Security Groups (create missing, update rules; two-pass for SG->SG references)
+- Target Groups
+- Load Balancers + Listeners
+
+Constraints:
+- Prod MUST be read-only: script only calls Describe/List APIs in prod session.
+- DR can create/modify resources.
+
+Usage:
+  python replicate_networking.py --config config.json --dry-run --report report.json
+  python replicate_networking.py --config config.json --report report.json
+"""
+
+from __future__ import annotations
+
 import argparse
 import hashlib
 import json
 import re
 import sys
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple, Any
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 from botocore.exceptions import ClientError
 
 
-# ============================
-# Stack suffix handling (SGs)
-# ============================
-STACK_SUFFIX_RE = re.compile(r"^(.*)-[A-Za-z0-9]{10,}$")  # e.g. -wf6YhVwT12IE
+# -----------------------------
+# Helpers: suffix + matching
+# -----------------------------
 
-def normalize_stack_name(name: str) -> str:
-    m = STACK_SUFFIX_RE.match(name)
-    return m.group(1) if m else name
+# Treat suffixes like "wf6YhVwT12IE" or "1T2IYVI2LWLCN" as random/stack suffix
+STACK_SUFFIX_RE = re.compile(r"^[A-Za-z0-9]{8,}$")  # conservative threshold
 
-def dr_name_for_prod_sg(prod_name: str, prod_sg_id: str, dr_vpc_id: str) -> str:
+
+def split_stack_suffix(name: str) -> Tuple[str, Optional[str]]:
     """
-    If prod name ends with a stack-like random suffix, replace with a new deterministic suffix.
-    NO "-dr-" is added.
+    If name looks like 'base-<randomSuffix>', return (base, suffix).
+    Else return (name, None).
     """
-    base = normalize_stack_name(prod_name)
-    if base != prod_name:
-        seed = f"{prod_sg_id}:{dr_vpc_id}".encode("utf-8")
-        suffix = hashlib.sha1(seed).hexdigest()[:10]
-        return f"{base}-{suffix}"
-    return prod_name
+    if not name or "-" not in name:
+        return name, None
+    base, suffix = name.rsplit("-", 1)
+    if STACK_SUFFIX_RE.match(suffix):
+        return base, suffix
+    return name, None
 
 
-# ============================
-# Helpers
-# ============================
-def die(msg: str) -> None:
-    print(f"ERROR: {msg}", file=sys.stderr)
-    sys.exit(2)
+def deterministic_suffix(seed: str, length: int = 12) -> str:
+    """
+    Deterministic suffix for DR. No '-dr-' added. Only alnum, stable.
+    """
+    h = hashlib.sha1(seed.encode("utf-8")).hexdigest()  # stable
+    # take hex and trim
+    return h[:length]
 
-def load_config(path: str) -> dict:
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
 
-def prefix_ok(name: str, prefixes: List[str]) -> bool:
-    return True if not prefixes else any(name.startswith(p) for p in prefixes)
+def is_aws_reserved_tag_key(k: str) -> bool:
+    return k.lower().startswith("aws:")
 
-def utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
-def list_all_elbv2(elbv2, op: str, key: str, **kwargs) -> List[dict]:
-    """Paginator helper for elbv2 Marker/NextMarker operations."""
+def safe_copy_tags(tags: List[Dict[str, str]], copy_all_tags: bool) -> List[Dict[str, str]]:
+    """
+    - If copy_all_tags is False: return []
+    - Else copy tags except aws:* (reserved)
+    """
+    if not copy_all_tags:
+        return []
     out = []
-    marker = None
-    while True:
-        call_kwargs = dict(kwargs)
-        if marker:
-            call_kwargs["Marker"] = marker
-        resp = getattr(elbv2, op)(**call_kwargs)
-        out.extend(resp.get(key, []))
-        marker = resp.get("NextMarker")
-        if not marker:
-            break
+    for t in tags or []:
+        key = t.get("Key", "")
+        if not key:
+            continue
+        if is_aws_reserved_tag_key(key):
+            continue
+        out.append({"Key": key, "Value": t.get("Value", "")})
     return out
 
 
-# ============================
-# Report Collector
-# ============================
-class Report:
-    def __init__(self, config_path: str):
-        self.data: Dict[str, Any] = {
-            "generated_at_utc": utc_now_iso(),
-            "config_path": config_path,
-            "accounts": {},
-            "regions": {},
-            "summary": {
-                "sg_created": 0,
-                "sg_reused": 0,
-                "sg_rules_ingress_added_attempts": 0,
-                "sg_rules_egress_added_attempts": 0,
-                "tg_created": 0,
-                "tg_reused": 0,
-                "lb_created": 0,
-                "lb_reused": 0,
-                "listener_created": 0,
-                "listener_reused": 0,
-                "listener_skipped": 0
-            },
-            "security_groups": [],
-            "target_groups": [],
-            "load_balancers": [],
-            "listeners": [],
-            "warnings": [],
-            "errors": []
-        }
-
-    def set_context(self, prod_acct: str, dr_acct: str, prod_region: str, dr_region: str, dry_run: bool):
-        self.data["accounts"] = {"prod": prod_acct, "dr": dr_acct}
-        self.data["regions"] = {"prod": prod_region, "dr": dr_region}
-        self.data["dry_run"] = dry_run
-
-    def warn(self, msg: str):
-        self.data["warnings"].append({"time": utc_now_iso(), "message": msg})
-
-    def error(self, msg: str):
-        self.data["errors"].append({"time": utc_now_iso(), "message": msg})
-
-    def add_sg(self, item: dict):
-        self.data["security_groups"].append(item)
-
-    def add_tg(self, item: dict):
-        self.data["target_groups"].append(item)
-
-    def add_lb(self, item: dict):
-        self.data["load_balancers"].append(item)
-
-    def add_listener(self, item: dict):
-        self.data["listeners"].append(item)
-
-    def inc(self, key: str, n: int = 1):
-        if key in self.data["summary"]:
-            self.data["summary"][key] += n
-
-    def write(self, path: str):
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(self.data, f, indent=2)
-        print(f"\n[REPORT] Wrote report to: {path}")
-
-
-# ============================
-# Security Groups
-# ============================
-def list_sgs_by_vpc(ec2, vpc_id: str) -> List[dict]:
-    return ec2.describe_security_groups(Filters=[{"Name": "vpc-id", "Values": [vpc_id]}])["SecurityGroups"]
-
-def ensure_sgs_no_duplicates(
-    prod_ec2, dr_ec2,
-    prod_vpc_id: str, dr_vpc_id: str,
-    dry_run: bool,
-    sg_prefixes: List[str],
-    report: Report
-) -> Tuple[List[dict], Dict[str, str]]:
+def best_candidate_sg(candidates: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     """
-    Pass 1:
-    - Discover SGs in Prod VPC
-    - Ensure each exists in DR using intended DR name
-    - Build prod_sg_id -> dr_sg_id map
-    - No tags copied
-    - Reuse existing; do not create duplicates
+    If multiple matches, pick deterministically.
+    Currently picks the highest GroupId lexicographically (stable).
     """
-    prod_sgs = [
-        sg for sg in list_sgs_by_vpc(prod_ec2, prod_vpc_id)
-        if sg["GroupName"] != "default" and prefix_ok(sg["GroupName"], sg_prefixes)
-    ]
+    if not candidates:
+        return None
+    return sorted(candidates, key=lambda x: x.get("GroupId", ""))[-1]
 
-    dr_sgs = list_sgs_by_vpc(dr_ec2, dr_vpc_id)
-    dr_by_name = {sg["GroupName"]: sg for sg in dr_sgs}
 
-    prod_to_dr: Dict[str, str] = {}
+def list_sgs_in_vpc(ec2_client, vpc_id: str) -> List[Dict[str, Any]]:
+    paginator = ec2_client.get_paginator("describe_security_groups")
+    sgs: List[Dict[str, Any]] = []
+    for page in paginator.paginate(Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]):
+        sgs.extend(page.get("SecurityGroups", []))
+    return sgs
 
-    for p in prod_sgs:
-        prod_id = p["GroupId"]
-        prod_name = p["GroupName"]
-        desired_name = dr_name_for_prod_sg(prod_name, prod_id, dr_vpc_id)
 
-        if desired_name in dr_by_name:
-            dr_id = dr_by_name[desired_name]["GroupId"]
-            prod_to_dr[prod_id] = dr_id
-            print(f"[SG] EXISTS: {desired_name}")
-            report.inc("sg_reused")
-            report.add_sg({
-                "action": "reused",
-                "prod": {"group_id": prod_id, "group_name": prod_name},
-                "dr": {"group_id": dr_id, "group_name": desired_name},
-                "notes": "Reused existing SG in DR; no tags copied."
-            })
-            continue
-
-        print(f"[SG] CREATE: {desired_name} (from PROD: {prod_name})")
-        if dry_run:
-            report.inc("sg_created")
-            report.add_sg({
-                "action": "would_create",
-                "prod": {"group_id": prod_id, "group_name": prod_name},
-                "dr": {"group_name": desired_name},
-                "notes": "Dry-run: SG not created; no tags copied."
-            })
-            continue
-
-        resp = dr_ec2.create_security_group(
-            GroupName=desired_name,
-            Description=p.get("Description", "replicated-from-prod"),
-            VpcId=dr_vpc_id
-        )
-        dr_id = resp["GroupId"]
-        prod_to_dr[prod_id] = dr_id
-        dr_by_name[desired_name] = {"GroupId": dr_id, "GroupName": desired_name}
-        report.inc("sg_created")
-        report.add_sg({
-            "action": "created",
-            "prod": {"group_id": prod_id, "group_name": prod_name},
-            "dr": {"group_id": dr_id, "group_name": desired_name},
-            "notes": "Created SG in DR; no tags copied."
-        })
-
-    return prod_sgs, prod_to_dr
-
-def translate_permissions(ip_permissions: List[dict], prod_to_dr: Dict[str, str], report: Report) -> List[dict]:
-    """
-    Translate SG references (UserIdGroupPairs) to DR SG IDs.
-    Preserve CIDR and Prefix list rules.
-    """
-    translated = []
-    for perm in ip_permissions:
-        new_perm = {"IpProtocol": perm["IpProtocol"]}
-        if "FromPort" in perm:
-            new_perm["FromPort"] = perm["FromPort"]
-        if "ToPort" in perm:
-            new_perm["ToPort"] = perm["ToPort"]
-
-        for k in ("IpRanges", "Ipv6Ranges", "PrefixListIds"):
-            if perm.get(k):
-                new_perm[k] = perm[k]
-
-        pairs = []
-        for p in perm.get("UserIdGroupPairs", []):
-            src = p.get("GroupId")
-            if not src:
-                continue
-            dst = prod_to_dr.get(src)
-            if dst:
-                pairs.append({"GroupId": dst})
-            else:
-                report.warn(f"SG rule reference skipped: referenced PROD SG not mapped ({src}).")
-        if pairs:
-            new_perm["UserIdGroupPairs"] = pairs
-
-        has_any = any(new_perm.get(k) for k in ("IpRanges", "Ipv6Ranges", "PrefixListIds", "UserIdGroupPairs"))
-        if has_any:
-            translated.append(new_perm)
-
-    return translated
-
-def add_missing_sg_rules_only(
+def find_existing_dr_sg_for_prod_name(
     dr_ec2,
-    prod_sgs: List[dict],
-    prod_to_dr: Dict[str, str],
+    dr_vpc_id: str,
+    prod_sg_name: str
+) -> Optional[Dict[str, Any]]:
+    """
+    If Prod SG has a stack-like suffix, find any DR SG that matches the same base name
+    with ANY suffix (including different one). If Prod SG is NOT suffix-like, match exact.
+    """
+    base, suffix = split_stack_suffix(prod_sg_name)
+    dr_sgs = list_sgs_in_vpc(dr_ec2, dr_vpc_id)
+
+    if suffix is None:
+        # exact match
+        matches = [sg for sg in dr_sgs if sg.get("GroupName") == prod_sg_name]
+        return best_candidate_sg(matches)
+
+    prefix = base + "-"
+    matches = [sg for sg in dr_sgs if sg.get("GroupName", "").startswith(prefix)]
+
+    # Prefer NOT matching the prod exact suffix to avoid duplicates
+    non_prod = [sg for sg in matches if sg.get("GroupName") != prod_sg_name]
+    if non_prod:
+        return best_candidate_sg(non_prod)
+
+    return best_candidate_sg(matches)
+
+
+# -----------------------------
+# Config + report structures
+# -----------------------------
+
+@dataclass
+class FiltersCfg:
+    security_group_name_prefixes: List[str]
+    load_balancer_name_prefixes: List[str]
+    target_group_name_prefixes: List[str]
+
+
+@dataclass
+class VpcMapCfg:
+    prod_vpc_id: str
+    dr_vpc_id: str
+    subnet_map: Dict[str, str]  # prod_subnet_id -> dr_subnet_id
+
+
+@dataclass
+class Config:
+    prod_profile: str
+    dr_profile: str
+    prod_region: str
+    dr_region: str
+    vpc_map: VpcMapCfg
+    filters: FiltersCfg
+    cert_map: Dict[str, str]       # prod_cert_arn -> dr_cert_arn (optional)
+    copy_tags: bool                # if False, copy no tags at all
+
+
+def load_config(path: str) -> Config:
+    with open(path, "r", encoding="utf-8") as f:
+        cfg = json.load(f)
+
+    filters = cfg.get("filters", {})
+    vpc_map = cfg["vpc_map"]
+
+    return Config(
+        prod_profile=cfg["prod_profile"],
+        dr_profile=cfg["dr_profile"],
+        prod_region=cfg["prod_region"],
+        dr_region=cfg["dr_region"],
+        vpc_map=VpcMapCfg(
+            prod_vpc_id=vpc_map["prod_vpc_id"],
+            dr_vpc_id=vpc_map["dr_vpc_id"],
+            subnet_map=vpc_map.get("subnet_map", {}),
+        ),
+        filters=FiltersCfg(
+            security_group_name_prefixes=filters.get("security_group_name_prefixes", []),
+            load_balancer_name_prefixes=filters.get("load_balancer_name_prefixes", []),
+            target_group_name_prefixes=filters.get("target_group_name_prefixes", []),
+        ),
+        cert_map=cfg.get("cert_map", {}),
+        copy_tags=bool(cfg.get("copy_tags", True)),
+    )
+
+
+def name_matches_prefixes(name: str, prefixes: List[str]) -> bool:
+    if not prefixes:
+        return True
+    return any(name.startswith(p) for p in prefixes)
+
+
+def report_init() -> Dict[str, Any]:
+    return {
+        "summary": {},
+        "security_groups": [],
+        "target_groups": [],
+        "load_balancers": [],
+        "warnings": [],
+        "errors": [],
+    }
+
+
+def rep_log(report: Dict[str, Any], kind: str, msg: str, data: Optional[Dict[str, Any]] = None):
+    entry = {"message": msg}
+    if data:
+        entry.update(data)
+    report.setdefault(kind, []).append(entry)
+
+
+# -----------------------------
+# AWS: read-only in prod
+# -----------------------------
+
+def get_sessions(cfg: Config):
+    prod_sess = boto3.Session(profile_name=cfg.prod_profile, region_name=cfg.prod_region)
+    dr_sess = boto3.Session(profile_name=cfg.dr_profile, region_name=cfg.dr_region)
+    return prod_sess, dr_sess
+
+
+def prod_ec2(prod_sess): return prod_sess.client("ec2")
+def dr_ec2(dr_sess): return dr_sess.client("ec2")
+def prod_elbv2(prod_sess): return prod_sess.client("elbv2")
+def dr_elbv2(dr_sess): return dr_sess.client("elbv2")
+
+
+# -----------------------------
+# Security Groups replication
+# -----------------------------
+
+def list_prod_security_groups(prod_ec2c, prod_vpc_id: str, prefixes: List[str]) -> List[Dict[str, Any]]:
+    # Prod read-only: describe_security_groups is safe
+    all_sgs = list_sgs_in_vpc(prod_ec2c, prod_vpc_id)
+    out = []
+    for sg in all_sgs:
+        name = sg.get("GroupName", "")
+        if name_matches_prefixes(name, prefixes):
+            out.append(sg)
+    return out
+
+
+def ensure_sg_in_dr(
+    dr_ec2c,
+    dr_vpc_id: str,
+    prod_sg: Dict[str, Any],
     dry_run: bool,
-    report: Report
-) -> None:
+    report: Dict[str, Any],
+    cfg: Config,
+) -> Optional[str]:
     """
-    Pass 2:
-    - Add ingress/egress rules from Prod to DR
-    - Does NOT remove DR rules
-    - Duplicates are ignored
+    Create missing SG (only if no matching DR SG already exists).
+    For stack suffix SGs, reuse existing DR SG with same base-* if present.
     """
-    for p in prod_sgs:
-        prod_id = p["GroupId"]
-        prod_name = p["GroupName"]
-        dr_id = prod_to_dr.get(prod_id)
-        if not dr_id:
+    prod_name = prod_sg["GroupName"]
+    prod_id = prod_sg["GroupId"]
+
+    existing = find_existing_dr_sg_for_prod_name(dr_ec2c, dr_vpc_id, prod_name)
+    if existing:
+        rep_log(report, "security_groups", "Reuse existing DR SG (skip create)",
+                {"action": "reuse", "prod_name": prod_name, "prod_id": prod_id,
+                 "dr_name": existing.get("GroupName"), "dr_id": existing.get("GroupId")})
+        return existing["GroupId"]
+
+    # Not found -> create one DR SG
+    base, suffix = split_stack_suffix(prod_name)
+    if suffix is not None:
+        # deterministic DR suffix seeded by prod GroupId (stable) + base
+        dr_sfx = deterministic_suffix(seed=f"{base}:{prod_id}:{cfg.vpc_map.dr_vpc_id}", length=12)
+        dr_name = f"{base}-{dr_sfx}"
+    else:
+        dr_name = prod_name
+
+    tags = safe_copy_tags(prod_sg.get("Tags", []), cfg.copy_tags)
+
+    rep_log(report, "security_groups", "Create DR SG",
+            {"action": "create", "prod_name": prod_name, "prod_id": prod_id,
+             "dr_name": dr_name, "dry_run": dry_run})
+
+    if dry_run:
+        return None
+
+    try:
+        resp = dr_ec2c.create_security_group(
+            GroupName=dr_name,
+            Description=prod_sg.get("Description", dr_name),
+            VpcId=dr_vpc_id,
+            TagSpecifications=[{"ResourceType": "security-group", "Tags": tags}] if tags else []
+        )
+        return resp["GroupId"]
+    except ClientError as e:
+        rep_log(report, "errors", "Failed to create DR SG",
+                {"prod_name": prod_name, "error": str(e)})
+        raise
+
+
+def normalize_ip_permission_for_apply(
+    perm: Dict[str, Any],
+    prod_to_dr_sg_id: Dict[str, str],
+) -> Dict[str, Any]:
+    """
+    Convert a Prod IpPermission into a DR-applicable IpPermission:
+    - Replace any UserIdGroupPairs GroupId via prod_to_dr_sg_id map
+    - Keep CIDR/IP ranges intact
+    """
+    out: Dict[str, Any] = {
+        "IpProtocol": perm.get("IpProtocol"),
+    }
+    if "FromPort" in perm:
+        out["FromPort"] = perm.get("FromPort")
+    if "ToPort" in perm:
+        out["ToPort"] = perm.get("ToPort")
+
+    # CIDRs
+    if perm.get("IpRanges"):
+        out["IpRanges"] = [{"CidrIp": r.get("CidrIp"), "Description": r.get("Description")}
+                           for r in perm.get("IpRanges", []) if r.get("CidrIp")]
+    if perm.get("Ipv6Ranges"):
+        out["Ipv6Ranges"] = [{"CidrIpv6": r.get("CidrIpv6"), "Description": r.get("Description")}
+                             for r in perm.get("Ipv6Ranges", []) if r.get("CidrIpv6")]
+    if perm.get("PrefixListIds"):
+        out["PrefixListIds"] = [{"PrefixListId": r.get("PrefixListId"), "Description": r.get("Description")}
+                                for r in perm.get("PrefixListIds", []) if r.get("PrefixListId")]
+
+    # SG references
+    ugps = []
+    for ugp in perm.get("UserIdGroupPairs", []) or []:
+        prod_gid = ugp.get("GroupId")
+        if not prod_gid:
             continue
+        dr_gid = prod_to_dr_sg_id.get(prod_gid)
+        if not dr_gid:
+            # if we can't map it, skip this referenced rule (but report elsewhere)
+            continue
+        ugps.append({"GroupId": dr_gid, "Description": ugp.get("Description")})
+    if ugps:
+        out["UserIdGroupPairs"] = ugps
 
-        ingress = translate_permissions(p.get("IpPermissions", []), prod_to_dr, report)
-        egress  = translate_permissions(p.get("IpPermissionsEgress", []), prod_to_dr, report)
+    return out
 
-        report.inc("sg_rules_ingress_added_attempts", len(ingress))
-        report.inc("sg_rules_egress_added_attempts", len(egress))
 
+def ipperm_key(perm: Dict[str, Any]) -> str:
+    """
+    Stable key for permission diffing.
+    """
+    proto = perm.get("IpProtocol")
+    fp = perm.get("FromPort", "")
+    tp = perm.get("ToPort", "")
+    parts = [str(proto), str(fp), str(tp)]
+
+    def add_ranges(label: str, items: List[Dict[str, Any]], field: str):
+        vals = sorted([i.get(field, "") for i in items if i.get(field)])
+        parts.append(label + ":" + ",".join(vals))
+
+    add_ranges("v4", perm.get("IpRanges", []) or [], "CidrIp")
+    add_ranges("v6", perm.get("Ipv6Ranges", []) or [], "CidrIpv6")
+    add_ranges("pl", perm.get("PrefixListIds", []) or [], "PrefixListId")
+
+    ugps = sorted([u.get("GroupId", "") for u in perm.get("UserIdGroupPairs", []) or [] if u.get("GroupId")])
+    parts.append("sg:" + ",".join(ugps))
+    return "|".join(parts)
+
+
+def diff_permissions(prod_perms: List[Dict[str, Any]], dr_perms: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Return a list of permissions present in prod but missing in dr.
+    """
+    dr_keys = {ipperm_key(p): p for p in dr_perms or []}
+    missing = []
+    for p in prod_perms or []:
+        if ipperm_key(p) not in dr_keys:
+            missing.append(p)
+    return missing
+
+
+def sync_sg_rules_two_pass(
+    prod_ec2c,
+    dr_ec2c,
+    prod_sgs: List[Dict[str, Any]],
+    prod_to_dr_sg_id: Dict[str, str],
+    dry_run: bool,
+    report: Dict[str, Any],
+):
+    """
+    Two-pass SG rule sync:
+      Pass 1: sync rules that do NOT reference SGs (CIDR/prefixlist) and SG refs that already map
+      Pass 2: re-run now that SG mappings exist, apply SG->SG referenced rules.
+    """
+    # Build DR SG objects cache
+    dr_sg_ids = list(set(prod_to_dr_sg_id.values()))
+    dr_sgs_by_id: Dict[str, Dict[str, Any]] = {}
+    if dr_sg_ids:
+        # DR read describe for those ids
+        resp = dr_ec2c.describe_security_groups(GroupIds=dr_sg_ids)
+        for sg in resp.get("SecurityGroups", []):
+            dr_sgs_by_id[sg["GroupId"]] = sg
+
+    def refresh_dr_sg(dr_sg_id: str) -> Dict[str, Any]:
+        resp = dr_ec2c.describe_security_groups(GroupIds=[dr_sg_id])
+        return resp["SecurityGroups"][0]
+
+    def apply_missing(dr_sg_id: str, direction: str, missing_perms: List[Dict[str, Any]]):
+        if not missing_perms:
+            return
+        rep_log(report, "security_groups", f"Add missing {direction} rules",
+                {"action": "authorize", "dr_sg_id": dr_sg_id, "count": len(missing_perms), "dry_run": dry_run})
         if dry_run:
-            print(f"[SG] SYNC (dry-run): {prod_name} -> {dr_id} | ingress_rules={len(ingress)} egress_rules={len(egress)}")
-            continue
+            return
+        if direction == "ingress":
+            dr_ec2c.authorize_security_group_ingress(GroupId=dr_sg_id, IpPermissions=missing_perms)
+        else:
+            dr_ec2c.authorize_security_group_egress(GroupId=dr_sg_id, IpPermissions=missing_perms)
 
-        if ingress:
-            try:
-                dr_ec2.authorize_security_group_ingress(GroupId=dr_id, IpPermissions=ingress)
-            except ClientError as e:
-                if e.response["Error"]["Code"] != "InvalidPermission.Duplicate":
-                    report.error(f"SG ingress sync failed for {prod_name} ({dr_id}): {e}")
-                    raise
+    def do_pass(pass_num: int):
+        for prod_sg in prod_sgs:
+            prod_id = prod_sg["GroupId"]
+            dr_id = prod_to_dr_sg_id.get(prod_id)
+            if not dr_id:
+                continue
 
-        if egress:
-            try:
-                dr_ec2.authorize_security_group_egress(GroupId=dr_id, IpPermissions=egress)
-            except ClientError as e:
-                if e.response["Error"]["Code"] != "InvalidPermission.Duplicate":
-                    report.error(f"SG egress sync failed for {prod_name} ({dr_id}): {e}")
-                    raise
+            # Always fetch fresh DR SG if not cached
+            dr_sg = dr_sgs_by_id.get(dr_id) or refresh_dr_sg(dr_id)
+            dr_sgs_by_id[dr_id] = dr_sg
+
+            # Prepare prod permissions in DR-applicable form
+            prod_ing = [normalize_ip_permission_for_apply(p, prod_to_dr_sg_id) for p in (prod_sg.get("IpPermissions") or [])]
+            prod_egr = [normalize_ip_permission_for_apply(p, prod_to_dr_sg_id) for p in (prod_sg.get("IpPermissionsEgress") or [])]
+
+            # Pass gating: in pass 1, drop any perm that STILL contains SG pairs that were unmapped and got removed
+            # We also skip "empty" perms (e.g., SG-ref only but was removed).
+            def valid_perm(p: Dict[str, Any]) -> bool:
+                has_any = bool(p.get("IpRanges") or p.get("Ipv6Ranges") or p.get("PrefixListIds") or p.get("UserIdGroupPairs"))
+                return has_any
+
+            prod_ing = [p for p in prod_ing if valid_perm(p)]
+            prod_egr = [p for p in prod_egr if valid_perm(p)]
+
+            dr_ing = dr_sg.get("IpPermissions") or []
+            dr_egr = dr_sg.get("IpPermissionsEgress") or []
+
+            missing_ing = diff_permissions(prod_ing, dr_ing)
+            missing_egr = diff_permissions(prod_egr, dr_egr)
+
+            apply_missing(dr_id, "ingress", missing_ing)
+            apply_missing(dr_id, "egress", missing_egr)
+
+            rep_log(report, "security_groups", f"Pass {pass_num} SG sync complete",
+                    {"action": "sync", "pass": pass_num, "prod_sg_id": prod_id, "dr_sg_id": dr_id,
+                     "missing_ingress": len(missing_ing), "missing_egress": len(missing_egr)})
+
+    do_pass(1)
+    do_pass(2)
 
 
-# ============================
-# Target Groups
-# ============================
-def ensure_target_groups(
-    prod_elb, dr_elb,
-    prod_vpc_id: str, dr_vpc_id: str,
+def build_prod_to_dr_sg_map(
+    cfg: Config,
+    prod_ec2c,
+    dr_ec2c,
+    prod_sgs: List[Dict[str, Any]],
     dry_run: bool,
-    tg_prefixes: List[str],
-    report: Report
+    report: Dict[str, Any],
 ) -> Dict[str, str]:
     """
-    Ensure TGs exist in DR (by TargetGroupName).
-    Returns prod_tg_arn -> dr_tg_arn mapping.
+    Ensure SGs exist (or reused) in DR and return mapping prod_sg_id -> dr_sg_id.
     """
-    prod_tgs = [
-        tg for tg in list_all_elbv2(prod_elb, "describe_target_groups", "TargetGroups")
-        if tg.get("VpcId") == prod_vpc_id and prefix_ok(tg["TargetGroupName"], tg_prefixes)
-    ]
-    dr_tgs = [
-        tg for tg in list_all_elbv2(dr_elb, "describe_target_groups", "TargetGroups")
-        if tg.get("VpcId") == dr_vpc_id
-    ]
-    dr_by_name = {tg["TargetGroupName"]: tg for tg in dr_tgs}
+    mapping: Dict[str, str] = {}
+    for psg in prod_sgs:
+        dr_id = ensure_sg_in_dr(
+            dr_ec2c=dr_ec2c,
+            dr_vpc_id=cfg.vpc_map.dr_vpc_id,
+            prod_sg=psg,
+            dry_run=dry_run,
+            report=report,
+            cfg=cfg,
+        )
+        if dr_id:
+            mapping[psg["GroupId"]] = dr_id
+        else:
+            # dry-run: we can't know created id; map is incomplete, but we can still report actions
+            rep_log(report, "warnings", "Dry-run: DR SG IDs not available for mapping",
+                    {"prod_sg_id": psg["GroupId"], "prod_name": psg.get("GroupName")})
+    return mapping
 
-    tg_map: Dict[str, str] = {}
 
-    for tg in prod_tgs:
-        name = tg["TargetGroupName"]
-        prod_arn = tg["TargetGroupArn"]
+# -----------------------------
+# Target Groups replication
+# -----------------------------
 
-        if name in dr_by_name:
-            dr_arn = dr_by_name[name]["TargetGroupArn"]
-            tg_map[prod_arn] = dr_arn
-            print(f"[TG] EXISTS: {name}")
-            report.inc("tg_reused")
-            report.add_tg({"action": "reused", "name": name, "prod_arn": prod_arn, "dr_arn": dr_arn})
+def list_all_target_groups(elb) -> List[Dict[str, Any]]:
+    out = []
+    paginator = elb.get_paginator("describe_target_groups")
+    for page in paginator.paginate():
+        out.extend(page.get("TargetGroups", []))
+    return out
+
+
+def list_prod_target_groups(prod_elb, prod_vpc_id: str, prefixes: List[str]) -> List[Dict[str, Any]]:
+    tgs = list_all_target_groups(prod_elb)
+    out = []
+    for tg in tgs:
+        if tg.get("VpcId") != prod_vpc_id:
+            continue
+        name = tg.get("TargetGroupName", "")
+        if name_matches_prefixes(name, prefixes):
+            out.append(tg)
+    return out
+
+
+def dr_find_tg_by_name(dr_elb, name: str) -> Optional[Dict[str, Any]]:
+    try:
+        resp = dr_elb.describe_target_groups(Names=[name])
+        tgs = resp.get("TargetGroups", [])
+        return tgs[0] if tgs else None
+    except ClientError:
+        return None
+
+
+def ensure_tg_in_dr(
+    cfg: Config,
+    dr_elb,
+    prod_tg: Dict[str, Any],
+    dry_run: bool,
+    report: Dict[str, Any],
+) -> Optional[str]:
+    name = prod_tg["TargetGroupName"]
+    existing = dr_find_tg_by_name(dr_elb, name)
+    if existing:
+        rep_log(report, "target_groups", "Reuse existing DR Target Group",
+                {"action": "reuse", "name": name, "dr_arn": existing.get("TargetGroupArn")})
+        return existing.get("TargetGroupArn")
+
+    # create TG in DR
+    create_args = {
+        "Name": name,
+        "Protocol": prod_tg.get("Protocol"),
+        "Port": prod_tg.get("Port"),
+        "VpcId": cfg.vpc_map.dr_vpc_id,
+        "TargetType": prod_tg.get("TargetType", "instance"),
+    }
+
+    # Health check settings (only set if present)
+    for k in [
+        "HealthCheckProtocol", "HealthCheckPort", "HealthCheckEnabled",
+        "HealthCheckPath", "HealthCheckIntervalSeconds", "HealthCheckTimeoutSeconds",
+        "HealthyThresholdCount", "UnhealthyThresholdCount", "Matcher"
+    ]:
+        if k in prod_tg and prod_tg[k] is not None:
+            create_args[k] = prod_tg[k]
+
+    rep_log(report, "target_groups", "Create DR Target Group",
+            {"action": "create", "name": name, "dry_run": dry_run, "args": create_args})
+
+    if dry_run:
+        return None
+
+    resp = dr_elb.create_target_group(**create_args)
+    return resp["TargetGroups"][0]["TargetGroupArn"]
+
+
+def build_prod_to_dr_tg_map(
+    cfg: Config,
+    prod_elb,
+    dr_elb,
+    prod_tgs: List[Dict[str, Any]],
+    dry_run: bool,
+    report: Dict[str, Any],
+) -> Dict[str, str]:
+    mapping: Dict[str, str] = {}
+    for ptg in prod_tgs:
+        dr_arn = ensure_tg_in_dr(cfg, dr_elb, ptg, dry_run, report)
+        if dr_arn:
+            mapping[ptg["TargetGroupArn"]] = dr_arn
+        else:
+            rep_log(report, "warnings", "Dry-run: DR TG ARNs not available for mapping",
+                    {"prod_tg_arn": ptg["TargetGroupArn"], "name": ptg["TargetGroupName"]})
+    return mapping
+
+
+# -----------------------------
+# Load Balancers + Listeners replication
+# -----------------------------
+
+def list_all_load_balancers(elb) -> List[Dict[str, Any]]:
+    out = []
+    paginator = elb.get_paginator("describe_load_balancers")
+    for page in paginator.paginate():
+        out.extend(page.get("LoadBalancers", []))
+    return out
+
+
+def list_prod_load_balancers(prod_elb, prod_vpc_id: str, prefixes: List[str]) -> List[Dict[str, Any]]:
+    lbs = list_all_load_balancers(prod_elb)
+    out = []
+    for lb in lbs:
+        if lb.get("VpcId") != prod_vpc_id:
+            continue
+        name = lb.get("LoadBalancerName", "")
+        if name_matches_prefixes(name, prefixes):
+            out.append(lb)
+    return out
+
+
+def dr_find_lb_by_name(dr_elb, name: str) -> Optional[Dict[str, Any]]:
+    try:
+        resp = dr_elb.describe_load_balancers(Names=[name])
+        lbs = resp.get("LoadBalancers", [])
+        return lbs[0] if lbs else None
+    except ClientError:
+        return None
+
+
+def map_subnets(cfg: Config, prod_subnet_ids: List[str], report: Dict[str, Any]) -> Optional[List[str]]:
+    dr_subnets = []
+    for sid in prod_subnet_ids:
+        dr_sid = cfg.vpc_map.subnet_map.get(sid)
+        if not dr_sid:
+            rep_log(report, "warnings", "No DR subnet mapping for prod subnet; cannot create LB using this subnet",
+                    {"prod_subnet_id": sid})
+            return None
+        dr_subnets.append(dr_sid)
+    return dr_subnets
+
+
+def map_sg_ids(prod_sg_ids: List[str], prod_to_dr_sg_id: Dict[str, str], report: Dict[str, Any]) -> Optional[List[str]]:
+    out = []
+    for sgid in prod_sg_ids:
+        drid = prod_to_dr_sg_id.get(sgid)
+        if not drid:
+            rep_log(report, "warnings", "No DR SG mapping for prod SG; LB may be skipped",
+                    {"prod_sg_id": sgid})
+            return None
+        out.append(drid)
+    return out
+
+
+def ensure_lb_in_dr(
+    cfg: Config,
+    prod_elb,
+    dr_elb,
+    prod_lb: Dict[str, Any],
+    prod_to_dr_sg_id: Dict[str, str],
+    dry_run: bool,
+    report: Dict[str, Any],
+) -> Optional[str]:
+    name = prod_lb["LoadBalancerName"]
+    existing = dr_find_lb_by_name(dr_elb, name)
+    if existing:
+        rep_log(report, "load_balancers", "Reuse existing DR Load Balancer",
+                {"action": "reuse", "name": name, "dr_arn": existing.get("LoadBalancerArn")})
+        return existing.get("LoadBalancerArn")
+
+    # Need subnet mapping
+    prod_subnets = [az.get("SubnetId") for az in (prod_lb.get("AvailabilityZones") or []) if az.get("SubnetId")]
+    dr_subnets = map_subnets(cfg, prod_subnets, report)
+    if not dr_subnets:
+        rep_log(report, "load_balancers", "Skip LB: missing subnet mapping",
+                {"action": "skip", "name": name})
+        return None
+
+    create_args: Dict[str, Any] = {
+        "Name": name,
+        "Subnets": dr_subnets,
+        "Scheme": prod_lb.get("Scheme"),
+        "Type": prod_lb.get("Type"),
+        "IpAddressType": prod_lb.get("IpAddressType", "ipv4"),
+    }
+
+    # SecurityGroups only for ALB/NLB? (NLB generally doesn't use SG unless TLS ALPN?; AWS: SGs apply to ALB and GWLB, not classic NLB)
+    # In practice, if SGs present in prod_lb, map them; otherwise omit.
+    prod_sgs = prod_lb.get("SecurityGroups") or []
+    if prod_sgs:
+        dr_sgs = map_sg_ids(prod_sgs, prod_to_dr_sg_id, report)
+        if not dr_sgs:
+            rep_log(report, "load_balancers", "Skip LB: missing SG mapping",
+                    {"action": "skip", "name": name})
+            return None
+        create_args["SecurityGroups"] = dr_sgs
+
+    rep_log(report, "load_balancers", "Create DR Load Balancer",
+            {"action": "create", "name": name, "dry_run": dry_run, "args": create_args})
+
+    if dry_run:
+        return None
+
+    resp = dr_elb.create_load_balancer(**create_args)
+    return resp["LoadBalancers"][0]["LoadBalancerArn"]
+
+
+def list_listeners(elb, lb_arn: str) -> List[Dict[str, Any]]:
+    out = []
+    paginator = elb.get_paginator("describe_listeners")
+    for page in paginator.paginate(LoadBalancerArn=lb_arn):
+        out.extend(page.get("Listeners", []))
+    return out
+
+
+def normalize_actions_for_dr(
+    actions: List[Dict[str, Any]],
+    prod_to_dr_tg_arn: Dict[str, str],
+) -> Optional[List[Dict[str, Any]]]:
+    """
+    Convert Prod listener default actions to DR by mapping TargetGroupArn.
+    If an action uses TargetGroupArn and mapping missing -> return None (cannot safely create).
+    """
+    out = []
+    for a in actions or []:
+        na = dict(a)
+        if "TargetGroupArn" in na:
+            prod_tg = na["TargetGroupArn"]
+            dr_tg = prod_to_dr_tg_arn.get(prod_tg)
+            if not dr_tg:
+                return None
+            na["TargetGroupArn"] = dr_tg
+        # ForwardConfig may include multiple target groups
+        if "ForwardConfig" in na and na["ForwardConfig"]:
+            fc = dict(na["ForwardConfig"])
+            tgs = []
+            for tg in fc.get("TargetGroups", []) or []:
+                prod_tg = tg.get("TargetGroupArn")
+                if not prod_tg:
+                    continue
+                dr_tg = prod_to_dr_tg_arn.get(prod_tg)
+                if not dr_tg:
+                    return None
+                ntg = dict(tg)
+                ntg["TargetGroupArn"] = dr_tg
+                tgs.append(ntg)
+            fc["TargetGroups"] = tgs
+            na["ForwardConfig"] = fc
+        out.append(na)
+    return out
+
+
+def ensure_listeners_in_dr(
+    cfg: Config,
+    prod_elb,
+    dr_elb,
+    prod_lb_arn: str,
+    dr_lb_arn: str,
+    prod_to_dr_tg_arn: Dict[str, str],
+    dry_run: bool,
+    report: Dict[str, Any],
+):
+    """
+    Create missing listeners in DR to match prod listeners (best-effort).
+    - If listener requires cert and cert_map missing => skip that listener (report it).
+    - If default action points to TG w/o mapping => skip that listener (report it).
+    """
+    prod_listeners = list_listeners(prod_elb, prod_lb_arn)
+    dr_listeners = list_listeners(dr_elb, dr_lb_arn)
+
+    dr_listener_keys = {(l.get("Protocol"), l.get("Port")) for l in dr_listeners}
+
+    for pl in prod_listeners:
+        proto = pl.get("Protocol")
+        port = pl.get("Port")
+        key = (proto, port)
+
+        if key in dr_listener_keys:
+            rep_log(report, "load_balancers", "Listener already exists in DR (skip)",
+                    {"action": "skip", "reason": "exists", "protocol": proto, "port": port, "dr_lb_arn": dr_lb_arn})
             continue
 
-        if tg.get("TargetType") == "lambda":
-            msg = f"[TG] SKIP lambda target group: {name}"
-            print(msg)
-            report.warn(msg)
-            continue
-
-        print(f"[TG] CREATE: {name}")
-        if dry_run:
-            report.inc("tg_created")
-            report.add_tg({"action": "would_create", "name": name, "prod_arn": prod_arn})
-            continue
-
-        create_args = {
-            "Name": name,
-            "Protocol": tg["Protocol"],
-            "Port": tg["Port"],
-            "VpcId": dr_vpc_id,
-            "TargetType": tg.get("TargetType", "instance"),
+        create_args: Dict[str, Any] = {
+            "LoadBalancerArn": dr_lb_arn,
+            "Protocol": proto,
+            "Port": port,
         }
 
-        resp = dr_elb.create_target_group(**create_args)
-        dr_arn = resp["TargetGroups"][0]["TargetGroupArn"]
-        tg_map[prod_arn] = dr_arn
-        report.inc("tg_created")
-        report.add_tg({"action": "created", "name": name, "prod_arn": prod_arn, "dr_arn": dr_arn})
-
-        # Copy attributes best-effort
-        try:
-            attrs = prod_elb.describe_target_group_attributes(TargetGroupArn=prod_arn)["Attributes"]
-            if attrs:
-                dr_elb.modify_target_group_attributes(TargetGroupArn=dr_arn, Attributes=attrs)
-        except ClientError as e:
-            report.warn(f"TG attribute copy failed for {name}: {e}")
-
-    return tg_map
-
-
-# ============================
-# Load Balancers + Listeners
-# ============================
-def ensure_load_balancers_and_listeners(
-    prod_elb, dr_elb,
-    prod_ec2,
-    prod_vpc_id: str,
-    subnet_map: Dict[str, str],
-    sg_map: Dict[str, str],
-    tg_map: Dict[str, str],
-    cert_map: Dict[str, str],
-    skip_https_without_cert_map: bool,
-    dry_run: bool,
-    lb_prefixes: List[str],
-    report: Report
-) -> None:
-    prod_lbs = list_all_elbv2(prod_elb, "describe_load_balancers", "LoadBalancers")
-    dr_lbs = list_all_elbv2(dr_elb, "describe_load_balancers", "LoadBalancers")
-    dr_by_name = {lb["LoadBalancerName"]: lb for lb in dr_lbs}
-
-    for lb in prod_lbs:
-        name = lb["LoadBalancerName"]
-        if not prefix_ok(name, lb_prefixes):
-            continue
-
-        azs = lb.get("AvailabilityZones", [])
-        if not azs:
-            continue
-
-        prod_subnets = [az["SubnetId"] for az in azs if az.get("SubnetId")]
-        if not prod_subnets:
-            continue
-
-        # Ensure LB is in the configured prod VPC (check subnet's VPC)
-        try:
-            vpc_check = prod_ec2.describe_subnets(SubnetIds=[prod_subnets[0]])["Subnets"][0]["VpcId"]
-            if vpc_check != prod_vpc_id:
+        # Certificates (HTTPS/TLS)
+        certs = pl.get("Certificates") or []
+        if certs:
+            mapped = []
+            for c in certs:
+                prod_cert_arn = c.get("CertificateArn")
+                if not prod_cert_arn:
+                    continue
+                dr_cert = cfg.cert_map.get(prod_cert_arn)
+                if not dr_cert:
+                    rep_log(report, "warnings", "Skipping listener: certificate mapping missing",
+                            {"prod_cert_arn": prod_cert_arn, "protocol": proto, "port": port})
+                    mapped = None
+                    break
+                mapped.append({"CertificateArn": dr_cert})
+            if mapped is None:
+                rep_log(report, "load_balancers", "Skip listener due to missing cert_map",
+                        {"action": "skip", "protocol": proto, "port": port, "reason": "missing_cert_map"})
                 continue
-        except ClientError as e:
-            report.warn(f"LB VPC check failed for {name}: {e}")
+            if mapped:
+                create_args["Certificates"] = mapped
+
+        # SSL Policy if present
+        if pl.get("SslPolicy"):
+            create_args["SslPolicy"] = pl["SslPolicy"]
+
+        # Default actions (must have)
+        actions = normalize_actions_for_dr(pl.get("DefaultActions") or [], prod_to_dr_tg_arn)
+        if not actions:
+            rep_log(report, "warnings", "Skipping listener: cannot map default actions (missing TG mapping?)",
+                    {"protocol": proto, "port": port})
+            rep_log(report, "load_balancers", "Skip listener due to action mapping failure",
+                    {"action": "skip", "protocol": proto, "port": port, "reason": "action_mapping_failed"})
             continue
+        create_args["DefaultActions"] = actions
 
-        # Map subnets to DR
-        dr_subnets = []
-        missing = [s for s in prod_subnets if s not in subnet_map]
-        if missing:
-            msg = f"[LB] SKIP {name}: missing subnet mappings for {missing}"
-            print(msg)
-            report.warn(msg)
-            continue
-        dr_subnets = [subnet_map[s] for s in prod_subnets]
-
-        # Ensure LB exists
-        if name in dr_by_name:
-            dr_lb = dr_by_name[name]
-            print(f"[LB] EXISTS: {name}")
-            report.inc("lb_reused")
-            report.add_lb({"action": "reused", "name": name, "type": lb["Type"], "dr_arn": dr_lb["LoadBalancerArn"]})
-        else:
-            print(f"[LB] CREATE: {name} ({lb['Type']})")
-            if dry_run:
-                report.inc("lb_created")
-                report.add_lb({"action": "would_create", "name": name, "type": lb["Type"]})
-                dr_lb = None
-            else:
-                args = {
-                    "Name": name,
-                    "Type": lb["Type"],
-                    "Scheme": lb["Scheme"],
-                    "Subnets": dr_subnets,
-                    "IpAddressType": lb.get("IpAddressType", "ipv4")
-                }
-
-                if lb["Type"] == "application":
-                    # Map SGs (required for ALB)
-                    mapped_sgs = [sg_map[s] for s in lb.get("SecurityGroups", []) if s in sg_map]
-                    if not mapped_sgs:
-                        msg = f"[LB] SKIP {name}: ALB has no mapped security groups"
-                        print(msg)
-                        report.warn(msg)
-                        continue
-                    args["SecurityGroups"] = mapped_sgs
-
-                try:
-                    resp = dr_elb.create_load_balancer(**args)
-                    dr_lb = resp["LoadBalancers"][0]
-                    dr_by_name[name] = dr_lb
-                    report.inc("lb_created")
-                    report.add_lb({"action": "created", "name": name, "type": lb["Type"], "dr_arn": dr_lb["LoadBalancerArn"]})
-                except ClientError as e:
-                    report.error(f"LB create failed for {name}: {e}")
-                    raise
-
-        # Listeners
-        prod_listeners = list_all_elbv2(prod_elb, "describe_listeners", "Listeners", LoadBalancerArn=lb["LoadBalancerArn"])
+        rep_log(report, "load_balancers", "Create DR listener",
+                {"action": "create_listener", "protocol": proto, "port": port, "dry_run": dry_run})
 
         if dry_run:
-            print(f"[LB] (dry-run) {name}: would evaluate {len(prod_listeners)} listeners")
-            # report planned listener actions (lightweight)
-            for lst in prod_listeners:
-                report.add_listener({
-                    "action": "would_evaluate",
-                    "lb_name": name,
-                    "protocol": lst.get("Protocol"),
-                    "port": lst.get("Port")
-                })
             continue
 
-        assert dr_lb is not None
-        dr_listeners = list_all_elbv2(dr_elb, "describe_listeners", "Listeners", LoadBalancerArn=dr_lb["LoadBalancerArn"])
-        dr_keys = {(l["Protocol"], l["Port"]) for l in dr_listeners}
-
-        for lst in prod_listeners:
-            proto, port = lst["Protocol"], lst["Port"]
-            listener_key = (proto, port)
-
-            if listener_key in dr_keys:
-                report.inc("listener_reused")
-                report.add_listener({"action": "reused", "lb_name": name, "protocol": proto, "port": port})
-                continue
-
-            # Only support forward default action (single or weighted forward)
-            actions = lst.get("DefaultActions", [])
-            if len(actions) != 1 or actions[0].get("Type") != "forward":
-                msg = f"[LB] SKIP listener {name} {proto}:{port} (complex DefaultActions)"
-                print(msg)
-                report.inc("listener_skipped")
-                report.add_listener({"action": "skipped", "lb_name": name, "protocol": proto, "port": port, "reason": "complex_default_actions"})
-                continue
-
-            create_payload = {
-                "LoadBalancerArn": dr_lb["LoadBalancerArn"],
-                "Protocol": proto,
-                "Port": port
-            }
-
-            # HTTPS/TLS cert mapping
-            if proto in ("HTTPS", "TLS"):
-                prod_certs = lst.get("Certificates", [])
-                mapped_certs = []
-                for c in prod_certs:
-                    prod_cert_arn = c.get("CertificateArn")
-                    if prod_cert_arn and prod_cert_arn in cert_map:
-                        mapped_certs.append({"CertificateArn": cert_map[prod_cert_arn]})
-
-                if not mapped_certs:
-                    if skip_https_without_cert_map:
-                        msg = f"[LB] SKIP HTTPS/TLS listener {name} {proto}:{port} (cert_map missing)"
-                        print(msg)
-                        report.inc("listener_skipped")
-                        report.add_listener({"action": "skipped", "lb_name": name, "protocol": proto, "port": port, "reason": "missing_cert_map"})
-                        continue
-                    else:
-                        mapped_certs = prod_certs  # not recommended cross-account
-
-                create_payload["Certificates"] = mapped_certs
-                if lst.get("SslPolicy"):
-                    create_payload["SslPolicy"] = lst["SslPolicy"]
-
-            # Forward action mapping
-            act = actions[0]
-            new_action = {"Type": "forward"}
-
-            if act.get("ForwardConfig") and act["ForwardConfig"].get("TargetGroups"):
-                mapped_tgs = []
-                ok = True
-                for tg in act["ForwardConfig"]["TargetGroups"]:
-                    prod_tg_arn = tg.get("TargetGroupArn")
-                    dr_tg_arn = tg_map.get(prod_tg_arn)
-                    if not dr_tg_arn:
-                        ok = False
-                        break
-                    entry = {"TargetGroupArn": dr_tg_arn}
-                    if "Weight" in tg:
-                        entry["Weight"] = tg["Weight"]
-                    mapped_tgs.append(entry)
-                if not ok:
-                    msg = f"[LB] SKIP listener {name} {proto}:{port} (weighted TG mapping incomplete)"
-                    print(msg)
-                    report.inc("listener_skipped")
-                    report.add_listener({"action": "skipped", "lb_name": name, "protocol": proto, "port": port, "reason": "weighted_tg_mapping_incomplete"})
-                    continue
-                new_action["ForwardConfig"] = {"TargetGroups": mapped_tgs}
-            else:
-                prod_tg_arn = act.get("TargetGroupArn")
-                dr_tg_arn = tg_map.get(prod_tg_arn)
-                if not dr_tg_arn:
-                    msg = f"[LB] SKIP listener {name} {proto}:{port} (TG not mapped)"
-                    print(msg)
-                    report.inc("listener_skipped")
-                    report.add_listener({"action": "skipped", "lb_name": name, "protocol": proto, "port": port, "reason": "tg_not_mapped"})
-                    continue
-                new_action["TargetGroupArn"] = dr_tg_arn
-
-            create_payload["DefaultActions"] = [new_action]
-
-            print(f"[LB] CREATE listener: {name} {proto}:{port}")
-            try:
-                dr_elb.create_listener(**create_payload)
-                report.inc("listener_created")
-                report.add_listener({"action": "created", "lb_name": name, "protocol": proto, "port": port})
-            except ClientError as e:
-                report.error(f"Listener create failed for {name} {proto}:{port}: {e}")
-                report.inc("listener_skipped")
-                report.add_listener({"action": "failed", "lb_name": name, "protocol": proto, "port": port, "reason": str(e)})
+        try:
+            dr_elb.create_listener(**create_args)
+        except ClientError as e:
+            rep_log(report, "errors", "Failed to create listener",
+                    {"protocol": proto, "port": port, "error": str(e)})
 
 
-# ============================
-# Main
-# ============================
+# -----------------------------
+# Main flow
+# -----------------------------
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True, help="Path to config.json")
-    ap.add_argument("--dry-run", action="store_true", help="Do not create/modify anything in DR")
-    ap.add_argument("--report", help="Write JSON report to this path (e.g., report.json)")
+    ap.add_argument("--dry-run", action="store_true", help="Do not create/modify; only report actions.")
+    ap.add_argument("--report", default="report.json", help="Write JSON report to this path.")
     args = ap.parse_args()
 
     cfg = load_config(args.config)
-    report = Report(config_path=args.config)
-
-    # Profiles / regions
-    prod_profile = cfg.get("prod_profile")
-    dr_profile = cfg.get("dr_profile")
-    if not prod_profile or not dr_profile:
-        die("config.json must include prod_profile and dr_profile")
-
-    prod_region = cfg.get("prod_region")
-    dr_region = cfg.get("dr_region")
-    if not prod_region or not dr_region:
-        die("config.json must include prod_region and dr_region")
-
-    # VPC mapping
-    vpc_map = cfg.get("vpc_map", {})
-    prod_vpc_id = vpc_map.get("prod_vpc_id")
-    dr_vpc_id = vpc_map.get("dr_vpc_id")
-    subnet_map = vpc_map.get("subnet_map", {})
-    if not prod_vpc_id or not dr_vpc_id or not subnet_map:
-        die("config.json vpc_map must include prod_vpc_id, dr_vpc_id, subnet_map")
-
-    filters = cfg.get("filters", {})
-    sg_prefixes = filters.get("security_group_name_prefixes", []) or []
-    lb_prefixes = filters.get("load_balancer_name_prefixes", []) or []
-    tg_prefixes = filters.get("target_group_name_prefixes", []) or []
-
-    cert_map = cfg.get("cert_map", {}) or {}
-    skip_https = cfg.get("skip_https_without_cert_map", True)
+    report = report_init()
 
     # Sessions
-    prod_sess = boto3.Session(profile_name=prod_profile)
-    dr_sess = boto3.Session(profile_name=dr_profile)
+    prod_sess, dr_sess = get_sessions(cfg)
+    prod_ec2c = prod_ec2(prod_sess)
+    dr_ec2c = dr_ec2(dr_sess)
+    prod_elb = prod_elbv2(prod_sess)
+    dr_elb = dr_elbv2(dr_sess)
 
-    prod_ec2 = prod_sess.client("ec2", region_name=prod_region)
-    prod_elb = prod_sess.client("elbv2", region_name=prod_region)
+    report["summary"] = {
+        "prod_profile": cfg.prod_profile,
+        "dr_profile": cfg.dr_profile,
+        "prod_region": cfg.prod_region,
+        "dr_region": cfg.dr_region,
+        "prod_vpc_id": cfg.vpc_map.prod_vpc_id,
+        "dr_vpc_id": cfg.vpc_map.dr_vpc_id,
+        "dry_run": bool(args.dry_run),
+        "copy_tags": cfg.copy_tags,
+    }
 
-    dr_ec2 = dr_sess.client("ec2", region_name=dr_region)
-    dr_elb = dr_sess.client("elbv2", region_name=dr_region)
+    # 1) SGs
+    rep_log(report, "warnings", "Prod is READ-ONLY enforced by design: only Describe/List APIs are used in prod.")
+    prod_sgs = list_prod_security_groups(prod_ec2c, cfg.vpc_map.prod_vpc_id, cfg.filters.security_group_name_prefixes)
+    rep_log(report, "security_groups", "Discovered prod security groups",
+            {"action": "discover", "count": len(prod_sgs)})
 
-    # Identity
-    prod_acct = prod_sess.client("sts", region_name=prod_region).get_caller_identity()["Account"]
-    dr_acct = dr_sess.client("sts", region_name=dr_region).get_caller_identity()["Account"]
-    report.set_context(prod_acct, dr_acct, prod_region, dr_region, args.dry_run)
+    prod_to_dr_sg_id = build_prod_to_dr_sg_map(cfg, prod_ec2c, dr_ec2c, prod_sgs, args.dry_run, report)
 
-    print(f"Prod: profile={prod_profile} account={prod_acct} region={prod_region} (CODE PATH: Describe-only)")
-    print(f"DR:   profile={dr_profile} account={dr_acct} region={dr_region} (Create/Modify)")
-    print(f"Dry-run: {args.dry_run}")
+    # Two-pass rules sync (only possible when not dry-run, because mapping is incomplete in dry-run)
+    if args.dry_run:
+        rep_log(report, "warnings", "Dry-run: SG rule sync is not fully evaluated because DR SG IDs are unknown until creation.")
+    else:
+        sync_sg_rules_two_pass(prod_ec2c, dr_ec2c, prod_sgs, prod_to_dr_sg_id, args.dry_run, report)
 
-    if prod_acct == dr_acct:
-        die("Prod and DR profiles resolve to the same account. Aborting.")
+    # 2) Target Groups
+    prod_tgs = list_prod_target_groups(prod_elb, cfg.vpc_map.prod_vpc_id, cfg.filters.target_group_name_prefixes)
+    rep_log(report, "target_groups", "Discovered prod target groups",
+            {"action": "discover", "count": len(prod_tgs)})
 
-    try:
-        # Step 1: SGs
-        print("\n=== Step 1: Security Groups (no tags, no duplicates; add missing rules) ===")
-        prod_sgs, sg_map = ensure_sgs_no_duplicates(
-            prod_ec2, dr_ec2, prod_vpc_id, dr_vpc_id, args.dry_run, sg_prefixes, report
-        )
-        add_missing_sg_rules_only(dr_ec2, prod_sgs, sg_map, args.dry_run, report)
+    prod_to_dr_tg_arn = build_prod_to_dr_tg_map(cfg, prod_elb, dr_elb, prod_tgs, args.dry_run, report)
 
-        # Step 2: TGs
-        print("\n=== Step 2: Target Groups ===")
-        tg_map = ensure_target_groups(prod_elb, dr_elb, prod_vpc_id, dr_vpc_id, args.dry_run, tg_prefixes, report)
+    # 3) Load Balancers + listeners
+    prod_lbs = list_prod_load_balancers(prod_elb, cfg.vpc_map.prod_vpc_id, cfg.filters.load_balancer_name_prefixes)
+    rep_log(report, "load_balancers", "Discovered prod load balancers",
+            {"action": "discover", "count": len(prod_lbs)})
 
-        # Step 3: LBs + listeners
-        print("\n=== Step 3: Load Balancers + Listeners ===")
-        ensure_load_balancers_and_listeners(
-            prod_elb=prod_elb,
-            dr_elb=dr_elb,
-            prod_ec2=prod_ec2,
-            prod_vpc_id=prod_vpc_id,
-            subnet_map=subnet_map,
-            sg_map=sg_map,
-            tg_map=tg_map,
-            cert_map=cert_map,
-            skip_https_without_cert_map=skip_https,
-            dry_run=args.dry_run,
-            lb_prefixes=lb_prefixes,
-            report=report
-        )
+    for plb in prod_lbs:
+        plb_arn = plb["LoadBalancerArn"]
+        name = plb["LoadBalancerName"]
 
-        print("\nDone.")
-    except Exception as e:
-        report.error(f"Unhandled exception: {e}")
-        raise
-    finally:
-        if args.report:
-            report.write(args.report)
+        dr_lb_arn = ensure_lb_in_dr(cfg, prod_elb, dr_elb, plb, prod_to_dr_sg_id, args.dry_run, report)
+        if not dr_lb_arn:
+            rep_log(report, "load_balancers", "Skip LB (not created / missing mapping)",
+                    {"action": "skip", "name": name})
+            continue
+
+        # listeners
+        if args.dry_run:
+            rep_log(report, "warnings", "Dry-run: listener creation is planned but not executed.",
+                    {"lb_name": name})
+        ensure_listeners_in_dr(cfg, prod_elb, dr_elb, plb_arn, dr_lb_arn, prod_to_dr_tg_arn, args.dry_run, report)
+
+    # Write report
+    with open(args.report, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, default=str)
+
+    print(f"Done. Report written to: {args.report}")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Interrupted.")
+        sys.exit(130)
