@@ -1,0 +1,1124 @@
+#!/usr/bin/env python3
+"""
+replicate_networking.py
+
+Purpose
+-------
+Replicate (PROD -> DR):
+- Security Groups (create missing, then sync inbound/outbound rules; no duplicates)
+- Target Groups
+- Load Balancers + Listeners + Listener Rules
+
+Key guarantees
+--------------
+- PROD is READ-ONLY: this script never calls create/modify/delete in PROD sessions.
+- DR is CREATE/MODIFY as needed (idempotent-ish): does not recreate existing resources;
+  instead it reconciles and adds missing pieces.
+- Two-pass SG sync: prevents SG->SG referenced rules from being skipped.
+- Tags: does NOT copy tags (and specifically never attempts to set aws:* tags).
+- Stack-suffix SG names: if a PROD SG name ends with a random/stack suffix (e.g. "-wf6YhVwT12IE"),
+  DR name will be the same base + a deterministic DR suffix (NO "-dr-").
+  If DR already has the same base with some other suffix, we adopt that instead of creating a new one.
+
+Config
+------
+JSON file, example:
+
+{
+  "prod_profile": "prod-sso",
+  "dr_profile": "default",
+  "prod_region": "us-west-2",
+  "dr_region": "us-east-1",
+
+  "vpc_map": {
+    "prod_vpc_id": "vpc-0236....",
+    "dr_vpc_id": "vpc-011a....",
+    "subnet_map": {
+      "subnet-prod-1": "subnet-dr-1",
+      "subnet-prod-2": "subnet-dr-2"
+    }
+  },
+
+  "filters": {
+    "security_group_name_prefixes": [],
+    "load_balancer_name_prefixes": [],
+    "target_group_name_prefixes": []
+  },
+
+  "cert_map": {
+    "arn:aws:acm:us-west-2:PROD:certificate/xxxx": "arn:aws:acm:us-east-1:DR:certificate/yyyy"
+  }
+}
+
+Notes
+-----
+- cert_map is OPTIONAL. If missing (or empty), listeners that require certificates are skipped.
+- Subnet mapping is required to create LBs.
+"""
+
+from __future__ import annotations
+
+import argparse
+import copy
+import dataclasses
+import hashlib
+import json
+import os
+import re
+import sys
+import time
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple, Set
+
+import boto3
+from botocore.exceptions import ClientError
+
+
+# =========================
+# Reporting
+# =========================
+
+@dataclass
+class ReportEvent:
+    ts: float
+    level: str  # INFO/WARN/ERROR
+    action: str
+    details: Dict[str, Any]
+
+
+class Reporter:
+    def __init__(self) -> None:
+        self.events: List[ReportEvent] = []
+        self.counts = {"INFO": 0, "WARN": 0, "ERROR": 0}
+
+    def log(self, level: str, action: str, **details: Any) -> None:
+        level_u = level.upper()
+        if level_u not in self.counts:
+            level_u = "INFO"
+        self.counts[level_u] += 1
+        self.events.append(ReportEvent(ts=time.time(), level=level_u, action=action, details=details))
+
+    def info(self, action: str, **details: Any) -> None:
+        self.log("INFO", action, **details)
+
+    def warn(self, action: str, **details: Any) -> None:
+        self.log("WARN", action, **details)
+
+    def error(self, action: str, **details: Any) -> None:
+        self.log("ERROR", action, **details)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "summary": {
+                "counts": self.counts,
+                "total_events": len(self.events),
+            },
+            "events": [
+                {"ts": e.ts, "level": e.level, "action": e.action, "details": e.details}
+                for e in self.events
+            ],
+        }
+
+    def write(self, path: str) -> None:
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.to_dict(), f, indent=2)
+
+
+# =========================
+# Helpers: JSON load + filters
+# =========================
+
+def load_config(path: str) -> Dict[str, Any]:
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        # Friendly message (your screenshots showed errors like "Extra data" / "Expecting ',' delimiter")
+        msg = f"Invalid JSON in config file '{path}': {e.msg} at line {e.lineno} col {e.colno} (char {e.pos})"
+        raise RuntimeError(msg) from e
+    except FileNotFoundError as e:
+        raise RuntimeError(f"Config file not found: {path}") from e
+
+
+def prefixes_match(name: str, prefixes: List[str]) -> bool:
+    if not prefixes:
+        return True
+    return any(name.startswith(p) for p in prefixes)
+
+
+# =========================
+# Stack suffix handling (SG names)
+# =========================
+
+# Treat endings like "-wf6YhVwT12IE" or "-1T2IYI2WLMCN" as stack/random suffixes.
+STACK_SUFFIX_RE = re.compile(r"^(.*)-([A-Za-z0-9]{8,})$")
+
+
+def split_stack_suffix(name: str) -> Tuple[str, Optional[str]]:
+    """
+    If name ends with -<8+ alnum>, returns (base, suffix); else (name, None)
+    """
+    m = STACK_SUFFIX_RE.match(name or "")
+    if not m:
+        return name, None
+    return m.group(1), m.group(2)
+
+
+def dr_name_for_prod_sg(prod_name: str, prod_sg_id: str, dr_vpc_id: str) -> str:
+    """
+    If PROD name ends with a stack suffix, generate a deterministic DR suffix (no '-dr-').
+    Otherwise return the same name.
+    """
+    base, suffix = split_stack_suffix(prod_name)
+    if suffix is None:
+        return prod_name
+
+    seed = f"{prod_sg_id}:{dr_vpc_id}:{base}".encode("utf-8")
+    # 10 chars keeps it “suffix-like” without looking like "-dr-"
+    dr_suffix = hashlib.sha256(seed).hexdigest()[:10]
+    return f"{base}-{dr_suffix}"
+
+
+def base_name(name: str) -> str:
+    b, s = split_stack_suffix(name)
+    return b
+
+
+# =========================
+# AWS session + safe calls
+# =========================
+
+def mk_session(profile: str, region: str) -> boto3.Session:
+    return boto3.Session(profile_name=profile, region_name=region)
+
+
+def is_reserved_aws_tag_key(key: str) -> bool:
+    return key.lower().startswith("aws:")
+
+
+# =========================
+# Security Groups replication
+# =========================
+
+@dataclass
+class SgInfo:
+    sg_id: str
+    name: str
+    description: str
+    vpc_id: str
+    tags: Dict[str, str]
+    ip_permissions: List[Dict[str, Any]]
+    ip_permissions_egress: List[Dict[str, Any]]
+
+
+def describe_all_sgs(ec2_client, vpc_id: str) -> List[Dict[str, Any]]:
+    paginator = ec2_client.get_paginator("describe_security_groups")
+    out: List[Dict[str, Any]] = []
+    for page in paginator.paginate(Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]):
+        out.extend(page.get("SecurityGroups", []))
+    return out
+
+
+def sg_to_info(sg: Dict[str, Any]) -> SgInfo:
+    tags = {t["Key"]: t.get("Value", "") for t in sg.get("Tags", []) if "Key" in t}
+    return SgInfo(
+        sg_id=sg["GroupId"],
+        name=sg.get("GroupName", ""),
+        description=sg.get("Description", ""),
+        vpc_id=sg.get("VpcId", ""),
+        tags=tags,
+        ip_permissions=sg.get("IpPermissions", []) or [],
+        ip_permissions_egress=sg.get("IpPermissionsEgress", []) or [],
+    )
+
+
+def build_dr_sg_indexes(dr_sgs: List[SgInfo]) -> Tuple[Dict[str, SgInfo], Dict[str, List[SgInfo]]]:
+    """
+    Returns:
+      - by_name: exact name -> SG
+      - by_base: base name -> [SGs...]
+    """
+    by_name: Dict[str, SgInfo] = {}
+    by_base: Dict[str, List[SgInfo]] = {}
+    for s in dr_sgs:
+        by_name[s.name] = s
+        b = base_name(s.name)
+        by_base.setdefault(b, []).append(s)
+    return by_name, by_base
+
+
+def ensure_sg_exists_in_dr(
+    *,
+    prod_sg: SgInfo,
+    dr_ec2,
+    dr_vpc_id: str,
+    dr_by_name: Dict[str, SgInfo],
+    dr_by_base: Dict[str, List[SgInfo]],
+    prod_to_dr_sg_id: Dict[str, str],
+    dry_run: bool,
+    reporter: Reporter,
+) -> None:
+    """
+    Choose an existing DR SG if it matches by exact name OR base-name (stack suffix mismatch),
+    else create a new DR SG.
+    """
+    # If already mapped, nothing to do
+    if prod_sg.sg_id in prod_to_dr_sg_id:
+        return
+
+    # 1) exact name match
+    if prod_sg.name in dr_by_name:
+        prod_to_dr_sg_id[prod_sg.sg_id] = dr_by_name[prod_sg.name].sg_id
+        reporter.info("SG_MAP_EXISTING_EXACT", prod_sg=prod_sg.name, dr_sg=dr_by_name[prod_sg.name].name)
+        return
+
+    # 2) base-name match (your “suffix differs between prod and DR” case)
+    prod_base = base_name(prod_sg.name)
+    candidates = dr_by_base.get(prod_base, [])
+    if candidates:
+        # If multiple, pick the oldest-ish deterministic choice: lowest GroupId lexicographically (stable)
+        chosen = sorted(candidates, key=lambda x: x.sg_id)[0]
+        prod_to_dr_sg_id[prod_sg.sg_id] = chosen.sg_id
+        reporter.warn(
+            "SG_MAP_EXISTING_BASE",
+            prod_sg=prod_sg.name,
+            dr_sg=chosen.name,
+            note="Mapped by base-name to avoid duplicates (suffix differs).",
+        )
+        return
+
+    # 3) create new with deterministic suffix if stack-suffix present
+    dr_name = dr_name_for_prod_sg(prod_sg.name, prod_sg.sg_id, dr_vpc_id)
+
+    # if that deterministic name exists (race / prior run), adopt it
+    if dr_name in dr_by_name:
+        prod_to_dr_sg_id[prod_sg.sg_id] = dr_by_name[dr_name].sg_id
+        reporter.info("SG_MAP_EXISTING_DETERMINISTIC", prod_sg=prod_sg.name, dr_sg=dr_name)
+        return
+
+    reporter.info("SG_CREATE", prod_sg=prod_sg.name, dr_sg=dr_name, dry_run=dry_run)
+    if dry_run:
+        # fake map to a placeholder; later rule sync should skip create calls anyway in dry-run
+        prod_to_dr_sg_id[prod_sg.sg_id] = f"dryrun:{dr_name}"
+        return
+
+    try:
+        resp = dr_ec2.create_security_group(
+            GroupName=dr_name,
+            Description=prod_sg.description or dr_name,
+            VpcId=dr_vpc_id,
+        )
+        new_id = resp["GroupId"]
+        # Refresh indexes
+        new_info = SgInfo(
+            sg_id=new_id,
+            name=dr_name,
+            description=prod_sg.description or dr_name,
+            vpc_id=dr_vpc_id,
+            tags={},  # we are not copying tags
+            ip_permissions=[],
+            ip_permissions_egress=[],
+        )
+        dr_by_name[dr_name] = new_info
+        dr_by_base.setdefault(base_name(dr_name), []).append(new_info)
+        prod_to_dr_sg_id[prod_sg.sg_id] = new_id
+    except ClientError as e:
+        reporter.error("SG_CREATE_FAILED", prod_sg=prod_sg.name, dr_sg=dr_name, error=str(e))
+        raise
+
+
+def normalize_ip_permission_for_compare(perm: Dict[str, Any], prod_to_dr_sg_id: Dict[str, str]) -> Dict[str, Any]:
+    """
+    Normalize IpPermission for set-comparison:
+    - Sort IpRanges, Ipv6Ranges, PrefixListIds, UserIdGroupPairs
+    - Map referenced SG IDs from PROD->DR where possible
+    """
+    p = copy.deepcopy(perm)
+
+    def sort_key(d: Dict[str, Any], keys: List[str]) -> Tuple:
+        return tuple(d.get(k) for k in keys)
+
+    # UserIdGroupPairs: map GroupId if present
+    ugps = []
+    for u in p.get("UserIdGroupPairs", []) or []:
+        u2 = dict(u)
+        gid = u2.get("GroupId")
+        if gid and gid in prod_to_dr_sg_id and not str(prod_to_dr_sg_id[gid]).startswith("dryrun:"):
+            u2["GroupId"] = prod_to_dr_sg_id[gid]
+        # Drop fields that can differ but are not required for authorization comparison
+        # (e.g., UserId may be different across accounts)
+        u2.pop("UserId", None)
+        u2.pop("GroupName", None)
+        ugps.append(u2)
+    ugps = sorted(ugps, key=lambda x: sort_key(x, ["GroupId", "VpcId", "VpcPeeringConnectionId", "PeeringStatus"]))
+    p["UserIdGroupPairs"] = ugps
+
+    # IP ranges
+    iprs = sorted((p.get("IpRanges", []) or []), key=lambda x: x.get("CidrIp", ""))
+    p["IpRanges"] = iprs
+    ipv6 = sorted((p.get("Ipv6Ranges", []) or []), key=lambda x: x.get("CidrIpv6", ""))
+    p["Ipv6Ranges"] = ipv6
+    pls = sorted((p.get("PrefixListIds", []) or []), key=lambda x: x.get("PrefixListId", ""))
+    p["PrefixListIds"] = pls
+
+    # Only keep stable keys
+    stable = {
+        "FromPort": p.get("FromPort"),
+        "ToPort": p.get("ToPort"),
+        "IpProtocol": p.get("IpProtocol"),
+        "IpRanges": p.get("IpRanges", []),
+        "Ipv6Ranges": p.get("Ipv6Ranges", []),
+        "PrefixListIds": p.get("PrefixListIds", []),
+        "UserIdGroupPairs": p.get("UserIdGroupPairs", []),
+    }
+    return stable
+
+
+def perm_list_to_set(perms: List[Dict[str, Any]], prod_to_dr_sg_id: Dict[str, str]) -> Set[str]:
+    """
+    Convert perms list into a comparable set by json-dumping normalized perms.
+    """
+    s: Set[str] = set()
+    for p in perms or []:
+        norm = normalize_ip_permission_for_compare(p, prod_to_dr_sg_id)
+        s.add(json.dumps(norm, sort_keys=True))
+    return s
+
+
+def ensure_sg_rules_synced(
+    *,
+    prod_sg: SgInfo,
+    dr_sg: SgInfo,
+    dr_ec2,
+    prod_to_dr_sg_id: Dict[str, str],
+    dry_run: bool,
+    reporter: Reporter,
+) -> None:
+    """
+    Add missing inbound/outbound rules in DR to match PROD.
+    Never removes rules from DR (safe).
+    """
+    if dr_sg.sg_id.startswith("dryrun:"):
+        reporter.info("SG_RULES_SKIP_DRYRUN_PLACEHOLDER", sg=dr_sg.name)
+        return
+
+    prod_in_set = perm_list_to_set(prod_sg.ip_permissions, prod_to_dr_sg_id)
+    dr_in_set = perm_list_to_set(dr_sg.ip_permissions, prod_to_dr_sg_id)
+    missing_in = prod_in_set - dr_in_set
+
+    prod_out_set = perm_list_to_set(prod_sg.ip_permissions_egress, prod_to_dr_sg_id)
+    dr_out_set = perm_list_to_set(dr_sg.ip_permissions_egress, prod_to_dr_sg_id)
+    missing_out = prod_out_set - dr_out_set
+
+    # Convert missing back to IpPermission dicts
+    missing_in_perms = [json.loads(x) for x in sorted(missing_in)]
+    missing_out_perms = [json.loads(x) for x in sorted(missing_out)]
+
+    if missing_in_perms:
+        reporter.info("SG_AUTHORIZE_INGRESS", sg=dr_sg.name, count=len(missing_in_perms), dry_run=dry_run)
+        if not dry_run:
+            try:
+                dr_ec2.authorize_security_group_ingress(GroupId=dr_sg.sg_id, IpPermissions=missing_in_perms)
+            except ClientError as e:
+                # Often duplicates can still happen due to AWS normalization; treat InvalidPermission.Duplicate as warn
+                code = e.response.get("Error", {}).get("Code", "")
+                if code in ("InvalidPermission.Duplicate",):
+                    reporter.warn("SG_INGRESS_DUPLICATE_IGNORED", sg=dr_sg.name, error=str(e))
+                else:
+                    reporter.error("SG_INGRESS_ADD_FAILED", sg=dr_sg.name, error=str(e))
+                    raise
+
+    if missing_out_perms:
+        reporter.info("SG_AUTHORIZE_EGRESS", sg=dr_sg.name, count=len(missing_out_perms), dry_run=dry_run)
+        if not dry_run:
+            try:
+                dr_ec2.authorize_security_group_egress(GroupId=dr_sg.sg_id, IpPermissions=missing_out_perms)
+            except ClientError as e:
+                code = e.response.get("Error", {}).get("Code", "")
+                if code in ("InvalidPermission.Duplicate",):
+                    reporter.warn("SG_EGRESS_DUPLICATE_IGNORED", sg=dr_sg.name, error=str(e))
+                else:
+                    reporter.error("SG_EGRESS_ADD_FAILED", sg=dr_sg.name, error=str(e))
+                    raise
+
+
+# =========================
+# Target Groups replication
+# =========================
+
+@dataclass
+class TgInfo:
+    arn: str
+    name: str
+    proto: str
+    port: int
+    vpc_id: str
+    target_type: str
+    health_check: Dict[str, Any]
+    attrs: Dict[str, str]
+
+
+def list_target_groups(elbv2_client) -> List[Dict[str, Any]]:
+    paginator = elbv2_client.get_paginator("describe_target_groups")
+    out: List[Dict[str, Any]] = []
+    for page in paginator.paginate():
+        out.extend(page.get("TargetGroups", []))
+    return out
+
+
+def get_tg_attributes(elbv2_client, tg_arn: str) -> Dict[str, str]:
+    resp = elbv2_client.describe_target_group_attributes(TargetGroupArn=tg_arn)
+    attrs = {a["Key"]: a["Value"] for a in resp.get("Attributes", [])}
+    return attrs
+
+
+def tg_to_info(elbv2_client, tg: Dict[str, Any]) -> TgInfo:
+    return TgInfo(
+        arn=tg["TargetGroupArn"],
+        name=tg["TargetGroupName"],
+        proto=tg["Protocol"],
+        port=int(tg.get("Port", 0) or 0),
+        vpc_id=tg.get("VpcId", ""),
+        target_type=tg.get("TargetType", "instance"),
+        health_check={
+            "HealthCheckProtocol": tg.get("HealthCheckProtocol"),
+            "HealthCheckPort": tg.get("HealthCheckPort"),
+            "HealthCheckEnabled": tg.get("HealthCheckEnabled"),
+            "HealthCheckPath": tg.get("HealthCheckPath"),
+            "HealthCheckIntervalSeconds": tg.get("HealthCheckIntervalSeconds"),
+            "HealthCheckTimeoutSeconds": tg.get("HealthCheckTimeoutSeconds"),
+            "HealthyThresholdCount": tg.get("HealthyThresholdCount"),
+            "UnhealthyThresholdCount": tg.get("UnhealthyThresholdCount"),
+            "Matcher": tg.get("Matcher"),
+        },
+        attrs=get_tg_attributes(elbv2_client, tg["TargetGroupArn"]),
+    )
+
+
+def ensure_tg_in_dr(
+    *,
+    prod_tg: TgInfo,
+    dr_elbv2,
+    dr_vpc_id: str,
+    dr_tgs_by_name: Dict[str, TgInfo],
+    prod_to_dr_tg_arn: Dict[str, str],
+    dry_run: bool,
+    reporter: Reporter,
+) -> None:
+    if prod_tg.arn in prod_to_dr_tg_arn:
+        return
+
+    if prod_tg.name in dr_tgs_by_name:
+        prod_to_dr_tg_arn[prod_tg.arn] = dr_tgs_by_name[prod_tg.name].arn
+        reporter.info("TG_EXISTS", tg=prod_tg.name)
+        return
+
+    reporter.info("TG_CREATE", tg=prod_tg.name, dry_run=dry_run)
+    if dry_run:
+        prod_to_dr_tg_arn[prod_tg.arn] = f"dryrun:{prod_tg.name}"
+        return
+
+    try:
+        resp = dr_elbv2.create_target_group(
+            Name=prod_tg.name,
+            Protocol=prod_tg.proto,
+            Port=prod_tg.port,
+            VpcId=dr_vpc_id,
+            TargetType=prod_tg.target_type,
+            **{k: v for k, v in prod_tg.health_check.items() if v is not None},
+        )
+        new_tg = resp["TargetGroups"][0]
+        new_info = TgInfo(
+            arn=new_tg["TargetGroupArn"],
+            name=new_tg["TargetGroupName"],
+            proto=new_tg["Protocol"],
+            port=int(new_tg.get("Port", 0) or 0),
+            vpc_id=new_tg.get("VpcId", ""),
+            target_type=new_tg.get("TargetType", "instance"),
+            health_check=prod_tg.health_check,
+            attrs=prod_tg.attrs,
+        )
+        # set attributes (best-effort)
+        try:
+            dr_elbv2.modify_target_group_attributes(
+                TargetGroupArn=new_info.arn,
+                Attributes=[{"Key": k, "Value": v} for k, v in (prod_tg.attrs or {}).items()],
+            )
+        except ClientError as e:
+            reporter.warn("TG_ATTRS_SET_FAILED", tg=prod_tg.name, error=str(e))
+
+        dr_tgs_by_name[new_info.name] = new_info
+        prod_to_dr_tg_arn[prod_tg.arn] = new_info.arn
+    except ClientError as e:
+        reporter.error("TG_CREATE_FAILED", tg=prod_tg.name, error=str(e))
+        raise
+
+
+# =========================
+# Load Balancers + Listeners + Rules replication
+# =========================
+
+@dataclass
+class LbInfo:
+    arn: str
+    name: str
+    lb_type: str  # application/network/gateway
+    scheme: str
+    ip_address_type: str
+    subnets: List[str]
+    security_groups: List[str]
+    attributes: Dict[str, str]
+
+
+def list_load_balancers(elbv2_client) -> List[Dict[str, Any]]:
+    paginator = elbv2_client.get_paginator("describe_load_balancers")
+    out: List[Dict[str, Any]] = []
+    for page in paginator.paginate():
+        out.extend(page.get("LoadBalancers", []))
+    return out
+
+
+def get_lb_attributes(elbv2_client, lb_arn: str) -> Dict[str, str]:
+    resp = elbv2_client.describe_load_balancer_attributes(LoadBalancerArn=lb_arn)
+    return {a["Key"]: a["Value"] for a in resp.get("Attributes", [])}
+
+
+def lb_to_info(elbv2_client, lb: Dict[str, Any]) -> LbInfo:
+    azs = lb.get("AvailabilityZones", []) or []
+    subnets = [a.get("SubnetId") for a in azs if a.get("SubnetId")]
+    return LbInfo(
+        arn=lb["LoadBalancerArn"],
+        name=lb["LoadBalancerName"],
+        lb_type=lb.get("Type", ""),
+        scheme=lb.get("Scheme", ""),
+        ip_address_type=lb.get("IpAddressType", "ipv4"),
+        subnets=subnets,
+        security_groups=lb.get("SecurityGroups", []) or [],
+        attributes=get_lb_attributes(elbv2_client, lb["LoadBalancerArn"]),
+    )
+
+
+def ensure_lb_in_dr(
+    *,
+    prod_lb: LbInfo,
+    dr_elbv2,
+    dr_lbs_by_name: Dict[str, LbInfo],
+    subnet_map: Dict[str, str],
+    prod_to_dr_sg_id: Dict[str, str],
+    prod_to_dr_lb_arn: Dict[str, str],
+    dry_run: bool,
+    reporter: Reporter,
+) -> None:
+    if prod_lb.arn in prod_to_dr_lb_arn:
+        return
+
+    if prod_lb.name in dr_lbs_by_name:
+        prod_to_dr_lb_arn[prod_lb.arn] = dr_lbs_by_name[prod_lb.name].arn
+        reporter.info("LB_EXISTS", lb=prod_lb.name)
+        return
+
+    # Ensure subnet mapping exists for every prod subnet
+    missing_subnets = [s for s in prod_lb.subnets if s not in subnet_map]
+    if missing_subnets:
+        reporter.warn("LB_SKIP_MISSING_SUBNET_MAP", lb=prod_lb.name, missing_subnets=missing_subnets)
+        return
+
+    dr_subnets = [subnet_map[s] for s in prod_lb.subnets]
+
+    # For ALB, map SGs
+    dr_sgs: List[str] = []
+    if prod_lb.lb_type == "application":
+        for sgid in prod_lb.security_groups:
+            if sgid in prod_to_dr_sg_id and not str(prod_to_dr_sg_id[sgid]).startswith("dryrun:"):
+                dr_sgs.append(prod_to_dr_sg_id[sgid])
+        if not dr_sgs:
+            reporter.warn("LB_ALB_SKIP_NO_SGS", lb=prod_lb.name, note="ALB requires security groups in DR.")
+            return
+
+    reporter.info("LB_CREATE", lb=prod_lb.name, type=prod_lb.lb_type, dry_run=dry_run)
+    if dry_run:
+        prod_to_dr_lb_arn[prod_lb.arn] = f"dryrun:{prod_lb.name}"
+        return
+
+    try:
+        kwargs: Dict[str, Any] = {
+            "Name": prod_lb.name,
+            "Subnets": dr_subnets,
+            "Scheme": prod_lb.scheme,
+            "Type": prod_lb.lb_type,
+            "IpAddressType": prod_lb.ip_address_type,
+        }
+        if prod_lb.lb_type == "application":
+            kwargs["SecurityGroups"] = dr_sgs
+
+        resp = dr_elbv2.create_load_balancer(**kwargs)
+        new_lb = resp["LoadBalancers"][0]
+        new_info = LbInfo(
+            arn=new_lb["LoadBalancerArn"],
+            name=new_lb["LoadBalancerName"],
+            lb_type=new_lb.get("Type", ""),
+            scheme=new_lb.get("Scheme", ""),
+            ip_address_type=new_lb.get("IpAddressType", "ipv4"),
+            subnets=dr_subnets,
+            security_groups=new_lb.get("SecurityGroups", []) or [],
+            attributes=prod_lb.attributes,
+        )
+        # set attributes best-effort
+        try:
+            dr_elbv2.modify_load_balancer_attributes(
+                LoadBalancerArn=new_info.arn,
+                Attributes=[{"Key": k, "Value": v} for k, v in (prod_lb.attributes or {}).items()],
+            )
+        except ClientError as e:
+            reporter.warn("LB_ATTRS_SET_FAILED", lb=prod_lb.name, error=str(e))
+
+        dr_lbs_by_name[new_info.name] = new_info
+        prod_to_dr_lb_arn[prod_lb.arn] = new_info.arn
+    except ClientError as e:
+        reporter.error("LB_CREATE_FAILED", lb=prod_lb.name, error=str(e))
+        raise
+
+
+def list_listeners(elbv2_client, lb_arn: str) -> List[Dict[str, Any]]:
+    paginator = elbv2_client.get_paginator("describe_listeners")
+    out: List[Dict[str, Any]] = []
+    for page in paginator.paginate(LoadBalancerArn=lb_arn):
+        out.extend(page.get("Listeners", []))
+    return out
+
+
+def list_rules(elbv2_client, listener_arn: str) -> List[Dict[str, Any]]:
+    paginator = elbv2_client.get_paginator("describe_rules")
+    out: List[Dict[str, Any]] = []
+    for page in paginator.paginate(ListenerArn=listener_arn):
+        out.extend(page.get("Rules", []))
+    return out
+
+
+def normalize_actions(
+    actions: List[Dict[str, Any]],
+    prod_to_dr_tg_arn: Dict[str, str],
+) -> List[Dict[str, Any]]:
+    """
+    Map TargetGroupArn(s) in actions from PROD->DR.
+    Avoid the “you can specify both a target group and forward config” validation errors by preserving structure.
+    """
+    new_actions = []
+    for a in actions or []:
+        a2 = copy.deepcopy(a)
+        if a2.get("Type") == "forward":
+            # Either a.TargetGroupArn OR a.ForwardConfig.TargetGroups[*].TargetGroupArn (or both in some cases).
+            if "TargetGroupArn" in a2 and a2["TargetGroupArn"] in prod_to_dr_tg_arn:
+                mapped = prod_to_dr_tg_arn[a2["TargetGroupArn"]]
+                if not str(mapped).startswith("dryrun:"):
+                    a2["TargetGroupArn"] = mapped
+
+            fc = a2.get("ForwardConfig")
+            if fc and isinstance(fc, dict) and "TargetGroups" in fc:
+                for tg in fc.get("TargetGroups", []) or []:
+                    arn = tg.get("TargetGroupArn")
+                    if arn and arn in prod_to_dr_tg_arn:
+                        mapped = prod_to_dr_tg_arn[arn]
+                        if not str(mapped).startswith("dryrun:"):
+                            tg["TargetGroupArn"] = mapped
+
+            # Safety: if both TargetGroupArn and ForwardConfig present, keep both only if PROD had both.
+            # (AWS accepts some combinations, but if you see ValidationError, remove TargetGroupArn as a fallback.)
+        new_actions.append(a2)
+    return new_actions
+
+
+def map_certificates(
+    certs: List[Dict[str, Any]],
+    cert_map: Dict[str, str],
+) -> Optional[List[Dict[str, Any]]]:
+    if not certs:
+        return []
+    if not cert_map:
+        return None  # means "cannot map"
+    mapped: List[Dict[str, Any]] = []
+    for c in certs:
+        arn = c.get("CertificateArn")
+        if arn and arn in cert_map:
+            mapped.append({"CertificateArn": cert_map[arn]})
+        else:
+            # If any certificate cannot be mapped, treat as not creatable
+            return None
+    return mapped
+
+
+def ensure_listeners_and_rules(
+    *,
+    prod_elbv2,
+    dr_elbv2,
+    prod_lb_arn: str,
+    dr_lb_arn: str,
+    prod_to_dr_tg_arn: Dict[str, str],
+    cert_map: Dict[str, str],
+    dry_run: bool,
+    reporter: Reporter,
+) -> None:
+    if str(dr_lb_arn).startswith("dryrun:"):
+        reporter.info("LISTENERS_SKIP_DRYRUN_LB", lb=dr_lb_arn)
+        return
+
+    prod_listeners = list_listeners(prod_elbv2, prod_lb_arn)
+    dr_listeners = list_listeners(dr_elbv2, dr_lb_arn)
+
+    # Index DR listeners by (port, protocol)
+    dr_idx: Dict[Tuple[int, str], Dict[str, Any]] = {}
+    for l in dr_listeners:
+        dr_idx[(int(l.get("Port", 0)), l.get("Protocol", ""))] = l
+
+    for pl in prod_listeners:
+        port = int(pl.get("Port", 0))
+        proto = pl.get("Protocol", "")
+        key = (port, proto)
+
+        default_actions = normalize_actions(pl.get("DefaultActions", []) or [], prod_to_dr_tg_arn)
+
+        # Certificates
+        mapped_certs = map_certificates(pl.get("Certificates", []) or [], cert_map)
+        if mapped_certs is None and (pl.get("Certificates") or []):
+            reporter.warn(
+                "LISTENER_SKIP_CERTS_UNMAPPED",
+                port=port,
+                protocol=proto,
+                reason="cert_map missing or incomplete for this listener",
+            )
+            continue
+
+        if key in dr_idx:
+            # Listener exists. Ensure rules.
+            dl = dr_idx[key]
+            reporter.info("LISTENER_EXISTS", port=port, protocol=proto, listener_arn=dl.get("ListenerArn"))
+            ensure_listener_rules(
+                prod_elbv2=prod_elbv2,
+                dr_elbv2=dr_elbv2,
+                prod_listener_arn=pl["ListenerArn"],
+                dr_listener_arn=dl["ListenerArn"],
+                prod_to_dr_tg_arn=prod_to_dr_tg_arn,
+                dry_run=dry_run,
+                reporter=reporter,
+            )
+            continue
+
+        reporter.info("LISTENER_CREATE", port=port, protocol=proto, dry_run=dry_run)
+        if dry_run:
+            continue
+
+        try:
+            kwargs: Dict[str, Any] = {
+                "LoadBalancerArn": dr_lb_arn,
+                "Protocol": proto,
+                "Port": port,
+                "DefaultActions": default_actions,
+            }
+            if mapped_certs is not None and mapped_certs:
+                kwargs["Certificates"] = mapped_certs
+
+            # Copy SSL policy if present
+            if pl.get("SslPolicy"):
+                kwargs["SslPolicy"] = pl["SslPolicy"]
+
+            dr_elbv2.create_listener(**kwargs)
+
+            # After creation, get the new listener arn and replicate rules
+            new_dr_listeners = list_listeners(dr_elbv2, dr_lb_arn)
+            new_dl = None
+            for l in new_dr_listeners:
+                if (int(l.get("Port", 0)), l.get("Protocol", "")) == key:
+                    new_dl = l
+                    break
+            if new_dl:
+                ensure_listener_rules(
+                    prod_elbv2=prod_elbv2,
+                    dr_elbv2=dr_elbv2,
+                    prod_listener_arn=pl["ListenerArn"],
+                    dr_listener_arn=new_dl["ListenerArn"],
+                    prod_to_dr_tg_arn=prod_to_dr_tg_arn,
+                    dry_run=dry_run,
+                    reporter=reporter,
+                )
+        except ClientError as e:
+            # If you see ValidationError "You can specify both a target group and forward config",
+            # it means PROD actions had both and AWS in DR rejected it. We log and continue.
+            reporter.error("LISTENER_CREATE_FAILED", port=port, protocol=proto, error=str(e))
+
+
+def normalize_conditions(conds: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return copy.deepcopy(conds or [])
+
+
+def ensure_listener_rules(
+    *,
+    prod_elbv2,
+    dr_elbv2,
+    prod_listener_arn: str,
+    dr_listener_arn: str,
+    prod_to_dr_tg_arn: Dict[str, str],
+    dry_run: bool,
+    reporter: Reporter,
+) -> None:
+    # Load rules
+    prod_rules = list_rules(prod_elbv2, prod_listener_arn)
+    dr_rules = list_rules(dr_elbv2, dr_listener_arn)
+
+    # Index DR rules by Priority (string) excluding "default"
+    dr_by_pri = {r.get("Priority"): r for r in dr_rules if r.get("Priority") != "default"}
+
+    for pr in prod_rules:
+        if pr.get("IsDefault"):
+            continue
+        pri = pr.get("Priority")
+        if pri in dr_by_pri:
+            reporter.info("RULE_EXISTS", priority=pri, listener=dr_listener_arn)
+            continue
+
+        conds = normalize_conditions(pr.get("Conditions", []) or [])
+        actions = normalize_actions(pr.get("Actions", []) or [], prod_to_dr_tg_arn)
+
+        reporter.info("RULE_CREATE", priority=pri, dry_run=dry_run)
+        if dry_run:
+            continue
+
+        try:
+            dr_elbv2.create_rule(
+                ListenerArn=dr_listener_arn,
+                Priority=int(pri),
+                Conditions=conds,
+                Actions=actions,
+            )
+        except ClientError as e:
+            reporter.error("RULE_CREATE_FAILED", priority=pri, error=str(e))
+
+
+# =========================
+# Main Orchestration
+# =========================
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", required=True, help="Path to config.json")
+    parser.add_argument("--prod-profile", default=None, help="Override prod_profile from config")
+    parser.add_argument("--dr-profile", default=None, help="Override dr_profile from config")
+    parser.add_argument("--dry-run", action="store_true", help="Do not create/modify in DR; report only")
+    parser.add_argument("--report", default=None, help="Write JSON report to this path (e.g., .\\report.json)")
+    args = parser.parse_args()
+
+    reporter = Reporter()
+
+    cfg = load_config(args.config)
+
+    prod_profile = args.prod_profile or cfg.get("prod_profile")
+    dr_profile = args.dr_profile or cfg.get("dr_profile")
+    prod_region = cfg.get("prod_region")
+    dr_region = cfg.get("dr_region")
+
+    if not prod_profile or not dr_profile:
+        raise RuntimeError("prod_profile and dr_profile must be set (either in config or via CLI overrides).")
+    if not prod_region or not dr_region:
+        raise RuntimeError("prod_region and dr_region must be set in config.")
+
+    vpc_map = cfg.get("vpc_map") or {}
+    prod_vpc_id = vpc_map.get("prod_vpc_id")
+    dr_vpc_id = vpc_map.get("dr_vpc_id")
+    subnet_map = (vpc_map.get("subnet_map") or {}).copy()
+
+    if not prod_vpc_id or not dr_vpc_id:
+        raise RuntimeError("vpc_map.prod_vpc_id and vpc_map.dr_vpc_id are required in config.")
+
+    filters = cfg.get("filters") or {}
+    sg_prefixes = filters.get("security_group_name_prefixes") or []
+    lb_prefixes = filters.get("load_balancer_name_prefixes") or []
+    tg_prefixes = filters.get("target_group_name_prefixes") or []
+
+    cert_map = cfg.get("cert_map") or {}
+
+    dry_run = bool(args.dry_run)
+
+    # Sessions / clients
+    prod_sess = mk_session(prod_profile, prod_region)
+    dr_sess = mk_session(dr_profile, dr_region)
+
+    prod_ec2 = prod_sess.client("ec2")
+    dr_ec2 = dr_sess.client("ec2")
+    prod_elbv2 = prod_sess.client("elbv2")
+    dr_elbv2 = dr_sess.client("elbv2")
+
+    # Validate identity (helps catch InvalidClientToken early)
+    try:
+        prod_sts = prod_sess.client("sts")
+        dr_sts = dr_sess.client("sts")
+        prod_ident = prod_sts.get_caller_identity()
+        dr_ident = dr_sts.get_caller_identity()
+        reporter.info("IDENTITY", prod=prod_ident.get("Arn"), dr=dr_ident.get("Arn"))
+        print(f"Using PROD profile (READ-ONLY): {prod_profile}")
+        print(f"Using DR profile   (CREATE/MODIFY): {dr_profile}")
+        print(f"PROD account: {prod_ident.get('Account')} ({prod_region})")
+        print(f"DR   account: {dr_ident.get('Account')} ({dr_region})")
+    except ClientError as e:
+        reporter.error("STS_IDENTITY_FAILED", error=str(e))
+        raise
+
+    # ===== Step 1: Security Groups (two-pass) =====
+    print("\n=== Step 1: Security Groups (two-pass sync) ===")
+
+    # Load SGs
+    prod_sgs_raw = describe_all_sgs(prod_ec2, prod_vpc_id)
+    dr_sgs_raw = describe_all_sgs(dr_ec2, dr_vpc_id)
+
+    prod_sgs = [sg_to_info(s) for s in prod_sgs_raw]
+    dr_sgs = [sg_to_info(s) for s in dr_sgs_raw]
+
+    # Apply prefix filter (on PROD)
+    prod_sgs = [s for s in prod_sgs if prefixes_match(s.name, sg_prefixes)]
+
+    dr_by_name, dr_by_base = build_dr_sg_indexes(dr_sgs)
+
+    prod_to_dr_sg_id: Dict[str, str] = {}
+
+    # Pass A: ensure all SGs exist or map to existing (avoid duplicates)
+    for psg in prod_sgs:
+        ensure_sg_exists_in_dr(
+            prod_sg=psg,
+            dr_ec2=dr_ec2,
+            dr_vpc_id=dr_vpc_id,
+            dr_by_name=dr_by_name,
+            dr_by_base=dr_by_base,
+            prod_to_dr_sg_id=prod_to_dr_sg_id,
+            dry_run=dry_run,
+            reporter=reporter,
+        )
+
+    # Refresh DR SG state (needed for accurate rule diff)
+    if not dry_run:
+        dr_sgs_raw2 = describe_all_sgs(dr_ec2, dr_vpc_id)
+        dr_sgs2 = [sg_to_info(s) for s in dr_sgs_raw2]
+        dr_by_name2, _ = build_dr_sg_indexes(dr_sgs2)
+    else:
+        dr_by_name2 = dr_by_name
+
+    # Pass B: sync rules (add missing only)
+    for psg in prod_sgs:
+        dr_id = prod_to_dr_sg_id.get(psg.sg_id)
+        if not dr_id:
+            reporter.warn("SG_NO_MAPPING", prod_sg=psg.name)
+            continue
+
+        # Resolve DR SG info by id (or by name fallback)
+        dr_info = None
+        for s in dr_by_name2.values():
+            if s.sg_id == dr_id:
+                dr_info = s
+                break
+        if dr_info is None and str(dr_id).startswith("dryrun:"):
+            dr_info = SgInfo(
+                sg_id=dr_id,
+                name=str(dr_id).replace("dryrun:", ""),
+                description="",
+                vpc_id=dr_vpc_id,
+                tags={},
+                ip_permissions=[],
+                ip_permissions_egress=[],
+            )
+
+        if dr_info is None:
+            reporter.warn("SG_DR_INFO_NOT_FOUND", prod_sg=psg.name, dr_sg_id=dr_id)
+            continue
+
+        ensure_sg_rules_synced(
+            prod_sg=psg,
+            dr_sg=dr_info,
+            dr_ec2=dr_ec2,
+            prod_to_dr_sg_id=prod_to_dr_sg_id,
+            dry_run=dry_run,
+            reporter=reporter,
+        )
+
+    # ===== Step 2: Target Groups =====
+    print("\n=== Step 2: Target Groups ===")
+    prod_tgs_raw = list_target_groups(prod_elbv2)
+    dr_tgs_raw = list_target_groups(dr_elbv2)
+
+    prod_tgs = [tg_to_info(prod_elbv2, tg) for tg in prod_tgs_raw]
+    dr_tgs = [tg_to_info(dr_elbv2, tg) for tg in dr_tgs_raw]
+
+    prod_tgs = [t for t in prod_tgs if prefixes_match(t.name, tg_prefixes)]
+    dr_tgs_by_name = {t.name: t for t in dr_tgs}
+
+    prod_to_dr_tg_arn: Dict[str, str] = {}
+
+    for ptg in prod_tgs:
+        # only replicate TGs that belong to PROD VPC (avoid cross-vpc surprises)
+        if ptg.vpc_id != prod_vpc_id:
+            continue
+        ensure_tg_in_dr(
+            prod_tg=ptg,
+            dr_elbv2=dr_elbv2,
+            dr_vpc_id=dr_vpc_id,
+            dr_tgs_by_name=dr_tgs_by_name,
+            prod_to_dr_tg_arn=prod_to_dr_tg_arn,
+            dry_run=dry_run,
+            reporter=reporter,
+        )
+
+    # ===== Step 3: Load Balancers + Listeners + Rules =====
+    print("\n=== Step 3: Load Balancers + Listeners + Rules ===")
+
+    prod_lbs_raw = list_load_balancers(prod_elbv2)
+    dr_lbs_raw = list_load_balancers(dr_elbv2)
+
+    prod_lbs = [lb_to_info(prod_elbv2, lb) for lb in prod_lbs_raw]
+    dr_lbs = [lb_to_info(dr_elbv2, lb) for lb in dr_lbs_raw]
+
+    prod_lbs = [l for l in prod_lbs if prefixes_match(l.name, lb_prefixes)]
+    dr_lbs_by_name = {l.name: l for l in dr_lbs}
+
+    prod_to_dr_lb_arn: Dict[str, str] = {}
+
+    for plb in prod_lbs:
+        ensure_lb_in_dr(
+            prod_lb=plb,
+            dr_elbv2=dr_elbv2,
+            dr_lbs_by_name=dr_lbs_by_name,
+            subnet_map=subnet_map,
+            prod_to_dr_sg_id=prod_to_dr_sg_id,
+            prod_to_dr_lb_arn=prod_to_dr_lb_arn,
+            dry_run=dry_run,
+            reporter=reporter,
+        )
+
+    # Listeners + Rules
+    for plb in prod_lbs:
+        dr_lb_arn = prod_to_dr_lb_arn.get(plb.arn)
+        if not dr_lb_arn:
+            reporter.warn("LB_NO_MAPPING", lb=plb.name)
+            continue
+        ensure_listeners_and_rules(
+            prod_elbv2=prod_elbv2,
+            dr_elbv2=dr_elbv2,
+            prod_lb_arn=plb.arn,
+            dr_lb_arn=dr_lb_arn,
+            prod_to_dr_tg_arn=prod_to_dr_tg_arn,
+            cert_map=cert_map,
+            dry_run=dry_run,
+            reporter=reporter,
+        )
+
+    # ===== Report =====
+    if args.report:
+        reporter.write(args.report)
+        print(f"\n[REPORT] Wrote report to: {args.report}")
+
+    print("\nDone.")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except Exception as e:
+        print(f"\nFATAL: {e}", file=sys.stderr)
+        raise
