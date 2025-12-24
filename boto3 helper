@@ -1,0 +1,25 @@
+def sanitize_ip_permissions_for_api(perms: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Boto3 does NOT accept FromPort/ToPort=None.
+    Remove keys with None values, especially FromPort/ToPort for '-1' and other protocols.
+    """
+    cleaned: List[Dict[str, Any]] = []
+
+    for p in perms or []:
+        p2 = copy.deepcopy(p)
+
+        # Drop any keys that are explicitly None (boto3 param validation fails)
+        for k in list(p2.keys()):
+            if p2[k] is None:
+                p2.pop(k, None)
+
+        # Safety: if FromPort/ToPort missing, that's fine for '-1' and many non-TCP/UDP cases
+        # If they exist, ensure they are ints
+        if "FromPort" in p2 and not isinstance(p2["FromPort"], int):
+            p2.pop("FromPort", None)
+        if "ToPort" in p2 and not isinstance(p2["ToPort"], int):
+            p2.pop("ToPort", None)
+
+        cleaned.append(p2)
+
+    return cleaned
