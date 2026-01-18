@@ -23,3 +23,29 @@ def sanitize_ip_permissions_for_api(perms: List[Dict[str, Any]]) -> List[Dict[st
         cleaned.append(p2)
 
     return cleaned
+
+
+
+
+
+
+
+
+
+cd C:\Users\gt130157\CS-DR\cs-2025\cs-gms\DR-AWS-Automation-main\cs-ami-restore-GMS
+
+python -m venv .venv
+.\.venv\Scripts\activate
+
+
+
+python -c "import sys; print(sys.executable)"
+
+
+
+
+python -c "import sys; print(sys.executable)"
+
+
+
+dir boto3*; dir botocore*
