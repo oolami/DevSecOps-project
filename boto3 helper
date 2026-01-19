@@ -182,6 +182,12 @@ except UnknownServiceError:
 
 
 
+aws ec2 describe-vpcs --region us-west-2 --profile dr `
+  --query "Vpcs[].{VpcId:VpcId,Name:Tags[?Key=='Name']|[0].Value,Cidr:CidrBlock}" `
+  --output table
+
+
+
 
 
 
