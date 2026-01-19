@@ -144,3 +144,33 @@ setx AWS_DEFAULT_REGION us-west-2
 
 
 
+
+
+from botocore.exceptions import UnknownServiceError
+
+try:
+    ams_client = boto3.client("amscm", region_name=AWS_region)
+except UnknownServiceError:
+    ams_client = None
+
+
+
+
+
+if ams_client:
+    # AMS RFC workflow
+else:
+    # GMS: do the existing ec2.run_instances workflow
+
+
+
+
+
+
+Select-String -Path *.py -Pattern "amscm" -CaseSensitive:$false
+Select-String -Path *.py -Pattern "RFC|change_type|ChangeType|ams_client" -CaseSensitive:$false
+
+
+
+
+
