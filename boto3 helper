@@ -173,4 +173,15 @@ Select-String -Path *.py -Pattern "RFC|change_type|ChangeType|ams_client" -CaseS
 
 
 
+from botocore.exceptions import UnknownServiceError
+
+try:
+    cm = boto3.client('amscm', region_name=AMS_region)
+except UnknownServiceError:
+    cm = None
+
+
+
+
+
 
