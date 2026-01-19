@@ -124,3 +124,23 @@ python master_create_placeholder_instances_ami.py 2>&1 | Select-String "Unknown 
 
 
 
+
+Get-ChildItem Env: | Where-Object Name -match "AMS" | Remove-Item
+
+
+Remove-Item Env:MGMT_MODE -ErrorAction SilentlyContinue
+Remove-Item Env:MANAGED_BY -ErrorAction SilentlyContinue
+
+
+
+aws sts get-caller-identity
+aws configure list
+
+
+
+setx AWS_REGION us-west-2
+setx AWS_DEFAULT_REGION us-west-2
+
+
+
+
