@@ -245,3 +245,9 @@ New-Item -ItemType Directory -Force -Path "C:\CS-DR" | Out-Null
 Copy-Item "C:\Users\gt130157\CS-DR-2\CS-DR\cs-dr-2025.csv" "C:\CS-DR\cs-dr-2025.csv" -Force
 Test-Path "C:\CS-DR\cs-dr-2025.csv"
 
+
+
+
+print(f"DR Region loaded from InfoFile: {dr_region}")
+
+
