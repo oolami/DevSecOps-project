@@ -431,5 +431,39 @@ python -c "import json; print(json.load(open(r'.\cs-ami-restore-GMS\InfoFile.jso
 
 
 
+cd "C:\Users\gt130157\CS-DR-2\cs-2025\cs-gms\DR-AWS-Automation-main"
+python ".\LoadBalancer-AWS\master_associate_lb_aws.py"
+
+
+
+echo $env:PYTHONPATH
+
+
+Remove-Item Env:\PYTHONPATH -ErrorAction SilentlyContinue
+
+$env:PYTHONPATH="C:\Users\gt130157\CS-DR-2\cs-2025\cs-gms\DR-AWS-Automation-main"
+
+
+
+python -c "import utils; print(utils.__file__)"
+
+
+Get-ChildItem -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
+
+
+cd "C:\Users\gt130157\CS-DR-2\cs-2025\cs-gms\DR-AWS-Automation-main"
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r ..\cs-ami-restore-GMS\requirements.txt   # adjust path if needed
+python ".\LoadBalancer-AWS\master_associate_lb_aws.py"
+
+
+
+python -c "import utils; print(utils.__file__)"
+
+
+
+
+
 
 
