@@ -483,4 +483,11 @@ python .\LoadBalancer-AWS\master_associate_lb_aws.py
 
 
 
+.\.venv\Scripts\python.exe .\master_create_placeholder_instances_ami.py
+
+
+
+.\.venv\Scripts\python.exe -c "import utils, os; print('utils:', utils.__file__); print('cwd:', os.getcwd())"
+
+
 
