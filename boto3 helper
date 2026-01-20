@@ -231,6 +231,14 @@ Select-String -Path *.py -Pattern 'amscm|boto3\.client\("amscm"|cm\.' -CaseSensi
 
 
 
+Test-Path "C:\CS-DR\cs-dr-2025.csv"
+
+
+Get-Content "C:\CS-DR\cs-dr-2025.csv" -TotalCount 3
+
+
+
+
 
 
 
