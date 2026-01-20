@@ -409,5 +409,27 @@ print(f"[INFO] FORCING CSV input: {csv_input}")
 
 
 
+# 1) Show every InfoFile.json in the repo and what it contains for EBS CSV Path
+Get-ChildItem -Recurse -Filter InfoFile.json |
+  ForEach-Object {
+    $p = $_.FullName
+    $m = (Select-String -Path $p -Pattern '"EBS CSV Path"\s*:\s*"' -ErrorAction SilentlyContinue).Line
+    [pscustomobject]@{ File=$p; Match=$m }
+  } | Format-Table -AutoSize
+
+
+
+Select-String -Path ".\cs-ami-restore-GMS\InfoFile.json" -Pattern "EBS CSV Path" | Measure-Object
+
+
+
+Select-String -Path ".\master_associate_lb_aws.py" -Pattern "csv_input\s*=" -Context 0,2
+
+
+python -c "import json; print(json.load(open(r'.\cs-ami-restore-GMS\InfoFile.json'))['EBS CSV Path'])"
+
+
+
+
 
 
