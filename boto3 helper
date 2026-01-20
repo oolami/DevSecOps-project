@@ -212,6 +212,25 @@ print(f"Using VPC ID from InfoFile: {vpc_id}")
 
 
 
+replace 
+cm = boto3.client("amscm", region_name=AMS_region)
+
+with;
+cm = None  # AMS CM disabled in GMS/non-AMS environments
+
+
+
+if cm:
+    # cm.<whatever>
+    pass
+
+
+
+
+Select-String -Path *.py -Pattern 'amscm|boto3\.client\("amscm"|cm\.' -CaseSensitive:$false
+
+
+
 
 
 
