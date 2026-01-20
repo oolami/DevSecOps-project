@@ -393,4 +393,21 @@ python .\master_associate_lb_aws.py --csv "C:\Users\gt130157\CS-DR-2\CS-DR\cs-dr
 
 
 
+csv_input = read_or_add_data_from_file(
+    "EBS CSV Path",
+    "Enter your EBS Inventory CSV Sheet Name in csv format: "
+)
+
+csv_input = os.path.abspath(csv_input)
+
+if not os.path.isfile(csv_input):
+    raise FileNotFoundError(f"CSV not found: {csv_input}")
+
+print(f"[INFO] FORCING CSV input: {csv_input}")
+
+
+
+
+
+
 
