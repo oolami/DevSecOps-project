@@ -251,3 +251,18 @@ Test-Path "C:\CS-DR\cs-dr-2025.csv"
 print(f"DR Region loaded from InfoFile: {dr_region}")
 
 
+
+(Get-Command python).Source
+python -c "import associate_lb; print(associate_lb.__file__)"
+
+
+Get-ChildItem -Recurse -Filter *.py | Select-String -Pattern "boto3.client\('amscm'|amscm"
+
+
+Select-String -Path .\associate_lb.py -Pattern "amscm"
+
+
+python -c "import associate_lb; print(associate_lb.__file__)"
+Get-ChildItem -Recurse -Filter *.py | Select-String -Pattern "amscm"
+
+
