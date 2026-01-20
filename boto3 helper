@@ -361,3 +361,36 @@ Remove-Item .\__pycache__ -Recurse -Force
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--csv", required=True, help="Full path to the CSV file to use")
+args = parser.parse_args()
+
+csv_input = os.path.abspath(args.csv)
+
+if not os.path.isfile(csv_input):
+    raise FileNotFoundError(f"CSV not found: {csv_input}")
+
+print(f"[INFO] FORCING CSV input: {csv_input}")
+
+
+
+
+
+python .\master_associate_lb_aws.py --csv "C:\Users\gt130157\CS-DR-2\CS-DR\cs-dr-2025.csv"
+
+
+
+
+
+
