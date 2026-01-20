@@ -300,3 +300,64 @@ Get-ChildItem -Recurse -Directory __pycache__ | Remove-Item -Recurse -Force
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+AMS_REGION="us-east-1"
+cm = boto3.client('amscm', region_name=AMS_REGION)
+client = boto3.client('elbv2', region_name=dr_region)
+loadbalancer = boto3.client('elb', region_name=dr_region)
+
+
+
+# AMS CM disabled
+# AMS_REGION="us-east-1"
+cm = None
+
+client = boto3.client('elbv2', region_name=dr_region)
+loadbalancer = boto3.client('elb', region_name=dr_region)
+
+
+
+python -c "p=r'.\associate_lb.py'; print([line for line in open(p) if 'amscm' in line.lower()])"
+
+
+
+
+
+notepad .\associate_lb.py
+
+AMS_REGION="us-east-1"
+cm = boto3.client('amscm', region_name=AMS_REGION) 
+
+ Replace with -
+
+# AMS CM disabled
+# AMS_REGION="us-east-1"
+cm = None
+
+
+
+
+
+python -c "print([l for l in open('associate_lb.py') if 'amscm' in l.lower()])"
+
+
+
+clean up 
+
+Remove-Item .\__pycache__ -Recurse -Force
+
+
+
+
+
