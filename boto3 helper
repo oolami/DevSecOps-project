@@ -462,6 +462,23 @@ python ".\LoadBalancer-AWS\master_associate_lb_aws.py"
 python -c "import utils; print(utils.__file__)"
 
 
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+cd C:\Users\gt130157\CS-DR-2\cs-2025\cs-gms\DR-AWS-Automation-main
+.\.venv\Scripts\Activate.ps1
+
+python -c "import boto3; print(boto3.__version__)"
+
+
+pip install -r cs-ami-restore-GMS\requirements.txt
+
+python -c "import sys; print(sys.executable)"
+python -c "import utils; print(utils.__file__)"
+python -c "import boto3, pandas; print('OK')"
+
+
+python .\LoadBalancer-AWS\master_associate_lb_aws.py
+
 
 
 
