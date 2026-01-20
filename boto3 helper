@@ -188,6 +188,20 @@ aws ec2 describe-vpcs --region us-west-2 --profile dr `
 
 
 
+vpc_id = read_or_add_data_from_file("VPC ID", "Enter VPC ID: ")
+
+
+instead
+
+vpc_id = read_or_add_data_from_file("VPC_ID", "Enter VPC ID: ")
+
+
+client.describe_vpcs(VpcIds=[vpc_id])
+
+
+aws ec2 describe-vpcs --region us-west-2 --vpc-ids vpc-096c5457817adf2a3 --output table
+
+
 
 
 
