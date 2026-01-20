@@ -287,3 +287,16 @@ python .\master_associate_lb_aws.py
 
 
 
+Get-ChildItem -Recurse -Filter associate_lb.py | Select FullName
+
+
+python -c "p=r'.\associate_lb.py';print(p);print('---');print(''.join(open(p).read().splitlines(True)[15:26]))"
+
+
+Select-String -Path *.py -Pattern "amscm" -Recurse
+
+Get-ChildItem -Recurse -Directory __pycache__ | Remove-Item -Recurse -Force
+
+
+
+
