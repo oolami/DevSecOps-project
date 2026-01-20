@@ -203,5 +203,15 @@ aws ec2 describe-vpcs --region us-west-2 --vpc-ids vpc-096c5457817adf2a3 --outpu
 
 
 
+# Use VPC ID from InfoFile (do not discover by tag)
+vpc_id = read_or_add_data_from_file(
+    "VPC ID",
+    "Enter the DR VPC ID (vpc-xxxx): "
+)
+print(f"Using VPC ID from InfoFile: {vpc_id}")
+
+
+
+
 
 
