@@ -491,3 +491,22 @@ python .\LoadBalancer-AWS\master_associate_lb_aws.py
 
 
 
+
+
+
+
+
+
+
+
+
+Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+$env:PYTHONPATH = (Get-Location).Path
+
+
+$env:AWS_DEFAULT_REGION="us-west-2"
+
+
+
+python -c "import boto3; ec2=boto3.client('ec2'); v=ec2.describe_vpcs()['Vpcs']; print('VPCs:', len(v)); print(v[0]['VpcId'] if v else 'NONE')"
+
