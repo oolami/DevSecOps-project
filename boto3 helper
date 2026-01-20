@@ -266,3 +266,24 @@ python -c "import associate_lb; print(associate_lb.__file__)"
 Get-ChildItem -Recurse -Filter *.py | Select-String -Pattern "amscm"
 
 
+
+cd "C:\Users\gt130157\CS-DR\cs-2025\cs-gms\DR-AWS-Automation-main\LoadBalancer-AWS"
+python -c "import associate_lb; print('USING:', associate_lb.__file__); print('LINE21:', open(associate_lb.__file__).read().splitlines()[20])"
+
+
+Select-String -Path .\*.py -Pattern "amscm"
+Select-String -Path .\*.py -Pattern "boto3.client('amscm"
+
+
+
+Select-String -Path ..\*.py -Pattern "amscm" -Recurse
+
+
+
+Get-ChildItem -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+
+
+python .\master_associate_lb_aws.py
+
+
+
