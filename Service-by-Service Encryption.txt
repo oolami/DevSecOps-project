@@ -1,0 +1,165 @@
+5) Service-by-Service Encryption Documentation (Current State)
+5.1 Services with Direct Evidence in Assessment Worksheets
+
+These have the strongest “how it is encrypted today” documentation based on your attachments.
+
+A) ARMS (Assessment worksheet evidence)
+
+Purpose: Agent program enrollment; bonus payments; production agent data
+Exposure: Internal networks
+Dependencies: Uses Agent Rewards API to proxy to other APIs (including WindAPI)
+
+Encryption Implementation
+
+In Transit: HTTPS/TLS (internal network)
+
+At Rest (DB): SQL Server TDE (explicit)
+
+At Rest (Host/Endpoints): BitLocker (Windows), FileVault (Jamf) for macOS endpoints (explicit)
+
+Tokenization: Not implemented (explicit)
+
+Key Management: No centralized KMS; SYSAdmin controls cert access; secrets access not mature (explicit)
+
+Noted risks/gaps
+
+No tokenization
+
+Key management not mature / no centralized KMS
+
+B) Sentry (Assessment worksheet evidence)
+
+Purpose: On-prem Sentry for monitoring client transactions and application errors (SDK integration)
+Hosting: On-prem; containerized; notes referencing a RHEL server / container runtime
+Data type: Transaction telemetry; notes indicate possible PII/PHI depending on application emission
+
+Encryption Implementation
+
+In Transit:
+
+Client → Sentry: HTTPS/TLS (explicit)
+
+Certificate: references DigiCert for HTTPS transactions (explicit)
+
+At Rest (Data store):
+
+Sentry typically stores events in its storage backend (assessment references DB and “Sentry proprietary format”)
+
+Exact at-rest encryption for Sentry storage is not confirmed in the worksheet (it indicates uncertainty and suggests SYSAdmins know storage backend details)
+
+Access Controls: SSO enabled for users (explicit)
+
+Retention: Data retained ~90 days; deletion occurs after 90 days (explicit), but storage-level deletion/encryption details are not fully confirmed
+
+Noted risks/gaps
+
+At-rest encryption mechanism for Sentry data store not fully evidenced in the provided worksheet text
+
+Potential sensitive data exposure risk if apps emit PII/PHI into telemetry
+
+Strong recommendation: enforce PII/PHI scrubbing at source + validate disk/DB encryption status for Sentry backend
+
+
+
+
+
+3.1 APAS (Admin)
+
+Data Classification: Confidential
+Function: Administration of existing policies
+
+Layer	Encryption Used
+In Transit	TLS 1.2+ (HTTPS)
+Database	SQL Server TDE
+File Storage	Encrypted disk (BitLocker)
+Secrets	Encrypted config; no centralized KMS
+Backups	Encrypted; DB-restricted access
+
+Known Gaps
+
+SSN not encrypted once policy is opened
+
+No tokenization
+
+No application-level encryption enforcement
+
+3.2 Intake Application
+
+Data Classification: Confidential (High)
+Function: Creation and approval of new policies
+
+Layer	Encryption Used
+In Transit	TLS 1.2+
+Database	SQL Server TDE
+File Uploads	Encrypted storage
+Endpoints	BitLocker / FileVault
+Backups	Encrypted
+
+Notes
+
+All policy owner PII collected here
+
+Banking data passed to ACH API is encrypted
+
+MFA not required for storage access (risk)
+
+3.3 Portal
+
+Data Classification: Confidential
+Function: External client/agent access
+
+Layer	Encryption Used
+In Transit	TLS 1.2+
+Database	SQL Server TDE
+UI Masking	SSN masked until policy opened
+Secrets	Encrypted config
+Backups	Encrypted
+
+Known Gaps
+
+Read-only PII still stored unencrypted
+
+No field-level encryption
+
+Masking does not persist after retrieval
+
+3.4 WindAPI
+
+Data Classification: Confidential
+Function: Backend policy and annuity processing
+
+Layer	Encryption Used
+In Transit	TLS
+Database	SQL Server TDE
+Storage	BitLocker
+Secrets	Encrypted, SYSAdmin controlled
+Backups	Encrypted
+
+Ownership
+
+Software Engineering owns WindAPI
+
+DBA owns database encryption
+
+3.5 ACH API
+
+Data Classification: Confidential (Financial)
+
+Layer	Encryption Used
+In Transit	TLS
+Stored Banking Data	Encrypted (explicit)
+Database	SQL Server TDE
+Secrets	Encrypted
+Backups	Encrypted
+
+Strongest encryption posture among services
+
+3.6 Background Services (Celery / Jobs)
+
+Data Classification: Inherited (Confidential)
+
+Layer	Encryption Used
+In Transit	TLS
+Task Storage	Encrypted disk
+Logs	Stored encrypted
+Secrets	Encrypted config
