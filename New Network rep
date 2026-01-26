@@ -1122,3 +1122,65 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\nFATAL: {e}", file=sys.stderr)
         raise
+
+
+
+
+
+
+
+
+
+WindAPI
+
+Encrypted network communications (TLS)
+
+Backend service supporting annuity and policy operations
+
+SQL Server Transparent Data Encryption (TDE) for data at rest
+
+Full-disk encryption on database and application hosts
+
+Secrets and credentials centrally managed via CyberArk
+
+Intake
+
+Encrypted network communications (TLS)
+
+Processes customer and policy intake data
+
+SQL Server Transparent Data Encryption (TDE) for data at rest
+
+Full-disk encryption on application and database hosts
+
+Sensitive data masked at the user interface level
+
+Secrets and service credentials managed via CyberArk
+
+Admin
+
+Encrypted network communications (TLS)
+
+Internal administrative, user-facing application
+
+Relies on backend APIs for business logic and data access
+
+SQL Server Transparent Data Encryption (TDE) for data at rest
+
+Full-disk encryption on supporting hosts
+
+Secrets and credentials centrally managed via CyberArk
+
+ACH-API
+
+Encrypted network communications (TLS)
+
+Processes ACH and banking-related transactions
+
+ACH-related data encrypted within database storage
+
+SQL Server Transparent Data Encryption (TDE) for data at rest
+
+Full-disk encryption on application and database hosts
+
+Secrets and credentials centrally managed via CyberArk
