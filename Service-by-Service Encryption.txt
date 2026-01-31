@@ -162,4 +162,39 @@ Layer	Encryption Used
 In Transit	TLS
 Task Storage	Encrypted disk
 Logs	Stored encrypted
+
 Secrets	Encrypted config
+
+
+
+
+
+
+
+
+
+$ip="10.130.152.58"
+aws ec2 describe-network-interfaces `
+  --region us-west-2 `
+  --filters "Name=addresses.private-ip-address,Values=$ip" `
+  --query "NetworkInterfaces[*].{ENI:NetworkInterfaceId,Status:Status,Instance:Attachment.InstanceId,Subnet:SubnetId,VPC:VpcId,Desc:Description,PrivateIPs:PrivateIpAddresses[*].PrivateIpAddress}" `
+  --output table
+
+
+
+
+$ip="10.130.152.58"
+aws ec2 describe-instances `
+  --region us-west-2 `
+  --filters "Name=private-ip-address,Values=$ip" "Name=network-interface.addresses.private-ip-address,Values=$ip" `
+  --query "Reservations[*].Instances[*].{InstanceId:InstanceId,State:State.Name,Name:Tags[?Key=='Name']|[0].Value,Subnet:SubnetId,VPC:VpcId}" `
+  --output table
+
+
+
+
+aws ec2 describe-network-interfaces --region us-west-2 --network-interface-ids eni-xxxxxxxx --output json
+
+
+
+aws ec2 delete-network-interface --region us-west-2 --network-interface-id eni-xxxxxxxx
