@@ -198,3 +198,62 @@ aws ec2 describe-network-interfaces --region us-west-2 --network-interface-ids e
 
 
 aws ec2 delete-network-interface --region us-west-2 --network-interface-id eni-xxxxxxxx
+
+
+
+
+
+
+
+df = pd.read_csv(csv_input)
+
+
+# --- GMS fix: RFC columns may not exist. Create non-RFC status columns if missing.
+for col in ["TG Status", "LB Status"]:
+    if col not in df.columns:
+        df[col] = ""
+
+
+tg_info = associate_status(df, 'Target Group', ind, 'TG RFC Status', cust_dict)
+lb_info = associate_status(df, 'LB Name', ind, 'LB RFC Status', cust_dict)
+
+
+tg_info = associate_status(df, 'Target Group', ind, 'TG Status', cust_dict)
+lb_info = associate_status(df, 'LB Name', ind, 'LB Status', cust_dict)
+
+
+
+status_info = df[status][ind]
+
+status_info = df.get(status, pd.Series([""] * len(df)))[ind]
+
+
+
+'TG RFC Status'
+
+'TG Status'
+
+
+'LB RFC Status'
+
+'LB Status'
+
+
+if column not in df.columns:
+    df[column] = ""
+
+
+
+
+print(f"[INFO] Using CSV: {csv_input}")
+
+print("[INFO] Columns:", list(df.columns))
+print("[INFO] Rows:", len(df))
+
+
+
+
+
+
+
+
