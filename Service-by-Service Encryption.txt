@@ -356,3 +356,51 @@ def associate_status(df, column_name, ind, status_col, cust_dict):
 
 
 
+
+
+
+
+
+
+
+# Ensure all possible status columns exist (AMS + GMS)
+for col in ["TG RFC Status", "LB RFC Status", "TG Status", "LB Status"]:
+    if col not in df.columns:
+        df[col] = ""
+
+def _pick_status_col(rfc_col: str, non_rfc_col: str) -> str:
+    # If RFC column exists AND has at least one non-empty value, use it
+    if rfc_col in df.columns and df[rfc_col].astype(str).str.strip().ne("").any():
+        return rfc_col
+    return non_rfc_col
+
+TG_STATUS_COL = _pick_status_col("TG RFC Status", "TG Status")
+LB_STATUS_COL = _pick_status_col("LB RFC Status", "LB Status")
+
+
+
+
+
+
+tg_info = associate_status(df, "Target Group", ind, TG_STATUS_COL, cust_dict)
+lb_info = associate_status(df, "LB Name", ind, LB_STATUS_COL, cust_dict)
+
+
+
+
+tg_status_col = TG_STATUS_COL
+lb_status_col = LB_STATUS_COL
+tg_info = associate_status(df, "Target Group", ind, tg_status_col, cust_dict)
+lb_info = associate_status(df, "LB Name", ind, lb_status_col, cust_dict)
+
+
+
+def associate_status(df, column_name, ind, status_col, cust_dict):
+
+
+
+
+print("TG_STATUS_COL:", TG_STATUS_COL)
+print("LB_STATUS_COL:", LB_STATUS_COL)
+
+
