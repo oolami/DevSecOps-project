@@ -257,3 +257,102 @@ print("[INFO] Rows:", len(df))
 
 
 
+
+# --- GMS fix: RFC columns may not exist. Create non-RFC status columns if missing.
+if column not in df.columns:
+    df[column] = ""
+for col in ["TG Status", "LB Status"]:
+    if col not in df.columns:
+        df[col] = ""
+
+
+
+# --- GMS fix: support both AMS (RFC columns) and GMS (non-RFC columns)
+# Ensure all possible status columns exist so we never KeyError
+for col in ["TG RFC Status", "LB RFC Status", "TG Status", "LB Status"]:
+    if col not in df.columns:
+        df[col] = ""
+
+# Choose which status columns to use:
+# If RFC columns exist and are populated, use them; otherwise use non-RFC columns.
+def _pick_status_col(rfc_col: str, non_rfc_col: str) -> str:
+    if rfc_col in df.columns and df[rfc_col].astype(str).str.strip().ne("").any():
+        return rfc_col
+    return non_rfc_col
+
+TG_STATUS_COL = _pick_status_col("TG RFC Status", "TG Status")
+LB_STATUS_COL = _pick_status_col("LB RFC Status", "LB Status")
+
+
+
+
+tg_info = associate_status(df, "Target Group", ind, TG_STATUS_COL, cust_dict)
+lb_info = associate_status(df, "LB Name", ind, LB_STATUS_COL, cust_dict)
+
+
+
+
+
+
+
+
+def associate_status(df,column_name,ind,status,cust_dict):
+    empty_column = ''
+    status_info = df.get(status, pd.Series([""] * len(df)))[ind]
+    try:
+        status_info = status_info.split(';')
+    except AttributeError:
+        ...
+    try:
+        target_group_dict = {}
+        tg_info = df[column_name][ind]
+        tg_info = tg_info.split(';')
+    except AttributeError:
+        ...
+    try:
+        for index in range(len(status_info)):
+            ...
+            target_group_dict[status_info[index]].append(tg_info[index])
+
+
+
+
+
+
+
+def associate_status(df, column_name, ind, status_col, cust_dict):
+    target_group_dict = {}
+
+    # Read status cell safely
+    raw_status = df.get(status_col, pd.Series([""] * len(df))).iloc[ind]
+    if pd.isna(raw_status) or str(raw_status).strip() == "":
+        status_list = []
+    else:
+        status_list = [s.strip() for s in str(raw_status).split(";")]
+
+    # Read value cell safely (Target Group or LB Name)
+    raw_val = df.get(column_name, pd.Series([""] * len(df))).iloc[ind]
+    if pd.isna(raw_val) or str(raw_val).strip() == "":
+        val_list = []
+    else:
+        val_list = [v.strip() for v in str(raw_val).split(";")]
+
+    # If one side is missing, we cannot map; return empty mapping
+    if not val_list:
+        logging.info(f"In csv row index {ind}: no {column_name}")
+        return {}
+
+    # Normalize lengths: if status missing, treat everything as "Placeholder"
+    if not status_list:
+        status_list = ["Placeholder"] * len(val_list)
+
+    # Align lengths (avoid index errors)
+    n = min(len(status_list), len(val_list))
+    for i in range(n):
+        st = status_list[i] if status_list[i] else "Placeholder"
+        target_group_dict.setdefault(st, []).append(val_list[i])
+
+    return target_group_dict
+
+
+
