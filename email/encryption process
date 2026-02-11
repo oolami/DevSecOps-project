@@ -226,3 +226,15 @@ BUT
 It does not explicitly restate the exception process inside the Encryption Standard.
 
 It relies on the broader governance framework (Risk Exception + Risk Acceptance).
+
+
+
+
+
+
+
+Yes. SILAC has a documented Vulnerability Remediation Procedure that defines remediation timelines based on severity (e.g., Critical within 24 hours, High within 7 days, Medium within 30 days).
+
+Vulnerabilities are prioritized using CVSS scoring and asset criticality, and remediation timelines are enforced through defined SLAs, escalation processes, and tracking within a centralized vulnerability management system.
+
+Exceptions must follow the formal Exception Management process and require Information Security approval.
