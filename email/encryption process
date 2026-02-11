@@ -1,0 +1,131 @@
+Is there an approved SILAC records retention schedule that documents record categories, retention durations, disposal methods, and legal/regulatory hold requirements?
+
+Answer:
+Yes. SILAC maintains an approved Data Retention Policy and supporting Retention Schedule that define data/record categories, minimum retention periods, and disposition requirements. Retention requirements are aligned with legal, regulatory, and business obligations. Disposal expectations are defined in conjunction with the Media & Destruction Procedure. Legal and regulatory hold requirements are managed through governance and exception processes.
+
+2️⃣ Are retention requirements captured in the Record of Processing (RoP)?
+
+Answer:
+The Record of Processing documents purpose and processing context. Retention duration and disposal requirements are governed by the Data Retention Policy and Retention Schedule. These artifacts work together but serve distinct governance purposes.
+
+3️⃣ Is there a formal procedure for destruction/sanitization of media and data?
+
+Answer:
+Yes. SILAC maintains a formal Media & Destruction Procedure covering secure sanitization and destruction of hard drives, magnetic tapes, CD/DVD media, and other storage. Methods include wiping, cryptographic erasure, degaussing, shredding, or crushing, depending on sensitivity and media type. Vendor-managed destruction includes certificate-of-destruction documentation where applicable.
+
+4️⃣ Is destruction aligned with recognized standards (e.g., NIST SP 800-88)?
+
+Answer:
+Yes. Destruction procedures align with industry standards such as NIST SP 800-88 for media sanitization and secure disposal practices.
+
+5️⃣ How are backup retention and destruction handled?
+
+Answer:
+Backup retention is governed by the same retention principles as primary data. Enforcement is implemented via approved backup platforms (e.g., Cohesity, IBM solutions, Microsoft 365 retention via Purview). Backup encryption and retention configurations align with the Data Retention and Encryption Standards.
+
+6️⃣ Is there a formal exception process for data retention deviations?
+
+Answer:
+Yes. Exceptions to the Data Retention Policy require documented business justification and approval by the Chief Security Officer (or delegate). Exceptions are tracked and reviewed periodically and revoked when no longer necessary.
+
+🔐 ENCRYPTION STANDARD QUESTIONS
+7️⃣ What encryption protocols are required for data in transit?
+
+Answer:
+Transport Layer Security (TLS) 1.3 is recommended, with TLS 1.2 supported where necessary. Deprecated protocols (e.g., SSL, TLS 1.0/1.1) are prohibited and must be removed per defined deprecation timelines.
+
+8️⃣ What encryption algorithms are approved for data at rest and in motion?
+
+Answer:
+Approved algorithms include AES (128-bit minimum, 256-bit required for sensitive data), RSA (2048-bit minimum), ECC (P-256 or stronger), and SHA-2/SHA-3 family hashing. All cryptographic implementations must comply with FIPS 140-2 or its successors.
+
+9️⃣ What are the key management requirements?
+
+Answer:
+Encryption keys must be generated using approved algorithms and stored securely in HSMs or KMS platforms. Symmetric keys must rotate at least annually. Asymmetric keys rotate according to compliance requirements (minimum two-year initial period). Key compromise requires immediate revocation and incident handling.
+
+🔴 10️⃣ Is there a formally documented encryption exception process (for deprecated methods or non-compliance)?
+
+Status: 🔴 MISSING / NEEDS CONFIRMATION
+
+The Encryption Standard references compliance requirements but does not clearly document:
+
+A formal exception request workflow
+
+Required risk assessment criteria
+
+Approval authority
+
+Time-bound remediation expectations
+
+Tracking mechanism (risk register, ticketing, etc.)
+
+This should be explicitly documented or referenced.
+
+11️⃣ How are encryption controls audited and monitored?
+
+Answer:
+Access logs must be maintained for encrypted data access. Regular audits are performed to verify encryption standard compliance. Annual reviews confirm alignment with the Data Protection Policy and regulatory requirements.
+
+🔴 12️⃣ How is encryption compliance technically enforced across platforms?
+
+Status: 🔴 MISSING / NEEDS CONFIRMATION
+
+While standards are defined, the document does not explicitly describe:
+
+Configuration baselines enforcement
+
+Automated compliance scanning
+
+Periodic control validation
+
+Evidence collection process
+
+This may need clarification or reference to technical enforcement documentation.
+
+13️⃣ How is data encrypted in use (processing/memory)?
+
+Answer:
+Encryption in use includes:
+
+Trusted Execution Environments (TEE)
+
+Confidential computing environments
+
+Application-level encryption
+
+Field-level encryption for databases
+
+Hardware-based memory encryption (TPM/HSM)
+
+🔴 14️⃣ Are encryption controls consistently enforced across backups and retention workflows?
+
+Status: 🔴 NEEDS CONFIRMATION
+
+The Encryption Standard states backups must follow the same encryption requirements, but enforcement validation across:
+
+Cohesity
+
+IBM
+
+M365
+should be confirmed operationally.
+
+15️⃣ How are encryption keys destroyed at end of lifecycle?
+
+Answer:
+Key destruction includes cryptographic erasure, overwriting secure storage, memory scrubbing, and HSM-based secure deletion to ensure keys are unrecoverable.
+
+🔴 16️⃣ Is there a formal breach notification timeline and documentation reference?
+
+Status: 🔴 PARTIALLY ADDRESSED – NEEDS CROSS-REFERENCE
+
+Encryption references incident handling but does not explicitly reference:
+
+Breach notification timelines
+
+Regulatory reporting windows (e.g., 72-hour requirements)
+
+Formal IR/Breach documentation link
+
+This should reference the Incident Response Policy.
