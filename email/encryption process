@@ -129,3 +129,100 @@ Regulatory reporting windows (e.g., 72-hour requirements)
 Formal IR/Breach documentation link
 
 This should reference the Incident Response Policy.
+
+
+
+
+
+
+
+
+
+1️⃣ Is there a documented exception process?
+
+Answer: YES
+
+📄 Document:
+
+1.2.1.2 – Risk Exception Process
+
+📍 Where it is stated:
+
+Purpose Section
+
+“…process that allows stakeholders to make an informed decision about whether or not to approve an exception to a particular security policy or standard…”
+
+Exception Process Section
+
+Jira ticket submission required
+
+Risk evaluation (low, medium, high)
+
+Escalation path defined
+
+Approval and documentation required
+
+Expiration (90 days)
+
+Tracking in centralized repository
+
+This directly covers:
+
+Use of deprecated encryption
+
+Temporary non-compliance with encryption standards
+
+Controlled deviation from policy
+
+2️⃣ Are exceptions risk-based and formally approved?
+
+Answer: YES
+
+This is covered in BOTH documents.
+
+📄 Risk Acceptance Procedure (1.2.1.3)
+Risk Acceptance Matrix
+
+Defines approval levels based on risk classification:
+
+Low Risk – Department-level approval
+
+Medium Risk – Senior management / CSO
+
+High Risk – Executive management
+
+Critical Risk – Board or Risk Committee
+
+This is clearly risk-based governance.
+
+📄 Risk Exception Process (1.2.1.2)
+Review and Risk Assessment
+
+Residual risk rating required
+
+Business benefit evaluation
+
+Escalation based on risk level
+
+Formal approval and documentation
+
+Periodic review and expiration
+
+This satisfies the “risk-based approval” requirement.
+
+🎯 What the Encryption Standard Itself Does NOT Explicitly State
+
+The Encryption Standard:
+
+Defines required encryption protocols
+
+Defines deprecation requirements
+
+Defines key management requirements
+
+Defines access controls and auditing
+
+BUT
+It does not explicitly restate the exception process inside the Encryption Standard.
+
+It relies on the broader governance framework (Risk Exception + Risk Acceptance).
