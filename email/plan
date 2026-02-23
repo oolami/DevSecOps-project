@@ -111,3 +111,61 @@ Please let me know if you’d like additional detail on any of the above or if t
 
 Best regards,
 Grace Olamide Arolawun
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hi Erik,
+
+As part of our DR drill readiness validation for the Oklahoma environment, I performed a PROD vs DR IAM role comparison on the EC2 instance profiles.
+
+The following policies are present in PROD but are currently missing in the DR account:
+
+1. **customer-mc-ec2-edi-profile**
+
+   * Attached in PROD to: customer-ok-mc-ec2-instance-profile
+   * Not present in DR
+
+2. **customer_ok_mc_ec2_instance_profile_policy**
+
+   * Attached in PROD to: customer-mc-ec2-dboracle-instance-profile
+   * Not present in DR
+
+For DR parity and to mitigate potential access or service failures during the drill, these policies need to be created and attached to the corresponding roles in the DR account.
+
+Please prioritize creation and attachment of these policies in DR so we can ensure full functional alignment before execution of the drill.
+
+Let me know once completed, and I will re-validate the configuration.
+
+Thank you,
+Grace
