@@ -194,3 +194,13 @@ SSH agent / SSH keys (name varies by TeamCity version/plugins)
 eval "$(ssh-agent -s)"
 ssh-add /path/to/private_key
 ssh-add -l
+
+
+
+
+
+
+
+echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
+test -S "$SSH_AUTH_SOCK" && echo "SSH agent socket OK" || echo "WARNING: SSH agent socket missing/invalid"
+ssh-add -l || true
