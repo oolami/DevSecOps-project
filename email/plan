@@ -169,3 +169,28 @@ Let me know once completed, and I will re-validate the configuration.
 
 Thank you,
 Grace
+
+
+
+
+
+
+
+
+
+
+echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
+ssh-add -l || true
+
+
+
+
+SSH agent / SSH keys (name varies by TeamCity version/plugins)
+
+
+
+
+
+eval "$(ssh-agent -s)"
+ssh-add /path/to/private_key
+ssh-add -l
