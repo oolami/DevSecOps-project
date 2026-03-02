@@ -204,3 +204,15 @@ ssh-add -l
 echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
 test -S "$SSH_AUTH_SOCK" && echo "SSH agent socket OK" || echo "WARNING: SSH agent socket missing/invalid"
 ssh-add -l || true
+
+
+
+
+
+
+
+
+
+
+
+Hi Ryan — can you confirm the TeamCity SSH public key is added to the arc-hub-frontend-shared repo under Access/Deploy Keys (read access)? The build is failing on git@bitbucket.org:silacins/arc-hub-frontend-shared.git during npm install. I’ve already configured the SSH agent and forwarding in TeamCity, so this appears to be repo-level access.
