@@ -216,3 +216,42 @@ ssh-add -l || true
 
 
 Hi Ryan — can you confirm the TeamCity SSH public key is added to the arc-hub-frontend-shared repo under Access/Deploy Keys (read access)? The build is failing on git@bitbucket.org:silacins/arc-hub-frontend-shared.git during npm install. I’ve already configured the SSH agent and forwarding in TeamCity, so this appears to be repo-level access.
+
+
+
+
+
+
+
+
+
+echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
+test -S "$SSH_AUTH_SOCK" && echo "SSH socket OK" || (echo "SSH socket missing" && exit 1)
+
+ssh-add -l || true
+
+# Prove the agent can auth to Bitbucket on the HOST before docker build:
+ssh -o StrictHostKeyChecking=accept-new -T git@bitbucket.org || true
+
+# Prove you can reach that repo before docker build:
+git ls-remote git@bitbucket.org:silacins/arc-hub-frontend-shared.git HEAD || true
+
+
+
+
+
+
+docker buildx build \
+  --ssh default=$SSH_AUTH_SOCK \
+  ...
+
+
+
+# syntax=docker/dockerfile:1.4
+RUN --mount=type=ssh npm ci
+
+
+
+
+
+ I can troubleshoot the TeamCity side, but I don’t have Bitbucket admin access to verify deploy keys. Can someone with access confirm that the TeamCity “Bitbucket Cloud” public key is added as a read-only deploy key on silacins/arc-hub-frontend-shared?
