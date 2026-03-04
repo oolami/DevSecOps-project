@@ -302,4 +302,41 @@ else:
 
 
 
-default_vpc = next((v for v in vpcs if v.get("IsDefault")), None) vpc_id = (default_vpc or vpcs[0])["VpcId"]
+default_vpc = next((v for v in vpcs if v.get("IsDefault")), None) vpc_id = (default_vpc or vpcs[0])["VpcId"] 
+
+
+
+
+
+
+
+
+
+
+# Second - after first-pass AZ match, assign remaining source AZs to any remaining DR subnets.
+unmapped_azs = [k for k, v in create_placeholder_instance_az_mapper.items() if v == ""]
+available_dr_subnets = [s for s in dr_application_subnets.get("Subnets", [])
+                        if s["SubnetId"] not in create_placeholder_instance_az_mapper.values()]
+
+# If you truly have fewer DR subnets than what you need, stop with a clear message
+if len(available_dr_subnets) < len(unmapped_azs):
+    raise RuntimeError(
+        f"Not enough DR application subnets to map instances. "
+        f"Need {len(unmapped_azs)} more mappings, but only {len(available_dr_subnets)} DR subnets available. "
+        f"Check the DR subnet filters/tags and subnet count in this VPC."
+    )
+
+# Assign remaining mappings deterministically
+for az_key, dr_subnet in zip(unmapped_azs, available_dr_subnets):
+    create_placeholder_instance_az_mapper[az_key] = dr_subnet["SubnetId"]
+
+
+
+
+
+
+
+
+
+print("DR application subnet count:", len(dr_application_subnets.get("Subnets", [])))
+print([ (s["SubnetId"], s["AvailabilityZone"], s.get("Tags", [])) for s in dr_application_subnets.get("Subnets", []) ])
