@@ -195,3 +195,16 @@ f"and your subnet discovery returns it."
 chosen = sorted(candidates, key=lambda x: x.get("SubnetId", ""))[0]
 create_placeholder_instance.az_mapper[src_az] = chosen["SubnetId"]
 used_subnet_ids.add(chosen["SubnetId"])
+
+
+
+
+
+def assign_subnet_az_mapping(df):
+
+# STRICT AZ mapping rule
+# a -> a
+# b -> b
+# c -> c
+# Example:
+# us-east-1a -> us-west-2a
