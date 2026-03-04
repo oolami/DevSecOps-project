@@ -437,3 +437,16 @@ def assign_subnet_az_mapping(df):
 
         create_placeholder_instance.az_mapper[letter] = same_letter["SubnetId"]
         used_subnet_ids.add(same_letter["SubnetId"])
+
+
+
+
+
+
+
+
+
+
+
+print("AZ Mapper:", create_placeholder_instance.az_mapper)
+print("DR subnet AZs:", [s.get("AvailabilityZone") for s in dr_application_subnets.get("Subnets", [])])
