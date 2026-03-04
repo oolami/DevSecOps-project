@@ -450,3 +450,12 @@ def assign_subnet_az_mapping(df):
 
 print("AZ Mapper:", create_placeholder_instance.az_mapper)
 print("DR subnet AZs:", [s.get("AvailabilityZone") for s in dr_application_subnets.get("Subnets", [])])
+
+
+
+
+
+
+
+
+aws ec2 describe-subnets --region us-west-2 --query "Subnets[].{SubnetId:SubnetId,AZ:AvailabilityZone,VpcId:VpcId,Name:Tags[?Key=='Name']|[0].Value}" --output table
