@@ -1,0 +1,121 @@
+def assign_subnet_az_mapping(df):
+"""
+STRICT mapping:
+source AZ suffix letter -> DR subnet in DR AZ with same suffix letter
+a->a, b->b, c->c (NO fallback)
+Example: us-east-1a must map to a subnet in us-west-2a
+"""
+
+# --- collect unique source AZs from CSV ---
+src_azs = []
+for ind in df.index:
+az = str(df['Availability Zone'][ind]) if 'Availability Zone' in df.columns else ""
+if az and az.lower() != "nan" and az not in src_azs:
+src_azs.append(az)
+src_azs = sorted(src_azs)
+
+# --- ensure mapper exists on the module used later ---
+if not hasattr(create_placeholder_instance, "az_mapper") or not isinstance(create_placeholder_instance.az_mapper, dict):
+create_placeholder_instance.az_mapper = {}
+
+# --- validate DR subnet discovery ---
+dr_subnets = dr_application_subnets.get("Subnets", [])
+if not dr_subnets:
+raise RuntimeError(
+"No DR subnets found (dr_application_subnets['Subnets'] is empty). "
+"Fix the DR subnet filters (describe_subnets) so it returns the DR application subnets."
+)
+
+# --- index DR subnets by AZ letter suffix ---
+dr_by_letter = {}
+for s in dr_subnets:
+dr_az = str(s.get("AvailabilityZone", ""))
+subnet_id = s.get("SubnetId")
+if not dr_az or not subnet_id:
+continue
+letter = dr_az[-1] # a/b/c
+dr_by_letter.setdefault(letter, []).append(s)
+
+# Track already-used subnet IDs to prevent duplicates
+used_subnet_ids = set(v for v in create_placeholder_instance.az_mapper.values() if v)
+
+# --- strict mapping for each source AZ ---
+for src_az in src_azs:
+letter = src_az[-1] # a/b/c
+candidates = [s for s in dr_by_letter.get(letter, []) if s.get("SubnetId") not in used_subnet_ids]
+
+if not candidates:
+available_letters = sorted(set(dr_by_letter.keys()))
+available_azs = sorted(set(str(s.get("AvailabilityZone")) for s in dr_subnets if s.get("AvailabilityZone")))
+raise RuntimeError(
+f"STRICT AZ mapping failed: source AZ '{src_az}' requires DR AZ letter '{letter}', "
+f"but no UNUSED DR subnet was found in an AZ ending with '{letter}'.\n"
+f"DR letters available: {available_letters}\n"
+f"DR AZs seen: {available_azs}\n"
+f"Used subnet IDs: {sorted(list(used_subnet_ids))}\n"
+f"Fix: ensure DR has an application subnet in us-west-2{letter} (or correct your subnet filters)."
+)
+
+# Deterministic pick: smallest subnet id (or adjust sorting if you prefer Name tag ordering)
+chosen = sorted(candidates, key=lambda x: x.get("SubnetId"))[0]
+create_placeholder_instance.az_mapper[src_az] = chosen["SubnetId"]
+used_subnet_ids.add(chosen["SubnetId"])
+
+print("STRICT AZ mapper (source AZ -> DR SubnetId):", create_placeholder_instance.az_mapper)
+print("DR subnet AZs:", sorted(set(s.get("AvailabilityZone") for s in dr_subnets if s.get("AvailabilityZone"))))
+
+
+
+
+
+
+
+
+
+
+Create placeholder
+
+
+def get_dr_instance_subnet(source_instance_az):
+try:
+return az_mapper[source_instance_az]
+except KeyError:
+raise RuntimeError(
+f"AZ mapping missing for source AZ '{source_instance_az}'. "
+f"Current az_mapper keys: {sorted(list(az_mapper.keys()))}. "
+"Make sure assign_subnet_az_mapping(df) ran and populated the mapping."
+)
+
+
+
+
+
+
+Replace;
+
+dr_application_subnets = client.describe_subnets(Filters=[
+{"Name": "tag:Name", "Values": ["6365611...customer-applications-..."]}
+])
+
+
+
+
+With:
+
+# Get all subnets in the DR VPC, then filter in Python by Name tag contains 'customer-applications'
+all_dr_subnets = client.describe_subnets(
+Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
+).get("Subnets", [])
+
+def _tag_value(tags, key):
+for t in tags or []:
+if t.get("Key") == key:
+return t.get("Value")
+return ""
+
+dr_application_subnets = {
+"Subnets": [
+s for s in all_dr_subnets
+if "customer-applications" in _tag_value(s.get("Tags"), "Name")
+]
+}
