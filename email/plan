@@ -340,3 +340,15 @@ for az_key, dr_subnet in zip(unmapped_azs, available_dr_subnets):
 
 print("DR application subnet count:", len(dr_application_subnets.get("Subnets", [])))
 print([ (s["SubnetId"], s["AvailabilityZone"], s.get("Tags", [])) for s in dr_application_subnets.get("Subnets", []) ])
+
+
+
+
+
+
+
+
+if mapped_azs:
+    create_placeholder_instance.az_mapper[unmapped_az] = create_placeholder_instance.az_mapper[mapped_azs[0]]
+else:
+    raise RuntimeError("No DR subnets available to map source AZ {}".format(unmapped_az))
