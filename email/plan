@@ -280,3 +280,19 @@ vpc_id = vpcs[0]["VpcId"]
 
 
 
+
+
+
+vpc_response = client.describe_vpcs()
+
+vpcs = vpc_response.get("Vpcs", [])
+
+if not vpcs:
+    raise RuntimeError("No VPCs found.")
+
+default_vpc = next((v for v in vpcs if v.get("IsDefault")), None)
+
+if default_vpc:
+    vpc_id = default_vpc["VpcId"]
+else:
+    vpc_id = vpcs[0]["VpcId"]
