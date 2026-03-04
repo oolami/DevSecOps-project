@@ -255,3 +255,28 @@ RUN --mount=type=ssh npm ci
 
 
  I can troubleshoot the TeamCity side, but I don’t have Bitbucket admin access to verify deploy keys. Can someone with access confirm that the TeamCity “Bitbucket Cloud” public key is added as a read-only deploy key on silacins/arc-hub-frontend-shared?
+
+
+
+
+
+
+
+
+
+
+
+vpc_response = client.describe_vpcs()
+
+
+
+
+vpcs = vpc_response.get("Vpcs", [])
+
+if not vpcs:
+    raise RuntimeError("No VPCs found in this account/region.")
+
+vpc_id = vpcs[0]["VpcId"]
+
+
+
