@@ -372,3 +372,68 @@ if not is_subnet_az_found:
         create_placeholder_instance.az_mapper[unmapped_az] = create_placeholder_instance.az_mapper[mapped_azs[0]]
     else:
         raise RuntimeError(f"No DR subnets available to map source AZ {unmapped_az}")
+
+
+
+
+
+
+
+
+
+
+def assign_subnet_az_mapping(df):
+    """
+    STRICT mapping:
+      source AZ letter -> DR SubnetId
+    Rule:
+      a must map to DR AZ ending with 'a', b->'b', c->'c' (no fallback).
+    """
+
+    # Source AZ letters from CSV
+    src_letters = []
+    for ind in df.index:
+        az = str(df['Availability Zone'][ind])
+        if az and az != "nan":
+            src_letters.append(az[-1])  # a/b/c...
+
+    src_letters = sorted(set(src_letters))
+
+    # Ensure mapper exists
+    if not hasattr(create_placeholder_instance, "az_mapper") or not isinstance(create_placeholder_instance.az_mapper, dict):
+        create_placeholder_instance.az_mapper = {}
+
+    dr_subnets = dr_application_subnets.get("Subnets", [])
+    if not dr_subnets:
+        raise RuntimeError(
+            "No DR subnets found (dr_application_subnets['Subnets'] is empty). "
+            "Check your VPC/Subnet filters."
+        )
+
+    used_subnet_ids = set(v for v in create_placeholder_instance.az_mapper.values() if v)
+
+    for letter in src_letters:
+        # Skip if already mapped
+        if create_placeholder_instance.az_mapper.get(letter):
+            continue
+
+        # STRICT: only match same AZ letter (endswith a/b/c)
+        same_letter = next(
+            (s for s in dr_subnets
+             if str(s.get("AvailabilityZone", "")).endswith(letter)
+             and s.get("SubnetId") not in used_subnet_ids),
+            None
+        )
+
+        if not same_letter:
+            raise RuntimeError(
+                f"STRICT AZ mapping failed: No DR subnet found in an AZ ending with '{letter}' "
+                f"to match source AZ letter '{letter}'.\n"
+                f"DR subnets found AZs: {[s.get('AvailabilityZone') for s in dr_subnets]}\n"
+                "Fix: ensure DR has an application subnet in the matching AZ letter "
+                "(e.g., us-west-2a for 'a', us-west-2b for 'b', etc.) and that your subnet filters "
+                "return those subnets."
+            )
+
+        create_placeholder_instance.az_mapper[letter] = same_letter["SubnetId"]
+        used_subnet_ids.add(same_letter["SubnetId"])
