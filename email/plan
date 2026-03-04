@@ -352,3 +352,23 @@ if mapped_azs:
     create_placeholder_instance.az_mapper[unmapped_az] = create_placeholder_instance.az_mapper[mapped_azs[0]]
 else:
     raise RuntimeError("No DR subnets available to map source AZ {}".format(unmapped_az))
+
+
+
+
+
+
+'
+
+
+
+
+
+
+if not is_subnet_az_found:
+    mapped_azs = [k for k, v in create_placeholder_instance.az_mapper.items() if v != ""]
+
+    if mapped_azs:
+        create_placeholder_instance.az_mapper[unmapped_az] = create_placeholder_instance.az_mapper[mapped_azs[0]]
+    else:
+        raise RuntimeError(f"No DR subnets available to map source AZ {unmapped_az}")
