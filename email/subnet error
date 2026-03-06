@@ -281,3 +281,36 @@ f"Fix: ensure DR has an application subnet in us-west-2{letter} (or correct your
 chosen = sorted(candidates, key=lambda x: x.get("SubnetId", ""))[0]
 create_placeholder_instance.az_mapper[src_az] = chosen["SubnetId"]
 used_subnet_ids.add(chosen["SubnetId"])
+
+
+
+
+
+
+
+
+
+
+Hi Erik and Chris,
+
+While attempting to restore FSx in the Oklahoma DR account, the restore job failed due to a permission limitation on the IAM role currently used for the restore process.
+
+The role being used is **gms-backup-iam-role**, and the error indicates that the role does not have sufficient permissions to create the required service-linked role for Amazon FSx during the restore operation.
+
+Error summary:
+The role **gms-backup-iam-role** is not authorized to perform **iam:CreateServiceLinkedRole** for the FSx service role (**AWSServiceRoleForAmazonFSx**), which is required during the restore process.
+
+Could you please review the permissions for this role and add the necessary access so the FSx restore can proceed in the OK DR environment?
+
+This is currently blocking the FSx restore as part of the DR exercise.
+
+Please let me know once the permission has been added so I can retry the restore.
+
+Thank you,
+Olamide Arolawun
+Advisor Cloud Engineer
+Gainwell Technologies
+
+
+
+Permission Required for FSx Restore in OK DR Environment
