@@ -314,3 +314,28 @@ Gainwell Technologies
 
 
 Permission Required for FSx Restore in OK DR Environment
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hi Ryan — I’ve started looking into the *“Unlock Dev Env in CICD-Dashboard after a certain timeframe”* ticket and wanted to get a better understanding of how the CICD dashboard is set up.
+
+From what I can see, the goal is to prevent environments from being reserved for long periods when someone forgets to release them. I’m planning to look into two things for the solution:
+
+1. Restoring or identifying the previous alerting mechanism that notified DevOps when an environment had been reserved for too long.
+2. Evaluating whether we could add some form of expiration or auto-release logic after a defined timeframe.
+
+Before going too far down the wrong path, I was hoping you might be able to walk me through how the dashboard currently handles environment reservations and where that data lives (DB/app logic/etc.). I’m also curious how the email/notification integration was originally implemented for alerts.
+
+If you have some time, even a quick walkthrough would really help me understand the architecture so I can approach the ticket the right way. Thanks!
+
