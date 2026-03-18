@@ -111,3 +111,82 @@ I’ve been working on the TLS deprecation research and was able to identify sev
 I’m trying to determine whether any of these services are actively receiving traffic over TLS 1.0 or 1.1 versus TLS 1.2. I checked Virtual Services analytics and logs but wasn’t able to clearly identify TLS version usage per service.
 
 Is there a recommended way in AVI to validate TLS version usage at the Virtual Service level?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+I reviewed all Virtual Services on the Avi load balancer to validate active TLS versions based on observed traffic (SSL/TLS analytics).
+
+Findings
+
+Most Virtual Services
+
+Observed traffic shows 100% TLSv1.2 usage
+
+No evidence of TLS 1.0 or TLS 1.1 usage in logs
+
+Indicates clients are negotiating secure protocols despite broader SSL profile support
+
+prod/secure.silacins.com
+
+Observed multiple TLS versions in active use:
+
+TLSv1.2 → ~10.96%
+
+TLSv1.1 → ~1.67%
+
+TLSv1.0 → ~1.06%
+
+SSLv3 → ~1.27%
+
+Unknown → ~0.42%
+
+NO DATA → ~84.63%
+
+This confirms active usage of deprecated protocols (TLS 1.0 / 1.1 and SSLv3) by some clients
+
+Indicates presence of legacy systems or integrations still negotiating weaker protocols
+
+Majority “NO DATA” likely represents:
+
+Non-TLS (HTTP) traffic, or
+
+Incomplete SSL logging for some requests
+
+Services with No TLS Visibility
+
+design-library.silacins.com
+
+secure.apps-preprod.silacins.com
+
+Unable to validate TLS versions due to:
+
+No logs available in Avi
+
+Logging/analytics likely not enabled or insufficient traffic observed
+
+Conclusion
+
+TLS 1.2 is the dominant protocol across the environment
+
+However, prod/secure.silacins.com is still serving traffic over deprecated protocols, which presents:
+
+Security risk
+
+Potential compliance gap (e.g., PCI/NIST)
+
+Additional validation is required for services with no logging visibility
