@@ -87,3 +87,27 @@ A: “Sensitive fields not protected at the data layer in a uniform way (tokeniz
 
 Q: “What do you need from us?”
 A: “Owners + timeline approval for: (1) TLS matrix, (2) sensitive-field protection requirements, (3) backup encryption/retention evidence.”
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Good morning Ryan,
+
+I’ve been working on the TLS deprecation research and was able to identify several services (Grafana, Alertmanager, Kibana, SonarQube) using the System-Standard SSL profile, which still allows TLS 1.0 and 1.1.
+
+I’m trying to determine whether any of these services are actively receiving traffic over TLS 1.0 or 1.1 versus TLS 1.2. I checked Virtual Services analytics and logs but wasn’t able to clearly identify TLS version usage per service.
+
+Is there a recommended way in AVI to validate TLS version usage at the Virtual Service level?
