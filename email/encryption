@@ -190,3 +190,62 @@ Security risk
 Potential compliance gap (e.g., PCI/NIST)
 
 Additional validation is required for services with no logging visibility
+
+
+
+
+
+
+
+
+Work Completed – TLS Deprecation Assessment
+
+Reviewed all Virtual Services on Avi Load Balancer to validate active TLS versions using SSL/TLS analytics
+
+Confirmed that the majority of services are negotiating TLS 1.2 exclusively, despite broader SSL profile configurations
+
+Identified that prod/secure.silacins.com is actively serving traffic over deprecated protocols:
+
+TLS 1.1 (~1.67%)
+
+TLS 1.0 (~1.06%)
+
+SSLv3 (~1.27%)
+
+This indicates the presence of legacy clients or integrations that will be impacted if deprecated protocols are removed
+
+Observed a significant portion of traffic categorized as NO DATA (~84%), which may indicate:
+
+Non-TLS traffic, or
+
+Incomplete SSL logging visibility
+
+Identified two services where TLS usage could not be validated due to lack of logging:
+
+design-library.silacins.com
+
+secure.apps-preprod.silacins.com
+
+
+
+
+
+
+
+
+
+Hi Ryan,
+
+I’ve completed the TLS validation across the Avi virtual services. Most services are negotiating TLS 1.2 only, but prod/secure.silacins.com is still seeing active traffic over TLS 1.0, 1.1, and even SSLv3, which suggests we have some legacy clients still depending on those protocols.
+
+Before moving forward with removing deprecated protocols from the SSL profile, I wanted to get your guidance on a couple of things:
+
+What’s the best approach to validate impact before enforcing TLS 1.2 only on this VS?
+
+Do we have a recommended testing strategy (e.g., clone VS, maintenance window, or staged rollout)?
+
+Is there an existing way to map these client IPs to owning applications/teams, or is that something we’ll need to track down manually?
+
+Any known dependencies or integrations tied to this service that might still require older TLS versions?
+
+Just want to make sure we approach this safely without introducing any production impact.
