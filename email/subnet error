@@ -360,3 +360,13 @@ if pd.isna(raw_status) or str(raw_status).strip() == "":
 elif len(statuses) < len(loadbalancers):
     statuses.extend(['Placeholder'] * (len(loadbalancers) - len(statuses)))
 
+
+
+
+
+
+
+for index, loadbalancer in enumerate(loadbalancers):
+    if loadbalancer == lb and index < len(statuses):
+        statuses[index] = new_status
+
