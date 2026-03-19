@@ -370,3 +370,16 @@ for index, loadbalancer in enumerate(loadbalancers):
     if loadbalancer == lb and index < len(statuses):
         statuses[index] = new_status
 
+
+
+
+
+if isinstance(statuses, str):
+    statuses = [s.strip() for s in statuses.split(';')] if statuses.strip() else []
+
+
+
+
+
+if isinstance(statuses, str):
+    statuses = [s.strip() for s in statuses.split(';')] if statuses.strip() else []
