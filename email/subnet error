@@ -339,3 +339,24 @@ Before going too far down the wrong path, I was hoping you might be able to walk
 
 If you have some time, even a quick walkthrough would really help me understand the architecture so I can approach the ticket the right way. Thanks!
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+index = 0
+raw_status = df.loc[ind, column]
+
+if pd.isna(raw_status) or str(raw_status).strip() == "":
+    statuses = ['Placeholder'] * len(loadbalancers)
+elif len(statuses) < len(loadbalancers):
+    statuses.extend(['Placeholder'] * (len(loadbalancers) - len(statuses)))
+
