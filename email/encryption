@@ -249,3 +249,37 @@ Is there an existing way to map these client IPs to owning applications/teams, o
 Any known dependencies or integrations tied to this service that might still require older TLS versions?
 
 Just want to make sure we approach this safely without introducing any production impact.
+
+
+
+
+
+
+1. Retrieve the new Intake API client secret securely via password vault.
+2. Update the TeamCity parameter `env.INTAKE_API_MSAL_CLIENT_SECRET` for the Production environment.
+3. Trigger the WholesheStack deployment in TeamCity to apply the updated configuration.
+4. Monitor the deployment process to ensure all services restart successfully.
+
+
+
+Validation Plan
+
+1. Verify the TeamCity deployment completes successfully with no errors.
+2. Confirm application health checks are passing post-deployment.
+3. Review application logs to ensure there are no authentication errors (e.g., MSAL/Azure token failures).
+4. Perform a functional validation of Intake API endpoints to confirm successful authentication and normal operation.
+
+
+
+
+Mitigation plan
+
+
+If issues are encountered:
+
+1. Revert to the previous client secret value in TeamCity.
+2. Trigger a WholesheStack redeployment to restore the prior configuration.
+3. Validate that services return to normal operation and authentication is restored.
+4. Escalate to the DevSecOps team if issues persist.
+
+
