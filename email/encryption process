@@ -272,3 +272,40 @@ This cleanup activity is impacting the DR environment and may affect tomorrow’
 
 Thanks.
 
+
+
+
+
+
+
+
+Hi team,
+
+
+
+We’ve identified a critical issue in the DR account ahead of tomorrow’s exercise — a large number of security groups have been deleted.
+
+
+
+From CloudTrail, the deletions were triggered by a Lambda function security-groups-cleanup-lambda, deployed via a CloudFormation StackSet (stacksets-exec-* role) and invoked by EventBridge (scheduled job).
+
+
+
+This cleanup activity is currently impacting the DR environment and may affect tomorrow’s exercise.
+
+
+
+Can someone please confirm:
+
+Who owns this Lambda / StackSet?
+
+What criteria is being used for cleanup?
+
+Whether this job can be paused or scoped for DR?
+
+
+
+Also, was this activity coordinated with the DR team? This is introducing rework and risk ahead of a critical exercise.
+
+
+
