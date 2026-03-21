@@ -238,3 +238,37 @@ Yes. SILAC has a documented Vulnerability Remediation Procedure that defines rem
 Vulnerabilities are prioritized using CVSS scoring and asset criticality, and remediation timelines are enforced through defined SLAs, escalation processes, and tracking within a centralized vulnerability management system.
 
 Exceptions must follow the formal Exception Management process and require Information Security approval.
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a clean, professional Teams message you can drop — direct, clear, and shows you’ve already done the investigation:
+
+---
+
+**Message:**
+
+Hi team,
+
+I’m seeing an issue in the DR account ahead of tomorrow’s exercise — a large number of security groups have been deleted.
+
+From CloudTrail, the deletions were triggered by a Lambda function named **`security-groups-cleanup-lambda`**, which appears to be deployed via a **CloudFormation StackSet (`stacksets-exec-*` role)** and invoked by EventBridge (scheduled job).
+
+Can someone confirm:
+
+* Who owns this Lambda / StackSet?
+* What criteria it’s using to clean up security groups?
+* Whether it can be paused or scoped temporarily?
+
+This cleanup activity is impacting the DR environment and may affect tomorrow’s exercise.
+
+Thanks.
+
