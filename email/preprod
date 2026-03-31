@@ -1,0 +1,26 @@
+docker inspect -f '{{index .Config.Labels "com.docker.swarm.service.name"}}' 84d7a9b3bff6
+
+docker inspect -f '{{index .Config.Labels "com.docker.stack.namespace"}}' 84d7a9b3bff6
+
+
+
+docker inspect 84d7a9b3bff6 | findstr /i "com.docker.swarm.service.name com.docker.stack.namespace"
+
+
+
+docker inspect -f '{{.Name}}' 84d7a9b3bff6
+
+
+
+
+
+docker inspect -f '{{index .Config.Labels "com.docker.swarm.service.name"}}' 84d7a9b3bff6
+docker inspect -f '{{index .Config.Labels "com.docker.stack.namespace"}}' 84d7a9b3bff6
+docker inspect -f '{{.Name}}' 84d7a9b3bff6
+docker inspect -f '{{.Config.Hostname}}' 84d7a9b3bff6
+docker ps -a --filter "status=created"
+
+
+
+
+docker service ps <service-name> --no-trunc
