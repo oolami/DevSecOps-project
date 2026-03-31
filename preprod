@@ -1,0 +1,71 @@
+docker ps -a --no-trunc | findstr 84d7a9b3bff6
+docker ps -a --filter "status=created"
+docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}"
+
+
+
+docker inspect -f "{{.Name}}" <container-id>
+docker inspect -f "{{.State.Status}}" <container-id>
+docker inspect -f "{{.State.Error}}" <container-id>
+docker inspect -f "{{.Config.Image}}" <container-id>
+docker inspect -f "{{json .Config.Labels}}" <container-id>
+
+
+
+
+docker service ps <service-name> --no-trunc
+
+
+docker ps -a --filter "status=created"
+
+
+
+
+
+docker inspect -f "{{.Name}}" <id>
+docker inspect -f "{{json .Config.Labels}}" <id>
+docker inspect -f "{{.State.Error}}" <id>
+
+
+
+
+
+
+/var/lib/docker/volumes/wholeshestack_pre_prod_appserv1/_data
+
+
+
+
+
+
+docker inspect -f "{{index .Config.Labels \"com.docker.swarm.service.name\"}}" 84d7a9b3bff6
+
+
+
+
+docker inspect -f "{{index .Config.Labels \"com.docker.stack.namespace\"}}" 84d7a9b3bff6
+
+
+
+docker inspect -f "{{.Config.Hostname}}" 84d7a9b3bff6
+
+
+docker inspect -f "{{json .Mounts}}" 84d7a9b3bff6
+
+
+
+
+
+docker service ps <service-name> --no-trunc
+
+
+
+docker ps -a --filter "status=created"
+
+
+
+docker inspect -f "{{index .Config.Labels \"com.docker.swarm.service.name\"}}" 84d7a9b3bff6
+docker inspect -f "{{index .Config.Labels \"com.docker.stack.namespace\"}}" 84d7a9b3bff6
+docker inspect -f "{{.Config.Hostname}}" 84d7a9b3bff6
+docker service ps <service-name> --no-trunc
+docker ps -a --filter "status=created"
