@@ -24,3 +24,36 @@ docker ps -a --filter "status=created"
 
 
 docker service ps <service-name> --no-trunc
+
+
+
+
+
+
+
+
+docker inspect -f '{{index .Config.Labels "com.docker.swarm.service.name"}}' 84d7a9b3bff6
+docker inspect -f '{{index .Config.Labels "com.docker.stack.namespace"}}' 84d7a9b3bff6
+docker inspect -f '{{.Name}}' 84d7a9b3bff6
+docker inspect -f '{{.State.Error}}' 84d7a9b3bff6
+
+
+
+
+
+
+docker service ps wholeshestack_pre_prod_windapi --no-trunc
+
+
+
+docker ps -a --filter "status=created"
+
+
+
+
+
+docker ps -a --filter "status=created" --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}"
+
+
+
+docker service ps wholeshestack_pre_prod_windapi --no-trunc
