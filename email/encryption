@@ -19,3 +19,18 @@ Get-ChildItem -Recurse | Select-String "ba632e92-9a6d-4f36-bcdb-8fb576e3b789"
 
 
 grep -R "ba632e92-9a6d-4f36-bcdb-8fb576e3b789" .
+
+
+
+
+
+docker exec <container_id> sh -c "ls -l /var/www/app && sed -n '1,220p' /var/www/app/config.yaml"
+
+
+
+docker exec <container_id> sh -c "sed -n '1,220p' /var/www/app/secrets.yml"
+
+
+
+docker exec <container_id> sh -c "cat /var/www/app/config.yaml"
+docker exec <container_id> sh -c "cat /var/www/app/secrets.yml"
