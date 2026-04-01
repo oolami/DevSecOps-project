@@ -57,3 +57,29 @@ docker ps -a --filter "status=created" --format "table {{.ID}}\t{{.Image}}\t{{.S
 
 
 docker service ps wholeshestack_pre_prod_windapi --no-trunc
+
+
+
+
+
+
+
+
+
+
+Hi Erik,
+
+As part of the ongoing DR readiness validation, I reviewed the IAM role configuration for the SQL instance profile and identified a couple of permission policy differences between the PROD and DR environments.
+
+The following policies are currently attached in PROD but missing in DR for this IAM role:
+
+1. **gms_ds_auto_join_domain_policy**
+2. **ssm_vss_snapshot_policy**
+
+To maintain parity and avoid any potential access or functionality gaps during the DR exercise, could you please add these policies to the corresponding role in the DR account?
+
+Please let me know once this has been completed, and I’ll re-validate on my end.
+
+Thank you,
+Olamide
+
