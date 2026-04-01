@@ -1,24 +1,12 @@
-docker service ls | findstr /I windapi
+docker ps --format "{{.ID}} {{.Names}}" | Select-String "november.*windapi"
+
+
+docker exec -it <container_id> sh -c "grep -n 'ba632e92-9a6d-4f36-bcdb-8fb576e3b789' /var/www/app/config.yaml"
 
 
 
-docker service ls | Select-String -Pattern "windapi"
-
-
-docker service inspect wholeshestack_ste_windapi --format "{{json .Spec.TaskTemplate.ContainerSpec.Env}}"
+docker exec -it <container_id> sh -c "cat /var/www/app/config.yaml"
 
 
 
-docker service inspect wholeshestack_ste_windapi --format "{{json .Spec.TaskTemplate.ContainerSpec.Secrets}}"
-
-
-docker service inspect wholeshestack_ste_windapi --format "{{json .Spec.TaskTemplate.ContainerSpec.Configs}}"
-
-
-
-
-docker service inspect wholeshestack_ste_windapi
-
-
-
-wholeshestack_ste_windapi
+docker ps --format "{{.ID}} {{.Names}}" | Select-String "windapi"
