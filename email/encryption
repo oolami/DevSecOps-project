@@ -42,3 +42,14 @@ docker exec <container_id> sh -c "cat /var/www/app/secrets.yml"
 docker exec <container_id> sh -c "grep -n 'windapi\|client\|secret\|entra\|azure' /var/www/app/secrets.yml"
 
 docker exec <container_id> sh -c "cat /var/www/app/secrets.yml"
+
+
+
+
+
+
+
+I checked the running WindApi containers and they all appear to be using the same `client_secret` value from `secrets.yml`, and that runtime value does not match the old key GUID you referenced.
+
+Can you confirm that the expected update is to replace the `client_secret` value in `secrets/windapi-base.yml` with the newly generated secret for the test tenant, rather than updating the old key ID reference itself?
+
