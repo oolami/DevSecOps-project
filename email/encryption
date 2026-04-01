@@ -34,3 +34,11 @@ docker exec <container_id> sh -c "sed -n '1,220p' /var/www/app/secrets.yml"
 
 docker exec <container_id> sh -c "cat /var/www/app/config.yaml"
 docker exec <container_id> sh -c "cat /var/www/app/secrets.yml"
+
+
+
+
+
+docker exec <container_id> sh -c "grep -n 'windapi\|client\|secret\|entra\|azure' /var/www/app/secrets.yml"
+
+docker exec <container_id> sh -c "cat /var/www/app/secrets.yml"
