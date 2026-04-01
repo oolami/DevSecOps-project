@@ -10,3 +10,12 @@ docker exec -it <container_id> sh -c "cat /var/www/app/config.yaml"
 
 
 docker ps --format "{{.ID}} {{.Names}}" | Select-String "windapi"
+
+
+
+
+Get-ChildItem -Recurse | Select-String "ba632e92-9a6d-4f36-bcdb-8fb576e3b789"
+
+
+
+grep -R "ba632e92-9a6d-4f36-bcdb-8fb576e3b789" .
