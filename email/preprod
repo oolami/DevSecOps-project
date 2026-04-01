@@ -83,3 +83,28 @@ Please let me know once this has been completed, and I’ll re-validate on my en
 Thank you,
 Olamide
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hi team — quick clarification needed on the WindApi test tenant client secret expiration (Entra) that Alexander raised.
+
+Given this is impacting regression/end_of_day jobs and may affect tonight’s release, can we confirm ownership:
+
+* Is SysAdmin responsible for generating/rotating the new client secret in Entra?
+* And is DevOps responsible for updating the application config (or CyberArk) and restarting the service?
+
+Just want to make sure we align quickly and get this resolved before release. Thanks.
+
+
