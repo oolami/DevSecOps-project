@@ -459,3 +459,28 @@ print("DR subnet AZs:", [s.get("AvailabilityZone") for s in dr_application_subne
 
 
 aws ec2 describe-subnets --region us-west-2 --query "Subnets[].{SubnetId:SubnetId,AZ:AvailabilityZone,VpcId:VpcId,Name:Tags[?Key=='Name']|[0].Value}" --output table
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hi Ryan,
+
+I’m trying to clarify the WindAPI client secret for the test tenant. Troy mentioned the secret was rotated, and I understand DevOps is responsible for updating the config.
+
+Based on what I found, the secret should be in either:
+
+/configs/windapi.yml
+/secrets/windapi-base.yml
+
+However, when I checked the dev environment, the value currently being used (e.g., /var/www/app/secrets.yml inside the container) still matches the old secret.
+
+Can you confirm which source of truth we should be updating, and whether the containers are pulling from swarm-mounted secrets instead of the repo config?
