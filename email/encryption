@@ -1,104 +1,25 @@
-docker ps --format "{{.ID}} {{.Names}}" | Select-String "november.*windapi"
-
-
-docker exec -it <container_id> sh -c "grep -n 'ba632e92-9a6d-4f36-bcdb-8fb576e3b789' /var/www/app/config.yaml"
-
-
-
-docker exec -it <container_id> sh -c "cat /var/www/app/config.yaml"
-
-
-
-docker ps --format "{{.ID}} {{.Names}}" | Select-String "windapi"
-
-
-
-
-Get-ChildItem -Recurse | Select-String "ba632e92-9a6d-4f36-bcdb-8fb576e3b789"
-
-
-
-grep -R "ba632e92-9a6d-4f36-bcdb-8fb576e3b789" .
-
-
-
-
-
-docker exec <container_id> sh -c "ls -l /var/www/app && sed -n '1,220p' /var/www/app/config.yaml"
-
-
-
-docker exec <container_id> sh -c "sed -n '1,220p' /var/www/app/secrets.yml"
-
-
-
-docker exec <container_id> sh -c "cat /var/www/app/config.yaml"
-docker exec <container_id> sh -c "cat /var/www/app/secrets.yml"
-
-
-
-
-
-docker exec <container_id> sh -c "grep -n 'windapi\|client\|secret\|entra\|azure' /var/www/app/secrets.yml"
-
-docker exec <container_id> sh -c "cat /var/www/app/secrets.yml"
-
-
-
-
-
-
-
-I checked the running WindApi containers and they all appear to be using the same `client_secret` value from `secrets.yml`, and that runtime value does not match the old key GUID you referenced.
-
-Can you confirm that the expected update is to replace the `client_secret` value in `secrets/windapi-base.yml` with the newly generated secret for the test tenant, rather than updating the old key ID reference itself?
-
-
-
-
-
-
-Hi Alex, I picked up WHC-3231 about the wrong webhook in APAS UI.
-
-A couple quick clarifications so I update the right thing:
-
-* Which TeamCity project/build configuration should I change exactly?
-* Can you confirm the correct Bitbucket repo URL/name it should point to?
-* Is this issue only in one environment, or do we need to check DEV/TEST/STE/PROD equivalents?
-* Was this caused by a repo rename/move/refactor, or did APAS UI get switched to a different repo entirely?
-* Should the default branch remain `main`?
-* Do you know which branch specs are expected to show besides `main`?
-* Is there another working build config I should mirror for the correct setup?
-* After I update it, what’s the preferred validation step: just confirm branches appear, or also run a test build from a non-main branch?
-
-Thanks.
-
-
-
-
-
-
-
 Hi Bob,
 
 I pulled the PROD customer-managed KMS key policies for the relevant services identified so far.
 
 EC2 (EBS)
+
 KMS Key: StagingEbsCmk
 Key ID: f2c3e9d4-6eed-43e1-b36a-6cbde2a19594
+
 Access Summary:
 
-arn:aws:iam::669042391564:root
-Account-wide access for IAM principals in the PROD account, subject to IAM permissions
-Cross-account access: arn:aws:iam::359203453793:root
+Access is granted at the account level (PROD account: 669042391564), meaning IAM roles and users within the account can use the key based on their IAM permissions
+Cross-account access is configured for account: 359203453793
 
 RDS
+
 KMS Key: StagingRdsCmk
 Key ID: 6bc9f352-a153-4fd3-a895-00446bb1e83e
+
 Access Summary:
 
-arn:aws:iam::669042391564:root
+Access is granted at the account level (PROD account: 669042391564), with usage controlled via IAM permissions
 
-I’m still checking FSx and can send that as well once confirmed.
 
-Send the FSx screenshot next and I’ll finish the full response.
+IAM user-level access is governed through IAM roles and policies, which are managed separately by the security team.
