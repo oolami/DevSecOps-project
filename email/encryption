@@ -23,3 +23,7 @@ Access is granted at the account level (PROD account: 669042391564), with usage 
 
 
 IAM user-level access is governed through IAM roles and policies, which are managed separately by the security team.
+
+
+
+arn:aws:iam::669042391564:root
