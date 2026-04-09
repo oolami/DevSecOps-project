@@ -72,3 +72,33 @@ A couple quick clarifications so I update the right thing:
 * After I update it, what’s the preferred validation step: just confirm branches appear, or also run a test build from a non-main branch?
 
 Thanks.
+
+
+
+
+
+
+
+Hi Bob,
+
+I pulled the PROD customer-managed KMS key policies for the relevant services identified so far.
+
+EC2 (EBS)
+KMS Key: StagingEbsCmk
+Key ID: f2c3e9d4-6eed-43e1-b36a-6cbde2a19594
+Access Summary:
+
+arn:aws:iam::669042391564:root
+Account-wide access for IAM principals in the PROD account, subject to IAM permissions
+Cross-account access: arn:aws:iam::359203453793:root
+
+RDS
+KMS Key: StagingRdsCmk
+Key ID: 6bc9f352-a153-4fd3-a895-00446bb1e83e
+Access Summary:
+
+arn:aws:iam::669042391564:root
+
+I’m still checking FSx and can send that as well once confirmed.
+
+Send the FSx screenshot next and I’ll finish the full response.
