@@ -27,3 +27,33 @@ IAM user-level access is governed through IAM roles and policies, which are mana
 
 
 arn:aws:iam::669042391564:root
+
+
+
+
+We are currently performing a Disaster Recovery (DR) restore in AWS and have restored multiple EC2 instances from AMIs/snapshots.
+
+The attached EBS volumes are in "initializing" state (lazy loading from snapshot), which is causing degraded performance and preventing us from bringing the systems fully online.
+
+Key details:
+- Volumes restored from snapshots/AMIs
+- Volume type: gp3 (modified for higher performance)
+- Increased IOPS and throughput already applied (up to ~8000 IOPS and 500 MB/s)
+- Volumes are attached and in-use, but still initializing
+- Workload requires immediate readiness (cannot wait hours for full initialization)
+
+Impact:
+- Production/DR systems cannot be brought online in time
+- Latency due to cold block reads is affecting application readiness
+
+Questions:
+1. Is there any way to accelerate initialization for already-created volumes?
+2. Can AWS internally prioritize or expedite snapshot hydration?
+3. Are there backend options or temporary performance boosts available?
+4. Would enabling Fast Snapshot Restore retroactively help in this scenario?
+
+We are also performing manual pre-warming, but would like to know if there are AWS-side optimizations available.
+
+This is time-sensitive for DR readiness.
+
+Please advise urgently.
