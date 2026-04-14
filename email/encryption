@@ -25,3 +25,27 @@ Disk 4 (26%), 5 (45%), 6 (98%), 7 (14%), 9 (96%),
 11 (79%), 13 (66%), 14 (99%), 15 (18%), 16 (42%)
 
 I’ll continue to monitor progress and provide updates once we hear back from AWS or see any improvement.
+
+
+
+
+
+
+Hello Jyoti,
+
+Thank you for the update.
+
+I’ve confirmed that the limit for Provisioned Rate for Volume Initialization across concurrent volume creation requests is currently set to 7000 in the US West (Oregon) region.
+
+However, we are still experiencing slow volume initialization due to the size of the disks (~30TB each), even after increasing IOPS and throughput significantly. This is impacting our DR recovery timeline.
+
+Could you please confirm if:
+
+This limit (7000) is currently being fully utilized in our environment, and
+Whether increasing this limit further would have a measurable impact on improving parallel volume initialization performance?
+
+Additionally, are there any AWS-side optimizations or recommendations to accelerate snapshot/AMI-based volume initialization for large-scale workloads like ours?
+
+This is part of an active DR scenario, so any guidance would be greatly appreciated.
+
+Thank you,
