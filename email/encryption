@@ -1,59 +1,27 @@
-Hi Bob,
+Hi Kishore and team,
 
-I pulled the PROD customer-managed KMS key policies for the relevant services identified so far.
+Quick update on the disk initialization issue:
 
-EC2 (EBS)
+I’ve increased the EBS performance on several of the impacted servers — scaling IOPS up to ~40,000 and throughput up to ~1,500 MB/s. However, this has not significantly improved the initialization time.
 
-KMS Key: StagingEbsCmk
-Key ID: f2c3e9d4-6eed-43e1-b36a-6cbde2a19594
+The primary challenge is the size of the disks (each ~30TB). We attempted to accelerate the process using fio during our call with AWS to pre-warm/read the volumes, but the estimated time to fully process a single disk is still ~7 hours, which does not meet our recovery timeline requirements.
 
-Access Summary:
+At this point, the only pending item is AWS approval to increase the service quota for provisioned rate across concurrent volume creation, which may help improve parallel data hydration performance. We are waiting on their response.
 
-Access is granted at the account level (PROD account: 669042391564), meaning IAM roles and users within the account can use the key based on their IAM permissions
-Cross-account access is configured for account: 359203453793
-
-RDS
-
-KMS Key: StagingRdsCmk
-Key ID: 6bc9f352-a153-4fd3-a895-00446bb1e83e
-
-Access Summary:
-
-Access is granted at the account level (PROD account: 669042391564), with usage controlled via IAM permissions
-
-
-IAM user-level access is governed through IAM roles and policies, which are managed separately by the security team.
-
-
-
-arn:aws:iam::669042391564:root
+Given the size of these databases, restoring from snapshot alone is proving to be too slow for a true DR scenario. The client may need to consider implementing AWS DRS (Elastic Disaster Recovery) or an alternative replication-based approach for these database workloads to meet recovery objectives.
 
 
 
 
-We are currently performing a Disaster Recovery (DR) restore in AWS and have restored multiple EC2 instances from AMIs/snapshots.
 
-The attached EBS volumes are in "initializing" state (lazy loading from snapshot), which is causing degraded performance and preventing us from bringing the systems fully online.
+Current status per server:
 
-Key details:
-- Volumes restored from snapshots/AMIs
-- Volume type: gp3 (modified for higher performance)
-- Increased IOPS and throughput already applied (up to ~8000 IOPS and 500 MB/s)
-- Volumes are attached and in-use, but still initializing
-- Workload requires immediate readiness (cannot wait hours for full initialization)
+wv-prd-w-dbsqlmd-001 (5 disks remaining)
+Disk 2 (52%), 5 (31%), 6 (25%), 10 (79%), 13 (48%)
+wv-prd-w-dbsqlrx-001 (6 disks remaining)
+Disk 4 (48%), 6 (63%), 8 (61%), 10 (35%), 12 (78%), 14 (25%)
+wv-prd-w-dbsqlrdb-001 (10 disks remaining)
+Disk 4 (26%), 5 (45%), 6 (98%), 7 (14%), 9 (96%),
+11 (79%), 13 (66%), 14 (99%), 15 (18%), 16 (42%)
 
-Impact:
-- Production/DR systems cannot be brought online in time
-- Latency due to cold block reads is affecting application readiness
-
-Questions:
-1. Is there any way to accelerate initialization for already-created volumes?
-2. Can AWS internally prioritize or expedite snapshot hydration?
-3. Are there backend options or temporary performance boosts available?
-4. Would enabling Fast Snapshot Restore retroactively help in this scenario?
-
-We are also performing manual pre-warming, but would like to know if there are AWS-side optimizations available.
-
-This is time-sensitive for DR readiness.
-
-Please advise urgently.
+I’ll continue to monitor progress and provide updates once we hear back from AWS or see any improvement.
