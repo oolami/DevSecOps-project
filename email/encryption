@@ -1,51 +1,7 @@
-Hi Kishore and team,
+I wanted to get a bit more context on the overall scope and intent for this change before proceeding.
 
-Quick update on the disk initialization issue:
+Is the goal here to standardize all ArcHub-related database access to use the SILACINS\ArcHubDataOps service account via integrated security (e.g., replacing any existing SQL auth or other accounts), or is this specifically for a particular use case such as migrations or specific services?
 
-I’ve increased the EBS performance on several of the impacted servers — scaling IOPS up to ~40,000 and throughput up to ~1,500 MB/s. However, this has not significantly improved the initialization time.
+Also, should this be considered a broader pattern we’ll be applying across environments and pipelines going forward, or is this scoped only to ArcHub/DataOps1 connectivity at this time?
 
-The primary challenge is the size of the disks (each ~30TB). We attempted to accelerate the process using fio during our call with AWS to pre-warm/read the volumes, but the estimated time to fully process a single disk is still ~7 hours, which does not meet our recovery timeline requirements.
-
-At this point, the only pending item is AWS approval to increase the service quota for provisioned rate across concurrent volume creation, which may help improve parallel data hydration performance. We are waiting on their response.
-
-Given the size of these databases, restoring from snapshot alone is proving to be too slow for a true DR scenario. The client may need to consider implementing AWS DRS (Elastic Disaster Recovery) or an alternative replication-based approach for these database workloads to meet recovery objectives.
-
-
-
-
-
-Current status per server:
-
-wv-prd-w-dbsqlmd-001 (5 disks remaining)
-Disk 2 (52%), 5 (31%), 6 (25%), 10 (79%), 13 (48%)
-wv-prd-w-dbsqlrx-001 (6 disks remaining)
-Disk 4 (48%), 6 (63%), 8 (61%), 10 (35%), 12 (78%), 14 (25%)
-wv-prd-w-dbsqlrdb-001 (10 disks remaining)
-Disk 4 (26%), 5 (45%), 6 (98%), 7 (14%), 9 (96%),
-11 (79%), 13 (66%), 14 (99%), 15 (18%), 16 (42%)
-
-I’ll continue to monitor progress and provide updates once we hear back from AWS or see any improvement.
-
-
-
-
-
-
-Hello Jyoti,
-
-Thank you for the update.
-
-I’ve confirmed that the limit for Provisioned Rate for Volume Initialization across concurrent volume creation requests is currently set to 7000 in the US West (Oregon) region.
-
-However, we are still experiencing slow volume initialization due to the size of the disks (~30TB each), even after increasing IOPS and throughput significantly. This is impacting our DR recovery timeline.
-
-Could you please confirm if:
-
-This limit (7000) is currently being fully utilized in our environment, and
-Whether increasing this limit further would have a measurable impact on improving parallel volume initialization performance?
-
-Additionally, are there any AWS-side optimizations or recommendations to accelerate snapshot/AMI-based volume initialization for large-scale workloads like ours?
-
-This is part of an active DR scenario, so any guidance would be greatly appreciated.
-
-Thank you,
+Just want to make sure I understand the “why” and expected impact so I implement it correctly and consistently.
