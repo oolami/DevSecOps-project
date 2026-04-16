@@ -1,1 +1,20 @@
 I checked the DB Migrations build and confirmed the Arc Hub Business step is present, but it is currently being skipped because the execution condition RunArcHubBusiness = Yes is not being met in the run I reviewed. I’m going to enable that parameter in a custom build so I can validate the actual ArcHub Business execution path and confirm the DataOps1 connection behavior.
+
+
+
+
+
+Hi Ryan,
+I’m working on the TeamCity configuration for the ArcHub DB migration ticket where we need to move to using the SILACINS\ArcHubDataOps service account with integrated security for the DataOps1 connection.
+Right now, the DB Migrations build is running on shared TeamCity agents that are used across multiple pipelines. My concern is that changing the agent service account to ArcHubDataOps directly could introduce unintended impact to other builds running on those agents.
+To avoid that, I’m thinking the cleaner approach might be to isolate this workflow, either by:
+
+
+Using a dedicated TeamCity agent (or separate agent service) running under ArcHubDataOps
+
+
+Or another approach you’d recommend for handling integrated security in a shared-agent setup
+
+
+Before proceeding, I wanted to get your guidance on what would be the best and safest pattern from an agent/infrastructure standpoint.
+Thanks!
