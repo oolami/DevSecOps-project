@@ -26,3 +26,14 @@ Thanks!
 I updated the Arc Hub Business step to use the new SILACINS\ArcHubDataOps service account specifically for that migration path, and the build is now picking up that account correctly.
 
 The current failure is now Login failed for user 'SILACINS\ArcHubDataOps', so this looks like a database authentication/permission issue rather than a TeamCity parameter issue. Can you confirm whether that account has been created and granted access on the exact SQL Server/database the November Arc Hub Business path is targeting?
+
+
+
+
+
+Standup Update:
+
+Worked on enabling Arc Hub Business DB migration to use the new service account SILACINS\ArcHubDataOps
+Updated TeamCity to scope the credentials specifically to the Arc Hub Business step (no impact to other services)
+Verified the build is now picking up the new service account correctly
+Currently blocked on SQL login failure for that account — investigating whether it’s a permission or environment-specific access issue
