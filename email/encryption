@@ -37,3 +37,15 @@ Worked on enabling Arc Hub Business DB migration to use the new service account 
 Updated TeamCity to scope the credentials specifically to the Arc Hub Business step (no impact to other services)
 Verified the build is now picking up the new service account correctly
 Currently blocked on SQL login failure for that account — investigating whether it’s a permission or environment-specific access issue
+
+
+
+
+
+
+
+Hey Justin — thanks for the clarification, that helps.
+
+Based on how I understood the ticket, I implemented this through the DB migration path in TeamCity and validated that the ArcHubDataOps account is being picked up correctly there. However, if the intention is for the account to be used through the Arc Hub Business application endpoint (for the data comparison SPROC), then this likely needs to be handled at the application/config level rather than the migration pipeline.
+
+Can you confirm if the goal is to have ArcHub Business itself authenticate with that service account when calling the endpoint? If so, I can shift focus to where that configuration is managed.
