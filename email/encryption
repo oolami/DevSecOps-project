@@ -18,3 +18,11 @@ Or another approach you’d recommend for handling integrated security in a shar
 
 Before proceeding, I wanted to get your guidance on what would be the best and safest pattern from an agent/infrastructure standpoint.
 Thanks!
+
+
+
+
+
+I updated the Arc Hub Business step to use the new SILACINS\ArcHubDataOps service account specifically for that migration path, and the build is now picking up that account correctly.
+
+The current failure is now Login failed for user 'SILACINS\ArcHubDataOps', so this looks like a database authentication/permission issue rather than a TeamCity parameter issue. Can you confirm whether that account has been created and granted access on the exact SQL Server/database the November Arc Hub Business path is targeting?
