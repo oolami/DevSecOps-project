@@ -1,51 +1,42 @@
-I checked the DB Migrations build and confirmed the Arc Hub Business step is present, but it is currently being skipped because the execution condition RunArcHubBusiness = Yes is not being met in the run I reviewed. I’m going to enable that parameter in a custom build so I can validate the actual ArcHub Business execution path and confirm the DataOps1 connection behavior.
+Hi Erik,
 
+As part of DR readiness for the upcoming exercise, I completed a parity review of several IAM instance profiles between PROD and DR. Based on the comparison (PROD on the left, DR on the right in the attached screenshots), there are multiple missing permission policies in DR that need to be aligned with PROD.
 
+Please see the gaps identified below:
 
+1. Role: customer-pr-mc-ec2-instance-profile
 
+Missing in DR:
 
-Hi Ryan,
-I’m working on the TeamCity configuration for the ArcHub DB migration ticket where we need to move to using the SILACINS\ArcHubDataOps service account with integrated security for the DataOps1 connection.
-Right now, the DB Migrations build is running on shared TeamCity agents that are used across multiple pipelines. My concern is that changing the agent service account to ArcHubDataOps directly could introduce unintended impact to other builds running on those agents.
-To avoid that, I’m thinking the cleaner approach might be to isolate this workflow, either by:
+AmazonSSMDirectoryServiceAccess
+AmazonSSMManagedInstanceCore
+BYOIPSSMPolicy
+CloudWatchAgentServerPolicy
+gms_ds_auto_join_domain_policy
+pfe-pg--gbl-* (platform policy)
 
+2. Role: customer-mc-ec2-instance-profile-s3-custom
 
-Using a dedicated TeamCity agent (or separate agent service) running under ArcHubDataOps
+Missing in DR:
 
+AmazonSSMDirectoryServiceAccess
+AmazonSSMManagedInstanceCore
+BYOIPSSMPolicy
+CloudWatchAgentServerPolicy
+gms_ds_auto_join_domain_policy
+pfe-pg--gbl-* (platform policy)
 
-Or another approach you’d recommend for handling integrated security in a shared-agent setup
+3. Role: customer-mc-ec2-instance-profile
 
+Missing in DR:
 
-Before proceeding, I wanted to get your guidance on what would be the best and safest pattern from an agent/infrastructure standpoint.
-Thanks!
+AmazonSSMDirectoryServiceAccess
+AmazonSSMManagedInstanceCore
+BYOIPSSMPolicy
+CloudWatchAgentServerPolicy
+gms_ds_auto_join_domain_policy
+pfe-pg--gbl-* (platform policy)
 
+To ensure full parity and prevent any permission-related issues during the DR exercise, could you please add the above missing policies to the corresponding roles in the DR account?
 
-
-
-
-I updated the Arc Hub Business step to use the new SILACINS\ArcHubDataOps service account specifically for that migration path, and the build is now picking up that account correctly.
-
-The current failure is now Login failed for user 'SILACINS\ArcHubDataOps', so this looks like a database authentication/permission issue rather than a TeamCity parameter issue. Can you confirm whether that account has been created and granted access on the exact SQL Server/database the November Arc Hub Business path is targeting?
-
-
-
-
-
-Standup Update:
-
-Worked on enabling Arc Hub Business DB migration to use the new service account SILACINS\ArcHubDataOps
-Updated TeamCity to scope the credentials specifically to the Arc Hub Business step (no impact to other services)
-Verified the build is now picking up the new service account correctly
-Currently blocked on SQL login failure for that account — investigating whether it’s a permission or environment-specific access issue
-
-
-
-
-
-
-
-Hey Justin — thanks for the clarification, that helps.
-
-Based on how I understood the ticket, I implemented this through the DB migration path in TeamCity and validated that the ArcHubDataOps account is being picked up correctly there. However, if the intention is for the account to be used through the Arc Hub Business application endpoint (for the data comparison SPROC), then this likely needs to be handled at the application/config level rather than the migration pipeline.
-
-Can you confirm if the goal is to have ArcHub Business itself authenticate with that service account when calling the endpoint? If so, I can shift focus to where that configuration is managed.
+Let me know once completed, and I will re-validate.
