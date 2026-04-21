@@ -40,3 +40,22 @@ pfe-pg--gbl-* (platform policy)
 To ensure full parity and prevent any permission-related issues during the DR exercise, could you please add the above missing policies to the corresponding roles in the DR account?
 
 Let me know once completed, and I will re-validate.
+
+
+
+
+
+
+
+
+
+Hi Kimberly —
+
+The WorkSpaces have been successfully created for users.
+
+They are configured under the following directories:
+
+gainwelltechnologies.com — Registration Code: WSpdx+U3UJDV
+PR.GTDSD.com — Registration Code: WSpdx+5JQ3UK
+
+Both environments are active and ready for use. Please let me know if you’d like us to validate access or assist with any user onboarding steps.
