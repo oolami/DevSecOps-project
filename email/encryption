@@ -8,3 +8,17 @@ env.DATAOPS1_DATABASE_NAME
 Can you confirm where these should live — should they be set in the DB Migrations build or under the WholeSheStack deployment configs (Dev/Pre-Prod)?
 
 Once confirmed and added, I’ll update Justin so he can modify the PR to reference these env parameters instead of the hardcoded values.
+
+
+
+
+
+
+1. Host
+Name: env.DATAOPS1_HOST
+Kind: Environment variable (env.)
+Value: dataops1.equilife.com
+2. Database Name
+Name: env.DATAOPS1_DATABASE_NAME
+Kind: Environment variable (env.)
+Value: DataOpsCustom
