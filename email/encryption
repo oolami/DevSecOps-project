@@ -22,3 +22,18 @@ Value: dataops1.equilife.com
 Name: env.DATAOPS1_DATABASE_NAME
 Kind: Environment variable (env.)
 Value: DataOpsCustom
+
+
+
+
+
+
+
+Added TeamCity environment parameters under Deployments-Dev (WholeSheStack):
+
+env.DATAOPS1_HOST = dataops1.equilife.com
+env.DATAOPS1_DATABASE_NAME = DataOpsCustom
+
+Env values are now in place and available for use during deployment.
+
+@Justin Stonecipher — these match the values currently hardcoded in the PR. The next step would be to update the PR to reference these env parameters so they can be injected at runtime instead of being hardcoded.
