@@ -1,20 +1,10 @@
-Request vCenter (VCSA.silacins.com) Access for DevOps Support
+Hey team, quick clarification on the DataOps1 parameterization for ArcHub Business.
 
+I’m planning to add the following TeamCity environment parameters:
 
+env.DATAOPS1_HOST
+env.DATAOPS1_DATABASE_NAME
 
-I am currently unable to access objects within vCenter (VCSA.silacins.com) due to insufficient privileges (“You have no privileges to view this object”).
+Can you confirm where these should live — should they be set in the DB Migrations build or under the WholeSheStack deployment configs (Dev/Pre-Prod)?
 
-Access is required to support DevOps workflows, including infrastructure validation, troubleshooting, and coordination of environment-related activities tied to application deployments and operations.
-
-Requesting read/view access to:
-- Virtual Machines
-- Clusters
-- Datastores
-- Networks
-
-This will help improve visibility during deployments, incident troubleshooting, and reduce dependency on other teams for basic infrastructure checks.
-
-Please grant least-privilege access appropriate for DevOps support.
-
-
-Thank you.
+Once confirmed and added, I’ll update Justin so he can modify the PR to reference these env parameters instead of the hardcoded values.
