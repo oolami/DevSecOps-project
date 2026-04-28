@@ -37,3 +37,27 @@ env.DATAOPS1_DATABASE_NAME = DataOpsCustom
 Env values are now in place and available for use during deployment.
 
 @Justin Stonecipher — these match the values currently hardcoded in the PR. The next step would be to update the PR to reference these env parameters so they can be injected at runtime instead of being hardcoded.
+
+
+
+
+
+Here’s a **professional, concise response** confirming your interest and alignment:
+
+---
+
+**Subject:** Re: DevOps Engineer – 100% Remote Opportunity
+
+Dear Dharmendra,
+
+Thank you for reaching out and sharing this opportunity.
+
+I’m very interested in the DevOps Engineer role and believe my experience aligns well with the requirements. I have strong hands-on experience with CI/CD pipeline implementation and support, cloud platforms (AWS and Azure), and DevOps tools such as Jenkins, GitHub Actions, and Azure DevOps. I’ve also worked extensively with scripting (Bash/PowerShell), troubleshooting application and deployment issues, and supporting monitoring, logging, and alerting solutions in production environments.
+
+Additionally, I have experience working with both Windows and Linux server environments and collaborating with cross-functional teams to ensure operational stability and efficient delivery.
+
+I would welcome the opportunity to discuss this role further. Please let me know a convenient time for the next steps.
+
+Best regards,
+
+
