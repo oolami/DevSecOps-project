@@ -98,3 +98,10 @@ and Stream : "stderr"
 
 
 Feels like we’re missing a standardized change communication + ownership model. For changes like renames, we should probably have a defined notification path and validation checklist across teams. That, along with routing escalations through the Collab channels, would help avoid DevOps becoming the default entry point for everything.”
+
+
+
+
+
+
+I found a likely cause for the November deploy pause. The new arc-hub-business change appears to depend on parameters that were added at the Wholeshestack template level, but those parameters are not currently present/inherited in the November configuration. Kibana shows arc-hub-business failing startup validation because DatabaseName and Host are empty, which would explain why Swarm paused the update. I’m going to confirm the exact missing parameters and add the November-specific values before redeploying.
