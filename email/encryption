@@ -1,107 +1,47 @@
-Hey team, quick clarification on the DataOps1 parameterization for ArcHub Business.
-
-I’m planning to add the following TeamCity environment parameters:
-
-env.DATAOPS1_HOST
-env.DATAOPS1_DATABASE_NAME
-
-Can you confirm where these should live — should they be set in the DB Migrations build or under the WholeSheStack deployment configs (Dev/Pre-Prod)?
-
-Once confirmed and added, I’ll update Justin so he can modify the PR to reference these env parameters instead of the hardcoded values.
-
-
-
-
-
-
-1. Host
-Name: env.DATAOPS1_HOST
-Kind: Environment variable (env.)
-Value: dataops1.equilife.com
-2. Database Name
-Name: env.DATAOPS1_DATABASE_NAME
-Kind: Environment variable (env.)
-Value: DataOpsCustom
-
-
-
-
-
-
-
-Added TeamCity environment parameters under Deployments-Dev (WholeSheStack):
-
-env.DATAOPS1_HOST = dataops1.equilife.com
-env.DATAOPS1_DATABASE_NAME = DataOpsCustom
-
-Env values are now in place and available for use during deployment.
-
-@Justin Stonecipher — these match the values currently hardcoded in the PR. The next step would be to update the PR to reference these env parameters so they can be injected at runtime instead of being hardcoded.
-
-
-
-
-
-Here’s a **professional, concise response** confirming your interest and alignment:
-
----
-
-**Subject:** Re: DevOps Engineer – 100% Remote Opportunity
-
-Dear Dharmendra,
-
-Thank you for reaching out and sharing this opportunity.
-
-I’m very interested in the DevOps Engineer role and believe my experience aligns well with the requirements. I have strong hands-on experience with CI/CD pipeline implementation and support, cloud platforms (AWS and Azure), and DevOps tools such as Jenkins, GitHub Actions, and Azure DevOps. I’ve also worked extensively with scripting (Bash/PowerShell), troubleshooting application and deployment issues, and supporting monitoring, logging, and alerting solutions in production environments.
-
-Additionally, I have experience working with both Windows and Linux server environments and collaborating with cross-functional teams to ensure operational stability and efficient delivery.
-
-I would welcome the opportunity to discuss this role further. Please let me know a convenient time for the next steps.
-
-Best regards,
-
-
-
-
-
-This sounds like a solid approach to improving the initialization time. I had a couple of clarifying questions on the new process:
-
-Will the new script be applied to all server restores, or is it targeted specifically for database servers?
-For the EFSR-related process, does it apply only during restore operations, or does it also have any impact on snapshots/backups themselves?
-
-Also, since the PR DR exercise is almost complete and some of the drives are still initializing, I’d suggest we leverage that environment for testing rather than waiting, so we can validate the improvements in a real scenario.
-
-
-
-
-
-
-Looks like the November deployment pause is coming from arc-hub-business. 
-
-In Kibana, I’m seeing the container failing on startup with:
-“DatabaseName must not be null or empty” and “Host must not be null or empty”
-
-So it seems like DB config/env vars are not being injected for that service, causing the container to fail health checks and Swarm to pause the update.
-
-I’m checking TeamCity parameters and comparing with a working stack now.
-
-
-
-
-
-Stack : "wholeshestack_november" and service : "arc-hub-business"
-
-Stack : "wholeshestack_november" 
-and service : "arc-hub-business" 
-and Stream : "stderr"
-
-
-
-Feels like we’re missing a standardized change communication + ownership model. For changes like renames, we should probably have a defined notification path and validation checklist across teams. That, along with routing escalations through the Collab channels, would help avoid DevOps becoming the default entry point for everything.”
-
-
-
-
-
-
-I found a likely cause for the November deploy pause. The new arc-hub-business change appears to depend on parameters that were added at the Wholeshestack template level, but those parameters are not currently present/inherited in the November configuration. Kibana shows arc-hub-business failing startup validation because DatabaseName and Host are empty, which would explain why Swarm paused the update. I’m going to confirm the exact missing parameters and add the November-specific values before redeploying.
+AWS WorkSpaces – User Unable to Connect (“No Network” Error) – High Priority
+
+Service:
+
+Amazon WorkSpaces
+
+Severity:
+
+High (User access blocked during active usage window)
+
+Description:
+
+We are experiencing an issue with an AWS WorkSpace in our test-1 account where a user is unable to connect.
+
+Affected User: Faridd
+Reported by: Olamide Arolawun
+Issue Start Time: April 29, 2026 (late morning CT)
+Environment: Test-1 account
+Problem Details:
+
+The user is receiving a “No Network” error when attempting to connect to their WorkSpace.
+
+The WorkSpace was working as expected yesterday
+The issue started today without any known changes
+The user has:
+Attempted connection with VPN
+Attempted connection without VPN
+Issue persists in both scenarios
+
+A screenshot of the error is available and can be provided upon request.
+
+Business Impact:
+User is unable to access their WorkSpace
+This is time-sensitive as access is required before 4:00 PM CT today
+Impacting ongoing work during DR/test activities
+Troubleshooting Performed:
+Verified issue is not VPN-dependent
+Confirmed no user-side configuration changes
+Issue reproduced consistently
+Request:
+Investigate connectivity issue for the affected WorkSpace
+Validate:
+WorkSpace health status
+Directory Service connectivity
+Network path (subnet, routing, security groups, NACLs)
+Confirm if there are any backend service disruptions
+Provide remediation steps or restore access
