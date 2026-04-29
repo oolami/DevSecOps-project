@@ -61,3 +61,12 @@ I would welcome the opportunity to discuss this role further. Please let me know
 Best regards,
 
 
+
+
+
+This sounds like a solid approach to improving the initialization time. I had a couple of clarifying questions on the new process:
+
+Will the new script be applied to all server restores, or is it targeted specifically for database servers?
+For the EFSR-related process, does it apply only during restore operations, or does it also have any impact on snapshots/backups themselves?
+
+Also, since the PR DR exercise is almost complete and some of the drives are still initializing, I’d suggest we leverage that environment for testing rather than waiting, so we can validate the improvements in a real scenario.
