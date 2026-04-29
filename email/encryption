@@ -94,3 +94,7 @@ Stack : "wholeshestack_november" and service : "arc-hub-business"
 Stack : "wholeshestack_november" 
 and service : "arc-hub-business" 
 and Stream : "stderr"
+
+
+
+Feels like we’re missing a standardized change communication + ownership model. For changes like renames, we should probably have a defined notification path and validation checklist across teams. That, along with routing escalations through the Collab channels, would help avoid DevOps becoming the default entry point for everything.”
