@@ -70,3 +70,27 @@ Will the new script be applied to all server restores, or is it targeted specifi
 For the EFSR-related process, does it apply only during restore operations, or does it also have any impact on snapshots/backups themselves?
 
 Also, since the PR DR exercise is almost complete and some of the drives are still initializing, I’d suggest we leverage that environment for testing rather than waiting, so we can validate the improvements in a real scenario.
+
+
+
+
+
+
+Looks like the November deployment pause is coming from arc-hub-business. 
+
+In Kibana, I’m seeing the container failing on startup with:
+“DatabaseName must not be null or empty” and “Host must not be null or empty”
+
+So it seems like DB config/env vars are not being injected for that service, causing the container to fail health checks and Swarm to pause the update.
+
+I’m checking TeamCity parameters and comparing with a working stack now.
+
+
+
+
+
+Stack : "wholeshestack_november" and service : "arc-hub-business"
+
+Stack : "wholeshestack_november" 
+and service : "arc-hub-business" 
+and Stream : "stderr"
