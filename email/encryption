@@ -1,47 +1,15 @@
-AWS WorkSpaces – User Unable to Connect (“No Network” Error) – High Priority
+Update:
 
-Service:
+Identified that the November environment is not based on the Wholeshestack template, unlike other environments. Because of this, required TeamCity environment variables were not being inherited.
 
-Amazon WorkSpaces
+Action taken:
+- Manually added the missing environment variables to the November configuration (including DATAOPS1-related values and other required parameters)
 
-Severity:
+Result:
+- The original DbOptions validation error (Host/DatabaseName null) appears to be addressed
+- Deployment now progresses further than before
 
-High (User access blocked during active usage window)
+Next step:
+@Justin – can you please confirm whether arc-hub-business is now correctly picking up these parameters in November? 
 
-Description:
-
-We are experiencing an issue with an AWS WorkSpace in our test-1 account where a user is unable to connect.
-
-Affected User: Faridd
-Reported by: Olamide Arolawun
-Issue Start Time: April 29, 2026 (late morning CT)
-Environment: Test-1 account
-Problem Details:
-
-The user is receiving a “No Network” error when attempting to connect to their WorkSpace.
-
-The WorkSpace was working as expected yesterday
-The issue started today without any known changes
-The user has:
-Attempted connection with VPN
-Attempted connection without VPN
-Issue persists in both scenarios
-
-A screenshot of the error is available and can be provided upon request.
-
-Business Impact:
-User is unable to access their WorkSpace
-This is time-sensitive as access is required before 4:00 PM CT today
-Impacting ongoing work during DR/test activities
-Troubleshooting Performed:
-Verified issue is not VPN-dependent
-Confirmed no user-side configuration changes
-Issue reproduced consistently
-Request:
-Investigate connectivity issue for the affected WorkSpace
-Validate:
-WorkSpace health status
-Directory Service connectivity
-Network path (subnet, routing, security groups, NACLs)
-Confirm if there are any backend service disruptions
-Provide remediation steps or restore access
+There are still failures related to admin-api (Hangfire validation), but from a DevOps perspective the missing environment variable issue should now be resolved.
