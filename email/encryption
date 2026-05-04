@@ -1,15 +1,8 @@
-Update:
+Based on the current structure in \\dockerstorage2\dev-swarm-storage-tfs, I see an existing arc-hub-business-november folder.
 
-Identified that the November environment is not based on the Wholeshestack template, unlike other environments. Because of this, required TeamCity environment variables were not being inherited.
+Can you confirm the expected structure for this task:
 
-Action taken:
-- Manually added the missing environment variables to the November configuration (including DATAOPS1-related values and other required parameters)
+Should there be one arc-hub-business folder per dev environment (e.g., alfa, ste, sus), similar to November?
+Or are additional subfolders/files required within each environment-specific folder?
 
-Result:
-- The original DbOptions validation error (Host/DatabaseName null) appears to be addressed
-- Deployment now progresses further than before
-
-Next step:
-@Justin – can you please confirm whether arc-hub-business is now correctly picking up these parameters in November? 
-
-There are still failures related to admin-api (Hangfire validation), but from a DevOps perspective the missing environment variable issue should now be resolved.
+Just want to confirm before creating multiple folders to ensure consistency with the expected volume structure.
