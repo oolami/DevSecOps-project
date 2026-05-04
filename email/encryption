@@ -26,3 +26,11 @@ mkdir Z:\arc-hub-business-alfa
 echo test > "\\dockerstorage2\dev-swarm-storage-tfs\test.txt"
 
 echo test > "\\dockerstorage2\dev-swarm-storage-tfs\test.txt"echo test > "\\dockerstorage2\dev-swarm-storage-tfs\test.txt"
+
+
+
+
+
+Created arc-hub-business-* folders in \\dockerstorage2\dev-swarm-storage-tfs for all dev environments (Alfa through November), aligned with CICD environment naming.
+
+This matches the existing arc-hub-business-november pattern. Please confirm if any additional folder structure or contents are required.
