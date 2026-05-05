@@ -1,36 +1,19 @@
-Based on the current structure in \\dockerstorage2\dev-swarm-storage-tfs, I see an existing arc-hub-business-november folder.
+8. What is your ideal state?
 
-Can you confirm the expected structure for this task:
+A streamlined, collaborative environment where teams are empowered to make decisions, communication is clear, and processes are efficient with minimal bottlenecks.
 
-Should there be one arc-hub-business folder per dev environment (e.g., alfa, ste, sus), similar to November?
-Or are additional subfolders/files required within each environment-specific folder?
+9. What most slows down your ability to do your job effectively?
 
-Just want to confirm before creating multiple folders to ensure consistency with the expected volume structure.
+Lack of clear communication, frequent escalations for routine decisions, and dependencies on other teams without defined ownership.
 
+10. What is one thing we should stop doing?
 
+Stop over-relying on approvals and unnecessary escalations for routine tasks, which slows down delivery.
 
+11. What is one thing we should start doing?
 
+Start improving cross-team communication and documentation, and empower teams with clearer ownership and decision-making authority.
 
-mkdir "\\dockerstorage2\dev-swarm-storage-tfs\arc-hub-business-alfa"
-mkdir "\\dockerstorage2\dev-swarm-storage-tfs\arc-hub-business-ste"
-mkdir "\\dockerstorage2\dev-swarm-storage-tfs\arc-hub-business-sus"
+12. What is one thing we should continue doing?
 
-
-
-
-\\dockerstorage2\dev-swarm-storage-tfs
-mkdir Z:\arc-hub-business-alfa
-
-
-
-echo test > "\\dockerstorage2\dev-swarm-storage-tfs\test.txt"
-
-echo test > "\\dockerstorage2\dev-swarm-storage-tfs\test.txt"echo test > "\\dockerstorage2\dev-swarm-storage-tfs\test.txt"
-
-
-
-
-
-Created arc-hub-business-* folders in \\dockerstorage2\dev-swarm-storage-tfs for all dev environments (Alfa through November), aligned with CICD environment naming.
-
-This matches the existing arc-hub-business-november pattern. Please confirm if any additional folder structure or contents are required.
+Continue fostering collaboration and supporting initiatives that improve efficiency and team autonomy.
