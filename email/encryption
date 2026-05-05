@@ -1,19 +1,10 @@
-8. What is your ideal state?
+Hi Dennis, I’m taking a look at the Syslog service account and mount assistance ticket. I haven’t worked with Syslog before, and I believe it’s mainly managed/hosted by the SysAdmin team.
 
-A streamlined, collaborative environment where teams are empowered to make decisions, communication is clear, and processes are efficient with minimal bottlenecks.
+I’ve started digging into it but haven’t been able to find a related repo in Bitbucket — not sure if I might not have access or if it’s managed outside of our usual repos.
 
-9. What most slows down your ability to do your job effectively?
+To move forward, I wanted to confirm a few things:
 
-Lack of clear communication, frequent escalations for routine decisions, and dependencies on other teams without defined ownership.
-
-10. What is one thing we should stop doing?
-
-Stop over-relying on approvals and unnecessary escalations for routine tasks, which slows down delivery.
-
-11. What is one thing we should start doing?
-
-Start improving cross-team communication and documentation, and empower teams with clearer ownership and decision-making authority.
-
-12. What is one thing we should continue doing?
-
-Continue fostering collaboration and supporting initiatives that improve efficiency and team autonomy.
+Where Syslog is writing data to (mount locations)
+What storage it’s currently using (especially with the Equilife → Pure Storage migration)
+What service accounts are used to access those mounts
+Where those mounts are configured (VM, config files, or elsewhere)
