@@ -1,10 +1,28 @@
-Hi Dennis, I’m taking a look at the Syslog service account and mount assistance ticket. I haven’t worked with Syslog before, and I believe it’s mainly managed/hosted by the SysAdmin team.
+I reviewed WholeSheStack wholeshestack.30-base.yml for both pre-prod/deploy and prod/deploy.
 
-I’ve started digging into it but haven’t been able to find a related repo in Bitbucket — not sure if I might not have access or if it’s managed outside of our usual repos.
+Syslog is configured as a shared CIFS volume named syslog, not as a standalone service. It is mounted into multiple services such as windapi, celery, celery-beat, document-api, check-api, ach-api, general-ledger-api, and email-api.
 
-To move forward, I wanted to confirm a few things:
+Container mount paths include /opt/storage/syslog and /mnt/files/logging.
 
-Where Syslog is writing data to (mount locations)
-What storage it’s currently using (especially with the Equilife → Pure Storage migration)
-What service accounts are used to access those mounts
-Where those mounts are configured (VM, config files, or elsewhere)
+Pre-prod backend: //syslog.equilife.com/DockerLogging-pre-prod, using preprod@SMB, domain EQUILIFE, password variable ${SMB_EQ_STORAGE_PASSWORD}.
+
+Prod backend: //syslog.equilife.com/DockerLogging, using DOINFS, domain EQUILIFE, password variable ${SYSLOG_SMB_PASSWORD}.
+
+
+
+
+
+The SMB credentials appear to be parameterized and injected during deployment rather than hardcoded in source control. The password references (${SYSLOG_SMB_PASSWORD} and ${SMB_EQ_STORAGE_PASSWORD}) are likely managed through TeamCity deployment parameters or related deployment secret management.
+
+
+
+
+
+
+DevOps investigation completed. I identified the Syslog CIFS mounts, backend storage paths, service accounts, and deployment configuration locations in WholeSheStack for both pre-prod and prod deployments.
+
+The mounts are configured in wholeshestack.30-base.yml under the deploy branches and are consumed by multiple services across the swarm stack.
+
+SMB credentials appear to be parameterized and injected during deployment via deployment variables/secrets rather than hardcoded in source control.
+
+Waiting on SysAdm/team ownership confirmation for the new Pure Storage target path and any required account updates for migration/cutover planning.
