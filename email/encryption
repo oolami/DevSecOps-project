@@ -1,28 +1,3 @@
-I reviewed WholeSheStack wholeshestack.30-base.yml for both pre-prod/deploy and prod/deploy.
+That approach makes sense to me. If those SMB service accounts are already established and were successfully used during the Primary server migration, reusing them for the Syslog migration could reduce the amount of immediate credential and deployment changes required during cutover.
 
-Syslog is configured as a shared CIFS volume named syslog, not as a standalone service. It is mounted into multiple services such as windapi, celery, celery-beat, document-api, check-api, ach-api, general-ledger-api, and email-api.
-
-Container mount paths include /opt/storage/syslog and /mnt/files/logging.
-
-Pre-prod backend: //syslog.equilife.com/DockerLogging-pre-prod, using preprod@SMB, domain EQUILIFE, password variable ${SMB_EQ_STORAGE_PASSWORD}.
-
-Prod backend: //syslog.equilife.com/DockerLogging, using DOINFS, domain EQUILIFE, password variable ${SYSLOG_SMB_PASSWORD}.
-
-
-
-
-
-The SMB credentials appear to be parameterized and injected during deployment rather than hardcoded in source control. The password references (${SYSLOG_SMB_PASSWORD} and ${SMB_EQ_STORAGE_PASSWORD}) are likely managed through TeamCity deployment parameters or related deployment secret management.
-
-
-
-
-
-
-DevOps investigation completed. I identified the Syslog CIFS mounts, backend storage paths, service accounts, and deployment configuration locations in WholeSheStack for both pre-prod and prod deployments.
-
-The mounts are configured in wholeshestack.30-base.yml under the deploy branches and are consumed by multiple services across the swarm stack.
-
-SMB credentials appear to be parameterized and injected during deployment via deployment variables/secrets rather than hardcoded in source control.
-
-Waiting on SysAdm/team ownership confirmation for the new Pure Storage target path and any required account updates for migration/cutover planning.
+I can continue documenting which services and mounts currently reference the Equilife FQDNs so we have a complete dependency list available for planning.
