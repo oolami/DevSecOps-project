@@ -1,3 +1,12 @@
 That approach makes sense to me. If those SMB service accounts are already established and were successfully used during the Primary server migration, reusing them for the Syslog migration could reduce the amount of immediate credential and deployment changes required during cutover.
 
 I can continue documenting which services and mounts currently reference the Equilife FQDNs so we have a complete dependency list available for planning.
+
+
+
+Get-ChildItem -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
+
+print(vpc_response)
+
+
+print(vpc_response['Vpcs'])
