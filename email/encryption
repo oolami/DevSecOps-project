@@ -1,12 +1,59 @@
-That approach makes sense to me. If those SMB service accounts are already established and were successfully used during the Primary server migration, reusing them for the Syslog migration could reduce the amount of immediate credential and deployment changes required during cutover.
+Hi Becky,
 
-I can continue documenting which services and mounts currently reference the Equilife FQDNs so we have a complete dependency list available for planning.
+The November environment migration to the new AAG environment has now been completed successfully.
+
+The database restore using the AAG restore job completed successfully, and the November deployment was completed using the WHC-3108-envs-to-aag branch. Smoke testing and validation were also completed successfully.
+
+Please let me know if there is anything additional needed from my side.
+
+Thanks,
+Grace
 
 
 
-Get-ChildItem -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
-
-print(vpc_response)
 
 
-print(vpc_response['Vpcs'])
+
+
+
+Jira / Board Ticket Details
+
+Title
+
+Migrate November Dev Environment to AAG Environment
+
+Description
+
+Completed migration of the November development environment to the new AAG (Always On Availability Group) SQL environment.
+
+Work Completed
+
+* Executed AAG database restore job for November environment
+* Restored database successfully to AAG SQL environment
+* Deployed November environment using branch:
+    * WHC-3108-envs-to-aag
+* Verified successful deployment in TeamCity
+* Performed smoke testing and validation:
+    * Application launch successful
+    * Data loading validated
+    * Swarm deployment completed successfully
+    * No deployment or SQL errors observed
+
+TeamCity Builds
+
+* Database Restore:
+    * Restore Base To Env - AAG
+* Deployment:
+    * Wholeshestack-November
+
+Result
+
+November environment successfully migrated and validated against the new AAG infrastructure.
+
+
+
+
+
+
+
+Good morning everyone, I will be out today as I woke up not feeling well this morning. I have completed the November AAG migration effort successfully before stepping away. Please feel free to reach out if anything urgent comes up and I will respond as I’m able.
