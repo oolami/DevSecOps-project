@@ -5,3 +5,12 @@ await client.set(
     EX: 86400
   }
 )
+
+
+
+await client.set(
+  `${envReservationPrefix}${envName}`,
+  data,
+  "EX",
+  1209600
+)
