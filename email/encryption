@@ -14,3 +14,17 @@ await client.set(
   "EX",
   1209600
 )
+
+
+
+
+
+
+
+
+
+
+setEnvReservation
+client.set(
+env-res:
+reservedAtTs
