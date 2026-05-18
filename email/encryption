@@ -1,12 +1,7 @@
-Good morning Dennis, I will be out today as I’ve been feeling under the weather since yesterday and woke up with flu symptoms this morning.
-
-Becky reached out regarding the November migration to the AAG environment, and I completed the migration successfully before stepping away, including releasing the environment.
-
-Please let me know if anything urgent comes up and I’ll respond as I’m able.
-
-
-
-
-
-
-Good morning everyone, I’ll be out today due to not feeling well this morning. The November AAG migration effort has been completed successfully before I stepped away.
+await client.set(
+  `${envReservationPrefix}${envName}`,
+  data,
+  {
+    EX: 86400
+  }
+)
