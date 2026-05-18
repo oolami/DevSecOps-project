@@ -19,6 +19,8 @@ await client.set(
 
 
 
+The Redis key is still created with TTL -1 after release/re-reserve, so can we confirm whether the dashboard UI is hitting the green API that was just deployed, or still hitting the blue/live API?
+
 
 
 
@@ -28,3 +30,8 @@ setEnvReservation
 client.set(
 env-res:
 reservedAtTs
+
+
+
+
+I deployed the branch to cicd-dashboard-green_api, but the public URL is cicd-dashboard.silacins.com/Echo and Redis still shows TTL -1 after release/re-reserve. Can you confirm whether this public URL routes to green or still routes to blue/live? Also, is there a green-specific URL I can use for testing before promoting?
