@@ -1,31 +1,12 @@
-Investigated environment reservation auto-release and notification behavior for CICD Dashboard.
+Hi Tripti,
 
-Findings:
+Thank you for reaching out and for sharing the DevOps Engineer opportunity with Fidelity Investments. After reviewing the role, I’m very interested and believe my background aligns well with the requirements.
 
-Reservation TTL expiration in Redis is functioning correctly.
-env-res:wholeshestack_echo key expired and was automatically removed from Redis after configured TTL elapsed.
-Teams webhook notification flow was tested and corrected to use plain text payload format.
-CICD Dashboard deployment completed successfully with updated reservation monitoring configuration.
+I currently work in a DevOps/Cloud Engineering environment with hands-on experience in CI/CD pipeline automation, Jenkins, GitHub workflows, AWS cloud services, containerized deployments, monitoring/observability, and infrastructure support. I also have experience supporting enterprise applications, troubleshooting deployment and release issues, and working closely with cross-functional engineering teams.
 
-Additional findings:
+The opportunity to contribute to large-scale CI/CD modernization and developer experience initiatives is especially interesting to me.
 
-Despite Redis key expiration/removal, the CICD Dashboard UI continued displaying the environment as reserved.
-Browser/network investigation confirmed the dashboard uses websocket-based envReservationsMessage updates.
-Websocket stream continued broadcasting stale reservation state after Redis expiration occurred.
-This indicates the reservation expiration is not propagating correctly through the websocket/state synchronization layer.
+Please let me know the next steps in the process. I would be happy to discuss my experience further and provide any additional information needed.
 
-Conclusion:
-
-Infrastructure/Redis TTL functionality appears operational.
-Remaining issue appears application-side within CICD Dashboard websocket/state management logic, likely involving stale in-memory reservation state or missing expiration event cleanup/broadcast handling.
-
-
-
-
-
-
-Hey Dennis, quick update on the CICD reservation alerting task — I was able to implement the Teams notification logic and confirmed the Power Automate webhook integration is now working. I also tested the Redis TTL expiration and confirmed the reservation key expires correctly from Redis.
-
-One thing I found is that after the Redis reservation expires, the CICD dashboard UI still shows the environment as reserved. I traced it through the websocket messages in the browser dev tools, and it looks like the frontend/dashboard service may not be properly refreshing or clearing expired reservations from the UI state.
-
-At this point I think I may need some developer input on the dashboard/frontend behavior. Is there a specific engineer you’d recommend I work with for the next steps?
+Best regards,
+Ibrahim Lediju
