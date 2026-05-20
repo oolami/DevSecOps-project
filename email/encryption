@@ -1,37 +1,31 @@
-await client.set(
-  `${envReservationPrefix}${envName}`,
-  data,
-  {
-    EX: 86400
-  }
-)
+Investigated environment reservation auto-release and notification behavior for CICD Dashboard.
 
+Findings:
 
+Reservation TTL expiration in Redis is functioning correctly.
+env-res:wholeshestack_echo key expired and was automatically removed from Redis after configured TTL elapsed.
+Teams webhook notification flow was tested and corrected to use plain text payload format.
+CICD Dashboard deployment completed successfully with updated reservation monitoring configuration.
 
-await client.set(
-  `${envReservationPrefix}${envName}`,
-  data,
-  "EX",
-  1209600
-)
+Additional findings:
 
+Despite Redis key expiration/removal, the CICD Dashboard UI continued displaying the environment as reserved.
+Browser/network investigation confirmed the dashboard uses websocket-based envReservationsMessage updates.
+Websocket stream continued broadcasting stale reservation state after Redis expiration occurred.
+This indicates the reservation expiration is not propagating correctly through the websocket/state synchronization layer.
 
+Conclusion:
 
-
-
-The Redis key is still created with TTL -1 after release/re-reserve, so can we confirm whether the dashboard UI is hitting the green API that was just deployed, or still hitting the blue/live API?
-
+Infrastructure/Redis TTL functionality appears operational.
+Remaining issue appears application-side within CICD Dashboard websocket/state management logic, likely involving stale in-memory reservation state or missing expiration event cleanup/broadcast handling.
 
 
 
 
 
-setEnvReservation
-client.set(
-env-res:
-reservedAtTs
 
+Hey Dennis, quick update on the CICD reservation alerting task — I was able to implement the Teams notification logic and confirmed the Power Automate webhook integration is now working. I also tested the Redis TTL expiration and confirmed the reservation key expires correctly from Redis.
 
+One thing I found is that after the Redis reservation expires, the CICD dashboard UI still shows the environment as reserved. I traced it through the websocket messages in the browser dev tools, and it looks like the frontend/dashboard service may not be properly refreshing or clearing expired reservations from the UI state.
 
-
-I deployed the branch to cicd-dashboard-green_api, but the public URL is cicd-dashboard.silacins.com/Echo and Redis still shows TTL -1 after release/re-reserve. Can you confirm whether this public URL routes to green or still routes to blue/live? Also, is there a green-specific URL I can use for testing before promoting?
+At this point I think I may need some developer input on the dashboard/frontend behavior. Is there a specific engineer you’d recommend I work with for the next steps?
