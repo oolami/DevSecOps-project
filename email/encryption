@@ -1,3 +1,10 @@
 “For the S3/Glue DR work, I identified some missing IAM permission policies attached to the DR Glue bucket configuration. Initially there was concern that enabling those permissions in DR could unintentionally replicate logs back into PROD.
 
 I had a working session with Erik yesterday, and we were able to redesign the policy configuration so the required permissions exist in DR without pointing replication or logging traffic back to PROD. We now have a working approach that allows the previously missing logs/objects to replicate correctly within the DR scope only.
+
+
+
+
+That makes sense. My understanding is that if the S3 replication configuration, IAM permissions, bucket policies, and KMS access are all correctly in place, new eligible objects should replicate automatically to DR without relying on S3 Batch Operations. I see Batch Operations more as a remediation/backfill option for missed, existing, or emergency object copies rather than the primary replication mechanism.
+
+I agree it may still be useful as an operational safeguard, especially for future reconciliation or recovery scenarios where replication does not automatically catch up on missing objects.
