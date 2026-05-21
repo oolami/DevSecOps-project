@@ -1,12 +1,3 @@
-Hi Tripti,
+“For the S3/Glue DR work, I identified some missing IAM permission policies attached to the DR Glue bucket configuration. Initially there was concern that enabling those permissions in DR could unintentionally replicate logs back into PROD.
 
-Thank you for reaching out and for sharing the DevOps Engineer opportunity with Fidelity Investments. After reviewing the role, I’m very interested and believe my background aligns well with the requirements.
-
-I currently work in a DevOps/Cloud Engineering environment with hands-on experience in CI/CD pipeline automation, Jenkins, GitHub workflows, AWS cloud services, containerized deployments, monitoring/observability, and infrastructure support. I also have experience supporting enterprise applications, troubleshooting deployment and release issues, and working closely with cross-functional engineering teams.
-
-The opportunity to contribute to large-scale CI/CD modernization and developer experience initiatives is especially interesting to me.
-
-Please let me know the next steps in the process. I would be happy to discuss my experience further and provide any additional information needed.
-
-Best regards,
-Ibrahim Lediju
+I had a working session with Erik yesterday, and we were able to redesign the policy configuration so the required permissions exist in DR without pointing replication or logging traffic back to PROD. We now have a working approach that allows the previously missing logs/objects to replicate correctly within the DR scope only.
