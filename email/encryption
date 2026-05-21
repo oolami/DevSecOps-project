@@ -8,3 +8,27 @@ I had a working session with Erik yesterday, and we were able to redesign the po
 That makes sense. My understanding is that if the S3 replication configuration, IAM permissions, bucket policies, and KMS access are all correctly in place, new eligible objects should replicate automatically to DR without relying on S3 Batch Operations. I see Batch Operations more as a remediation/backfill option for missed, existing, or emergency object copies rather than the primary replication mechanism.
 
 I agree it may still be useful as an operational safeguard, especially for future reconciliation or recovery scenarios where replication does not automatically catch up on missing objects.
+
+
+
+
+
+
+Heads up everyone — while testing the new CICD environment reservation TTL/notification functionality, several older reserved environments were automatically released overnight due to expiration. Apologies that this was not communicated earlier during testing.
+
+If you still need any environment for active work, please go ahead and reserve it again through the CICD dashboard. Thanks everyone.
+
+
+
+I tested the reservation TTL expiration functionality using a temporary 1-day TTL setting, and it appears to be working successfully. Several environments that had older reservations were automatically released overnight, including reservations that existed prior to the changes.
+
+Teams webhook notifications were also validated successfully end-to-end through Power Automate.
+
+I’ll revert the temporary testing thresholds back to production values before finalizing the work.
+
+
+
+
+Quick check — I noticed several older reserved environments were automatically released overnight while testing the CICD reservation TTL functionality.
+
+Can anyone confirm whether those environments were manually released, or were they untouched overnight? Wanting to validate the expiration workflow behavior.
