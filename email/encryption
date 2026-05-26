@@ -130,3 +130,29 @@ OUT_FILE="container-info.html"
   echo "</pre>"
   echo "</body></html>"
 } > "$OUT_FILE"
+
+
+
+
+
+set -eu
+set -o pipefail
+
+STACK_NAME="wholeshestack_bravo"
+OUT_FILE="container-info.html"
+
+{
+  echo "<html><body>"
+  echo "<h2>Container Info - ${STACK_NAME}</h2>"
+  echo "<pre>"
+
+  echo "Resolved Docker image tag variables:"
+  grep -R "DI_.*_TAG=" . || echo "No resolved DI_*_TAG values found."
+
+  echo ""
+  echo "Image references from deployment config:"
+  grep -R "image:" . | sed 's/^/  /' || echo "No image entries found."
+
+  echo "</pre>"
+  echo "</body></html>"
+} > "$OUT_FILE"
