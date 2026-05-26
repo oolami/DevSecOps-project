@@ -21,3 +21,30 @@ OUT_FILE="container-info.html"
   echo "</pre>"
   echo "</body></html>"
 } > "$OUT_FILE"
+
+
+
+
+set -eu
+set -o pipefail
+
+STACK_NAME="wholeshestack_bravo"
+OUT_FILE="container-info.html"
+SERVICES_FILE="services.txt"
+
+if docker info 2>/dev/null | grep -q "Swarm: active"; then
+  docker service ls --filter "name=${STACK_NAME}" \
+    --format "table {{.Name}}\t{{.Image}}\t{{.Replicas}}" \
+    > "$SERVICES_FILE"
+else
+  echo "Docker swarm is not active on this TeamCity agent. Unable to query deployed service/container info from this node." > "$SERVICES_FILE"
+fi
+
+{
+  echo "<html><body>"
+  echo "<h2>Container Info - ${STACK_NAME}</h2>"
+  echo "<pre>"
+  cat "$SERVICES_FILE"
+  echo "</pre>"
+  echo "</body></html>"
+} > "$OUT_FILE"
