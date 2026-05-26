@@ -48,3 +48,36 @@ fi
   echo "</pre>"
   echo "</body></html>"
 } > "$OUT_FILE"
+
+
+
+
+
+
+set -eu
+set -o pipefail
+
+pushd %MkeBundlePath%
+eval "$(../env.sh)"
+popd
+
+STACK_NAME="wholeshestack_bravo"
+OUT_FILE="container-info.html"
+SERVICES_FILE="services.txt"
+
+if docker service ls >/dev/null 2>&1; then
+  docker service ls --filter "name=${STACK_NAME}" \
+    --format "table {{.Name}}\t{{.Image}}\t{{.Replicas}}" \
+    > "$SERVICES_FILE"
+else
+  echo "Unable to query Docker Swarm service info from this TeamCity agent/deployment context." > "$SERVICES_FILE"
+fi
+
+{
+  echo "<html><body>"
+  echo "<h2>Container Info - ${STACK_NAME}</h2>"
+  echo "<pre>"
+  cat "$SERVICES_FILE"
+  echo "</pre>"
+  echo "</body></html>"
+} > "$OUT_FILE"
