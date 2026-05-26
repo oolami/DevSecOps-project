@@ -208,3 +208,12 @@ Before I continue refining it, I wanted to confirm the preferred direction:
 Also for the second part of the ticket regarding traceability, do you want an additional full Git SHA image tag published during WindApi image builds, alongside the existing generated tags?
 
 Just wanted to validate the intended implementation before I finalize it.
+
+
+
+
+
+Yeah that was me this morning while working through WHC-3315 traceability testing in Bravo. I did run a few deployment builds while validating the Container Info changes.
+
+I wasn’t aware the env was actively being used for testing on a different branch at the time — apologies for the disruption. I’ve paused further Bravo testing for now.
+
