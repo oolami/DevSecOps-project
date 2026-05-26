@@ -1,3 +1,23 @@
 echo "<html><body><h2>Deployed Container Images</h2><pre>" > container-info.html
 docker service ls --filter name=wholeshestack_bravo --format "table {{.Name}}\t{{.Image}}" >> container-info.html
 echo "</pre></body></html>" >> container-info.html
+
+
+
+
+
+
+set -eu
+set -o pipefail
+
+STACK_NAME="wholeshestack_bravo"
+OUT_FILE="container-info.html"
+
+{
+  echo "<html><body>"
+  echo "<h2>Container Info - ${STACK_NAME}</h2>"
+  echo "<pre>"
+  docker service ls --filter name=${STACK_NAME} --format "table {{.Name}}\t{{.Image}}\t{{.Replicas}}"
+  echo "</pre>"
+  echo "</body></html>"
+} > "$OUT_FILE"
