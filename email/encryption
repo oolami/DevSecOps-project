@@ -220,3 +220,14 @@ I wasn’t aware the env was actively being used for testing on a different bran
 
 
 Understood, thanks for the context. I’ll coordinate with the assigned owner before future deployments and make sure feature flags/config align with the previous deployment state during testing.
+
+
+
+
+
+
+
+
+
+
+aws ec2 describe-network-interfaces --region us-east-1 --filters "Name=addresses.private-ip-address,Values=10.134.147.152" --query "NetworkInterfaces[*].[NetworkInterfaceId,Status,Attachment.InstanceId,Description,SubnetId,PrivateIpAddress]"
