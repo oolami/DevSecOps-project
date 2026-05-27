@@ -14,3 +14,10 @@ aws ec2 describe-network-interfaces --region us-east-1 --filters Name=addresses.
 
 
 aws ec2 describe-network-interfaces --region us-east-1 --filters Name=addresses.private-ip-address,Values=10.134.147.152 --query "NetworkInterfaces[*].[NetworkInterfaceId,Status,Attachment.InstanceId,Description,SubnetId,PrivateIpAddress]" --output table
+
+
+
+
+Team, during the placeholder restore for server `cadbo-prd-w-intl-02`, the automation failed because the configured private IP `10.134.147.152` is already in use by the internal load balancer `CADBO-PRD-INTF-ALB-Int` in the DR environment.
+
+Requesting approval to assign a new available private IP for this server restore so the EC2 instance creation can proceed successfully. I have validated that the current IP is attached to the ALB ENI and cannot be reused for the instance.
