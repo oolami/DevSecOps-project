@@ -69,3 +69,20 @@ const alertBeforeExpirySec = 86400 // 1 day
 
 const expiresAtTs = reservation.reservedAtTs + reservationTtlSec * 1000
 const timeRemaining = expiresAtTs - now
+
+
+
+
+
+const message = `
+⚠️ CICD Environment Reservation Expiration Reminder
+
+Environment: ${envName}
+Reserved By: ${userId}
+
+This environment reservation will expire in approximately 1 day.
+
+If you still need this environment, please re-reserve it or extend the reservation before it expires.
+
+If it is no longer needed, no action is required.
+`
