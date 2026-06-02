@@ -1,32 +1,39 @@
-aws ec2 describe-network-interfaces `
-  --region us-east-1 `
-  --filters "Name=addresses.private-ip-address,Values=10.134.147.152" `
-  --output table
+const ttlSec = 1209600
+const alertBeforeExpirySec = 86400
+
+const expiresAtTs = reservation.reservedAtTs + ttlSec * 1000
+const timeRemainingMs = expiresAtTs - now
+
+if (timeRemainingMs > alertBeforeExpirySec * 1000) {
+  continue
+}
 
 
 
 
-aws ec2 describe-instances --region us-east-1 --filters "Name=private-ip-address,Values=10.134.147.152" --query "Reservations[*].Instances[*].[InstanceId,State.Name,PrivateIpAddress,Tags[?Key=='Name'].Value|[0]]" --output table
-
-
-
-aws ec2 describe-network-interfaces --region us-east-1 --filters Name=addresses.private-ip-address,Values=10.134.147.152
-
-
-aws ec2 describe-network-interfaces --region us-east-1 --filters Name=addresses.private-ip-address,Values=10.134.147.152 --query "NetworkInterfaces[*].[NetworkInterfaceId,Status,Attachment.InstanceId,Description,SubnetId,PrivateIpAddress]" --output table
 
 
 
 
-Team, during the placeholder restore for server `cadbo-prd-w-intl-02`, the automation failed because the configured private IP `10.134.147.152` is already in use by the internal load balancer `CADBO-PRD-INTF-ALB-Int` in the DR environment.
+const message =
+`⚠️ CICD Environment Reservation Expiration Reminder
 
-Requesting approval to assign a new available private IP for this server restore so the EC2 instance creation can proceed successfully. I have validated that the current IP is attached to the ALB ENI and cannot be reused for the instance.
+Environment: ${envName}
+Reserved By: ${userId}
+
+This environment reservation will expire in approximately 1 day.
+
+If you still need this environment, please re-reserve it or extend the reservation before it expires.
+
+If it is no longer needed, no action is required.`
+
+
+"reservationTtlSec": 1209600,
+"alertBeforeExpirySec": 86400
 
 
 
 
-I’m currently getting some errors while testing the automation restore scripts for the servers. One of the servers, `cadbo-prd-w-intl-02`, failed during instance creation because the configured private IP `10.134.147.152` is already in use.
+const alertBeforeExpirySec = 1209600
 
-I ran a query against the IP and confirmed it is currently attached to the internal ALB `CADBO-PRD-INTF-ALB-Int` through its ENI in the DR environment.
-
-How do we suggest moving forward here? Should I proceed with assigning a new available private IP for the server restore, or is there another recommended approach for handling this scenario?
+const alertBeforeExpirySec = 86400
