@@ -37,3 +37,19 @@ If it is no longer needed, no action is required.`
 const alertBeforeExpirySec = 1209600
 
 const alertBeforeExpirySec = 86400
+
+
+
+
+
+const reservationTtlSec = 1209600 // 14 days
+const alertBeforeExpirySec = 86400 // 1 day
+
+const expiresAtTs = reservation.reservedAtTs + reservationTtlSec * 1000
+const timeRemaining = expiresAtTs - now
+
+logger.debug("env %s expires in %d sec", env, Math.round(timeRemaining / 1000))
+
+if (timeRemaining > alertBeforeExpirySec * 1000) {
+  continue
+}
