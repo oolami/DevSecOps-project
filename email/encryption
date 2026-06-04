@@ -1,1 +1,11 @@
-For item #1, I found the Finish Build Trigger inherited from the CypressTests-AAG template. Since it is inherited, removing it at the template level would impact all test projects, not just End2End and WholeSheStack. Did you want me to disable/remove it only for End2End and WholeSheStack, or remove it from the template entirely?
+Completed configuration updates for AAG automated test suites:
+
+• Disabled automatic post-deployment execution for End2End and WholeSheStack test suites.
+• Renamed Admin Payouts E2E to Admin Payouts/Death Benefits.
+• Removed the TestRail Run ID from the Admin Payouts nightly trigger.
+• Updated End2End PreProd trigger with TestRail Run ID 5769.
+• Updated Intake API to use the PreProd TestRail Run ID.
+• Reviewed and compared End2End, APAS UI, Portal, and Deprecated End2End configurations for consistency.
+• Updated the End2End VCS Root configuration to align with the APAS UI configuration (main branch and branch specification settings).
+
+Validation pending to confirm End2End custom builds can be executed against the desired branch after the VCS configuration update.
