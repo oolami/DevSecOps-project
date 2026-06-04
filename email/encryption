@@ -1,112 +1,36 @@
-const ttlSec = 1209600
-const alertBeforeExpirySec = 86400
+Completed initial investigation and proof of concept for the requested Container Info tab in Deployments-Dev → Wholeshestack-Bravo.
 
-const expiresAtTs = reservation.reservedAtTs + ttlSec * 1000
-const timeRemainingMs = expiresAtTs - now
+Work Completed
+Added a custom TeamCity build step to generate a Container Info artifact (container-info.html) similar to the existing APAS-API Container Info tab.
+Successfully configured TeamCity to publish the artifact and expose it through the Container Info tab.
+Validated that the artifact is generated during deployment builds.
+Tested multiple deployment runs in Bravo to verify artifact generation and visibility.
+Current Findings
 
-if (timeRemainingMs > alertBeforeExpirySec * 1000) {
-  continue
-}
+The Container Info tab is now being generated; however, it does not currently provide the information requested in the ticket.
 
+The original request is specifically asking for:
 
+Visibility into the actual deployed container image IDs/tags used by a deployment.
+Ability to easily identify the Git commit SHA associated with a deployment.
+Potential support for using a plain Git commit SHA as a Docker image tag.
 
+Current output only displays image references and deployment configuration variables. It does not resolve the actual deployed image tags or container IDs in a way that satisfies the traceability requirements described in the ticket.
 
+Blocker
 
+There is currently uncertainty regarding the intended implementation and expected output.
 
+The existing APAS-API Container Info tab appears to leverage TeamCity/Docker Registry metadata generated during image build and push operations, while the Wholeshestack deployment process only has access to deployment-time variables and stack configuration.
 
+Additional guidance is needed from the ticket requester (Alex) and/or Ryan regarding:
 
-const message =
-`⚠️ CICD Environment Reservation Expiration Reminder
+Whether the goal is simply to expose deployed image tags in the deployment view.
+Whether the goal is to expose full Git commit SHAs as deployment tags.
+Whether changes are required in the image build pipeline rather than the deployment pipeline.
+What specific output is expected in the Container Info tab.
+Next Step
 
-Environment: ${envName}
-Reserved By: ${userId}
+Await clarification from Alex/Ryan on expected traceability requirements before proceeding with implementation.
 
-This environment reservation will expire in approximately 1 day.
-
-If you still need this environment, please re-reserve it or extend the reservation before it expires.
-
-If it is no longer needed, no action is required.`
-
-
-"reservationTtlSec": 1209600,
-"alertBeforeExpirySec": 86400
-
-
-
-
-const alertBeforeExpirySec = 1209600
-
-const alertBeforeExpirySec = 86400
-
-
-
-
-
-const reservationTtlSec = 1209600 // 14 days
-const alertBeforeExpirySec = 86400 // 1 day
-
-const expiresAtTs = reservation.reservedAtTs + reservationTtlSec * 1000
-const timeRemaining = expiresAtTs - now
-
-logger.debug("env %s expires in %d sec", env, Math.round(timeRemaining / 1000))
-
-if (timeRemaining > alertBeforeExpirySec * 1000) {
-  continue
-}
-
-
-
-
-
-
-
-
-const reservation = reservations[env]
-const now = Date.now()
-
-const reservationTtlSec = 1209600 // 14 days
-const alertBeforeExpirySec = 86400 // 1 day
-
-const expiresAtTs = reservation.reservedAtTs + reservationTtlSec * 1000
-const timeRemaining = expiresAtTs - now
-
-
-
-
-
-const message = `
-⚠️ CICD Environment Reservation Expiration Reminder
-
-Environment: ${envName}
-Reserved By: ${userId}
-
-This environment reservation will expire in approximately 1 day.
-
-If you still need this environment, please re-reserve it or extend the reservation before it expires.
-
-If it is no longer needed, no action is required.
-`
-
-
-
-
-
-const res = await axios.post(config.msTeamsWebhookUrl, {
-  type: "message",
-  attachments: [
-    {
-      contentType: "application/vnd.microsoft.card.adaptive",
-      content: {
-        type: "AdaptiveCard",
-        version: "1.4",
-        body: [
-          {
-            type: "TextBlock",
-            text: message,
-            wrap: true
-          }
-        ]
-      }
-    }
-  ]
-})
+Status: Blocked – Requirements clarification needed.
