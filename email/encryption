@@ -1,1 +1,5 @@
 Thank you for the feedback and guidance. I am proud of the progress I have made within the DR team, particularly in expanding my AWS, automation, and cloud engineering knowledge while contributing to critical DR initiatives. I look forward to continuing my professional growth, increasing my involvement in team discussions, and taking on greater responsibility as I further develop my technical and leadership capabilities.
+
+
+
+I checked the AWS Network Firewall policy. There is already a rule allowing traffic from 10.136.144.30 to 165.235.60.21 on port 21 (SID 26, Action = Pass), so AWS Network Firewall does not appear to be blocking this connection.
