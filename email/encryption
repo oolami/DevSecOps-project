@@ -41,3 +41,9 @@ if (ttlSec <= 0) {
 if (ttlSec > alertBeforeExpirySec) {
   continue
 }
+
+
+
+
+
+Correct. S3 Cross-Region Replication only replicates objects stored in the S3 bucket. It does not replicate EC2 instances or their attached EBS volumes. EC2 recovery would still require AMI and/or EBS snapshot replication (or DRS) to the DR region.
