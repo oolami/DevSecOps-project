@@ -1,14 +1,15 @@
-Name: RESTORE_BUILD_TYPE_ID
-Kind: Configuration parameter
-Value type: Text
-Value: Database_AnnuityUvIntake_RestoreBaseToEnvTag
-Display: Prompt
-Label: Target database
-Description: Select target database restore build type
+Hi Shaun, I have completed the TeamCity changes for the SUS Env Automation ticket. The new "Target database" input now appears in the Run Custom Build dialog and passes the --restore-build-type-id parameter to the Python runner.
+
+Before I close the ticket, could you please validate on your end that this is the expected behavior? Alternatively, I can run a test build if you'd prefer. Just wanted to confirm everything looks good before marking the work complete.
 
 
 
 
+Added a new input parameter to the SUS Env Automation TeamCity build configuration.
+Added "Target database" to the Run Custom Build dialog with default value:
+Database_AnnuityUvIntake_RestoreBaseToEnvTag
+Configured the parameter to be prompted during build execution.
+Updated both Python Runner Execution and Dry Run Python Runner Execution build steps to pass:
 --restore-build-type-id %RESTORE_BUILD_TYPE_ID%
-
---restore-build-type-id Database_AnnuityUvIntake_RestoreBaseToEnvTag
+Verified the new input is displayed in the Run Custom Build popup.
+Awaiting functional validation/testing to confirm the Python script accepts and processes the new argument as expected.
