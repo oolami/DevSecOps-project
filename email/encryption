@@ -17,4 +17,24 @@ Awaiting functional validation/testing to confirm the Python script accepts and 
 
 
 
-Thanks Shaun. That makes sense. I added the TeamCity input and passed it into the Python runner as --restore-build-type-id, but it may still need validation in teamcity_jira_cicd.py to confirm the argument is being consumed and passed into the database restore function correctly. I’ll leave the ticket open and wait for Cris’ feedback.
+
+
+const res = await axios.post(config.msTeamsWebhookUrl, {
+  type: "message",
+  attachments: [
+    {
+      contentType: "application/vnd.microsoft.card.adaptive",
+      content: {
+        type: "AdaptiveCard",
+        version: "1.4",
+        body: [
+          {
+            type: "TextBlock",
+            text: message,
+            wrap: true
+          }
+        ]
+      }
+    }
+  ]
+})
