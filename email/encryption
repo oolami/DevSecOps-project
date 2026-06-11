@@ -46,3 +46,12 @@ const res = await axios.post(config.msTeamsWebhookUrl, {
 
 
 Initial review started for DigiCert SSL certificate automation spike. I will first work with SysAdm to confirm the current manual renewal/deployment process, identify the certificate installation targets, validate which domains require Fastly updates, and document the automation options available through DigiCert/Fastly. Once ownership, access requirements, and recommended approach are confirmed, I will create follow-up implementation stories/tasks.
+
+
+
+
+But if teamcity_jira_cicd.py does not define/handle that argument, or if the script receives the value but does not pass it into the database restore function, the restore can fail.
+
+
+
+That suggests the script may have accepted the argument, but the actual restore call may still be using the wrong/missing build type ID, or the restore job timed out.
