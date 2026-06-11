@@ -13,3 +13,8 @@ Updated both Python Runner Execution and Dry Run Python Runner Execution build s
 --restore-build-type-id %RESTORE_BUILD_TYPE_ID%
 Verified the new input is displayed in the Run Custom Build popup.
 Awaiting functional validation/testing to confirm the Python script accepts and processes the new argument as expected.
+
+
+
+
+Thanks Shaun. That makes sense. I added the TeamCity input and passed it into the Python runner as --restore-build-type-id, but it may still need validation in teamcity_jira_cicd.py to confirm the argument is being consumed and passed into the database restore function correctly. I’ll leave the ticket open and wait for Cris’ feedback.
