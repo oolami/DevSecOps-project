@@ -38,3 +38,11 @@ const res = await axios.post(config.msTeamsWebhookUrl, {
     }
   ]
 })
+
+
+
+
+
+
+
+Initial review started for DigiCert SSL certificate automation spike. I will first work with SysAdm to confirm the current manual renewal/deployment process, identify the certificate installation targets, validate which domains require Fastly updates, and document the automation options available through DigiCert/Fastly. Once ownership, access requirements, and recommended approach are confirmed, I will create follow-up implementation stories/tasks.
