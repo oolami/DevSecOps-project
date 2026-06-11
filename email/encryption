@@ -1,49 +1,11 @@
-return {
-   init,
-   getIsReady,
-   getMsrRepoTags,
-   setMsrRepoTags,
-   getEnvReservation,
-   getEnvReservationTtl,
-   getAllEnvReservations,
-   setEnvReservation,
-   removeEnvReservation
-}
+Name: env.RESTORE_BUILD_TYPE_ID
+Value: %Database_AnnuityUvIntake_RestoreBaseToEnvTag%
+Kind: Configuration parameter
 
 
 
 
-const getEnvReservationTtl = async (envName: string): Promise<number> => {
-  try {
-    return await client.ttl(`${envReservationPrefix}${envName}`)
-  } catch (e) {
-    logger.error("failed to get ttl for env reservation %s %o", envName, e)
-    return -1
-  }
-}
+--restore-build-type-id %env.RESTORE_BUILD_TYPE_ID%
 
 
-
-
-
-
-
-const alertBeforeExpirySec = 86400 // 1 day
-
-const ttlSec = await redisApi.getEnvReservationTtl(env)
-
-logger.debug("env %s Redis TTL is %d sec", env, ttlSec)
-
-if (ttlSec <= 0) {
-  continue
-}
-
-if (ttlSec > alertBeforeExpirySec) {
-  continue
-}
-
-
-
-
-
-Correct. S3 Cross-Region Replication only replicates objects stored in the S3 bucket. It does not replicate EC2 instances or their attached EBS volumes. EC2 recovery would still require AMI and/or EBS snapshot replication (or DRS) to the DR region.
+python teamcity_jira_cicd.py ... --restore-build-type-id %env.RESTORE_BUILD_TYPE_ID%
