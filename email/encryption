@@ -1,11 +1,14 @@
-Name: env.RESTORE_BUILD_TYPE_ID
-Value: %Database_AnnuityUvIntake_RestoreBaseToEnvTag%
+Name: RESTORE_BUILD_TYPE_ID
 Kind: Configuration parameter
+Value type: Text
+Value: Database_AnnuityUvIntake_RestoreBaseToEnvTag
+Display: Prompt
+Label: Target database
+Description: Select target database restore build type
 
 
 
 
---restore-build-type-id %env.RESTORE_BUILD_TYPE_ID%
+--restore-build-type-id %RESTORE_BUILD_TYPE_ID%
 
-
-python teamcity_jira_cicd.py ... --restore-build-type-id %env.RESTORE_BUILD_TYPE_ID%
+--restore-build-type-id Database_AnnuityUvIntake_RestoreBaseToEnvTag
