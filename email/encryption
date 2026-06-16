@@ -1,1 +1,182 @@
-> Hi all, I was testing changes to the reservation system over the last few days, including a new Teams webhook implementation. That likely contributed to the reservations being cleared during testing. Everything should be stable now and reservations are back to the intended behavior. Apologies for the inconvenience.
+Step 1-2: Generate CSR in TeamCity / NSX-ALB
+
+Run TeamCity Build
+Generate CSR
+Locate CSR
+
+Questions:
+
+Can TeamCity automatically generate CSR?
+Can TeamCity save CSR as an artifact?
+Can API calls generate CSR directly?
+
+Step 3-6: DigiCert Request
+
+Login to DigiCert
+Request Certificate
+Paste CSR
+Submit Request
+Wait for Approval
+
+Questions for SysAdm:
+
+Are we using DigiCert CertCentral?
+Do we have access to DigiCert API?
+Does DigiCert support API certificate requests?
+Does DigiCert support ACME for our certificate type?
+
+This is probably the biggest automation opportunity.
+
+
+
+Step 7: Download Issued Certificate
+
+Wait for approval
+Download certificate
+
+Can DigiCert API retrieve issued certificates after approval?
+
+TeamCity
+   ↓
+Submit CSR
+   ↓
+Wait for issuance
+   ↓
+Download certificate automatically
+
+
+Step 8-11: Upload Certificate to NSX-ALB
+
+Login NSX-ALB
+Import certificate
+Apply to Virtual Service
+Replace existing certificate
+
+
+Questions:
+
+Does NSX-ALB have REST APIs?
+Can certificates be uploaded through API?
+Can virtual service bindings be updated through API?
+
+Download Cert
+    ↓
+Call NSX-ALB API
+    ↓
+Import Cert
+    ↓
+Attach Cert
+    ↓
+Validate
+
+Step 12: Export Key File
+
+Export Key
+Save PEM
+
+
+⚠️ Security Discussion Required
+
+Ask:
+
+Can the automation securely retrieve the private key or should key export remain manual?
+
+This will likely require SysAdm input.
+
+
+Step 13: Delete Old Certificate
+
+Current:
+
+Delete old cert
+Automation Potential
+
+✅ Easy
+
+Could be API driven after validation succeeds.
+
+Step 14: Fastly Update
+This is the part Dennis specifically called out.
+Current:
+Login FastlySelect DomainReplace CertificateUpload KeyUpload Cert
+Automation Potential
+✅ Potentially High
+Questions:
+
+
+Are we using Fastly Managed Certificates or Self Managed Certificates?
+
+
+Does Fastly API support certificate replacement?
+
+
+Can we automate upload of:
+
+
+Certificate
+
+
+Private Key
+
+
+
+
+If yes:
+NSX-ALB Update     ↓Fastly Update     ↓Validation
+becomes fully automated.
+
+Questions I Would Specifically Ask Today
+To Jack (SysAdm)
+
+During the last DigiCert renewal, what was the most time-consuming part of the process?
+
+
+
+Which steps today absolutely require a human?
+
+
+
+Which steps have caused outages or issues in the past?
+
+
+To Tyler
+
+Do NSX-ALB APIs support certificate import and virtual service updates?
+
+
+
+Has anyone previously automated certificate deployments into NSX-ALB?
+
+
+To Dennis
+
+Are we trying to automate only deployment, or are we targeting a fully automated certificate lifecycle?
+
+This is an important question.
+There are really 3 possible goals:
+Level 1
+Manual renewalAutomated deployment
+Level 2
+Automated renewalAutomated deployment
+Level 3
+Automated renewalAutomated deploymentAutomated Fastly updatesAutomated validation
+The answer determines the size of the project.
+
+What I suspect the recommendation will be
+Based on your documentation, I would expect the final recommendation to be:
+TeamCity Pipeline     ↓Generate CSR     ↓DigiCert API Request     ↓Approval Workflow     ↓Download Certificate     ↓NSX-ALB API Update     ↓Fastly API Update     ↓SSL Validation     ↓Teams Notification
+That would eliminate nearly all manual work and address the upcoming certificate lifetime reductions (200 days → 100 days → 47 days).
+For today's meeting, focus less on the technical implementation and more on discovering:
+
+
+Which APIs exist (DigiCert, NSX-ALB, Fastly).
+
+
+Which team owns each step.
+
+
+Which steps must remain manual for security/compliance reasons.
+
+
+What the target level of automation should be.
+
