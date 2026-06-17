@@ -1,172 +1,161 @@
-1. Investigate DigiCert Automation Capabilities (Highest Priority)
+Ticket 1: Investigate DigiCert Automation Capabilities
+Summary
 
-Purpose
-Determine how much of the DigiCert lifecycle can be automated.
+Research DigiCert automation capabilities to determine whether certificate issuance, domain validation, certificate retrieval, and lifecycle management can be automated for SILAC external certificates.
+
+Description
+
+Background
+
+As part of WHC-3344 SSL Certificate Rotation Automation Spike, we need to determine the available DigiCert automation capabilities and identify the recommended approach for automating external certificate renewals.
+
+Current certificate renewals require manual interaction with DigiCert and supporting systems. With certificate lifetimes decreasing over time, the existing manual process may become operationally challenging.
 
 Research Areas
 
-CertCentral API
-Certificate request API
-Certificate download API
-Domain validation API
-Pre-validation process
-Validation reuse process
+DigiCert CertCentral APIs
+Certificate request/issuance APIs
+Certificate download/retrieval APIs
+Domain validation APIs and workflows
+Domain validation reuse requirements
+Domain pre-validation capabilities
 ACME support
-Trust Lifecycle Manager (TLM)
-Billing/approval workflow limitations
+Trust Lifecycle Manager (TLM) capabilities
+Approval workflow requirements
+Billing/payment workflow limitations
 
-Deliverable
-Documented capabilities, limitations, and recommended approach.
+Deliverables
 
-2. Investigate NSX-ALB Certificate Automation
+Document available DigiCert APIs
+Identify automation limitations
+Document domain validation requirements
+Determine whether TLM should be considered
+Provide recommendation for integration approach
 
-Purpose
-Determine whether certificate deployment can be automated.
+Linked To
 
-Research Areas
+WHC-3344 SSL Certificate Rotation Automation Spike
 
-Certificate import API
-Certificate replacement API
-Virtual Service binding API
-SSL profile updates
-Validation/testing methods
+Ticket 2: Investigate NSX-ALB Certificate Automation
+Summary
 
-Deliverable
-Proof that certificates can be uploaded and bound through API.
+Research NSX-ALB API capabilities for certificate management and deployment automation.
 
-3. Investigate Fastly Certificate Automation
+Description
 
-Purpose
-Determine whether Fastly updates can be automated.
+Background
 
-Research Areas
-
-Certificate upload API
-Private key upload API
-Service activation process
-Validation requirements
-
-Deliverable
-Documented Fastly automation workflow.
-
-4. Investigate Certificate Expiration Monitoring & Alerting
-
-This came directly from Dennis.
-
-Purpose
-Determine how automation should be triggered.
+Most external certificates appear to terminate at NSX-ALB. To automate certificate rotation, we must determine whether NSX-ALB supports certificate management actions through APIs.
 
 Research Areas
 
+Certificate import APIs
+Certificate replacement APIs
+SSL/TLS certificate management APIs
+Virtual Service binding APIs
+Virtual Service update APIs
+Certificate validation/testing options
+Authentication requirements
+Existing automation examples
+
+Questions To Answer
+
+Can certificates be uploaded through API?
+Can existing certificates be replaced through API?
+Can Virtual Service bindings be updated through API?
+Can deployment validation be automated?
+
+Deliverables
+
+Document supported APIs
+Document required permissions
+Identify automation workflow
+Provide implementation recommendations
+
+Linked To
+
+WHC-3344 SSL Certificate Rotation Automation Spike
+
+Ticket 3: Investigate Fastly Certificate Automation
+Summary
+
+Research Fastly API capabilities for automated certificate deployment and management.
+
+Description
+
+Background
+
+Several SILAC external domains are routed through Fastly and require certificate updates following DigiCert renewals.
+
+The objective is to determine whether Fastly certificate updates can be automated through available APIs.
+
+Research Areas
+
+Fastly certificate management APIs
+Self-managed certificate support
+Certificate upload APIs
+Private key upload support
+Domain configuration updates
+Service activation requirements
+API authentication requirements
+
+Questions To Answer
+
+Can certificates be uploaded through API?
+Can private keys be uploaded through API?
+Are service activations required?
+Can updates be fully automated?
+
+Deliverables
+
+Document Fastly API capabilities
+Document automation workflow
+Identify limitations or manual steps
+Provide implementation recommendations
+
+Linked To
+
+WHC-3344 SSL Certificate Rotation Automation Spike
+
+Ticket 4: Investigate Certificate Expiration Monitoring & Domain Validation Automation
+Summary
+
+Research certificate expiration monitoring, alerting, and domain validation automation requirements.
+
+Description
+
+Background
+
+As certificate lifetimes continue to decrease, proactive monitoring and domain validation automation will become increasingly important.
+
+The team discussed the possibility of using monitoring and alerting to initiate pre-validation or certificate renewal workflows.
+
+Research Areas
+
+Current certificate monitoring processes
 Existing certificate inventory
-Expiration monitoring
-Teams alerts
+Certificate expiration alerting options
 TeamCity scheduled jobs
-Pre-validation trigger timing
+TeamCity trigger options
+Domain validation reuse requirements
+Domain pre-validation workflow
+Monitoring integration opportunities
 
-Deliverable
-Recommended alerting and trigger architecture.
+Questions To Answer
 
-5. Document Recommended SSL Automation Architecture
+How will expiring certificates be detected?
+What monitoring tools can be used?
+Can TeamCity jobs be triggered automatically?
+Is pre-validation required?
+Can domain validation be incorporated into the renewal workflow?
 
-This should be the final ticket after the above investigations.
+Deliverables
 
-Purpose
-Combine findings into a recommended solution.
+Recommended monitoring approach
+Recommended alerting approach
+Domain validation workflow recommendation
+Trigger strategy for certificate automation
 
-Deliverables:
+Linked To
 
-Current State
-Future State
-Workflow Diagram
-Dependencies
-Risks
-Implementation Plan
-
-
-
-
-1. Investigate DigiCert Automation Capabilities (Highest Priority)
-
-Purpose
-Determine how much of the DigiCert lifecycle can be automated.
-
-Research Areas
-
-CertCentral API
-Certificate request API
-Certificate download API
-Domain validation API
-Pre-validation process
-Validation reuse process
-ACME support
-Trust Lifecycle Manager (TLM)
-Billing/approval workflow limitations
-
-Deliverable
-Documented capabilities, limitations, and recommended approach.
-
-2. Investigate NSX-ALB Certificate Automation
-
-Purpose
-Determine whether certificate deployment can be automated.
-
-Research Areas
-
-Certificate import API
-Certificate replacement API
-Virtual Service binding API
-SSL profile updates
-Validation/testing methods
-
-Deliverable
-Proof that certificates can be uploaded and bound through API.
-
-3. Investigate Fastly Certificate Automation
-
-Purpose
-Determine whether Fastly updates can be automated.
-
-Research Areas
-
-Certificate upload API
-Private key upload API
-Service activation process
-Validation requirements
-
-Deliverable
-Documented Fastly automation workflow.
-
-4. Investigate Certificate Expiration Monitoring & Alerting
-
-This came directly from Dennis.
-
-Purpose
-Determine how automation should be triggered.
-
-Research Areas
-
-Existing certificate inventory
-Expiration monitoring
-Teams alerts
-TeamCity scheduled jobs
-Pre-validation trigger timing
-
-Deliverable
-Recommended alerting and trigger architecture.
-
-5. Document Recommended SSL Automation Architecture
-
-This should be the final ticket after the above investigations.
-
-Purpose
-Combine findings into a recommended solution.
-
-Deliverables:
-
-Current State
-Future State
-Workflow Diagram
-Dependencies
-Risks
-Implementation Plan
+WHC-3344 SSL Certificate Rotation Automation Spike
