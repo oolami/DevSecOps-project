@@ -1,1 +1,5 @@
 I don't think | is restricted by the deployment process itself. The JSON files are generated successfully, and the failure occurs later when wholeshestack_charlie_apas-internal-api is updated. I'd check the application/container logs to see whether the new recipient format is causing the service to fail startup or validation.
+
+
+
+Can you send me the exact change you made to the recipient list (before and after)? I want to verify whether the application supports names in addition to email addresses before I dig further into the deployment logs.
