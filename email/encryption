@@ -3,3 +3,7 @@ I don't think | is restricted by the deployment process itself. The JSON files a
 
 
 Can you send me the exact change you made to the recipient list (before and after)? I want to verify whether the application supports names in addition to email addresses before I dig further into the deployment logs.
+
+
+
+That makes sense. Based on the deployment logs, I didn't see any indication that the JSON or separator character was causing the failure. The service update was being paused after deployment, which aligns with an application-level validation failure on the recipient list. Glad you were able to identify the validator.
