@@ -83,3 +83,18 @@ Further investigation is required to determine how DigiCert APIs can be integrat
 
 
 Reviewed existing TeamCity "NSX-ALB Certificate Issue" automation. Confirmed NSX-ALB supports API-driven CSR generation and certificate upload operations through PowerShell automation. Existing implementation currently targets SILAC SubCA issuance but demonstrates a reusable pattern for future external certificate automation workflows.
+
+
+
+
+
+
+
+
+Hi Jorge,
+
+We retested after the deployment and attempted to provision multiple WorkSpaces. However, the newly created WorkSpaces are still not completing provisioning successfully. One of the test WorkSpaces has remained in Pending status for several hours and has not transitioned to Available.
+
+Could the service team please review the provisioning workflow logs and verify that the latest changes were successfully deployed in the us-west-2 region? We are continuing to test on our side and can provide additional details if needed.
+
+Thank you,
