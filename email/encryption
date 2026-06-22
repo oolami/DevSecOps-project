@@ -1,9 +1,7 @@
-I don't think | is restricted by the deployment process itself. The JSON files are generated successfully, and the failure occurs later when wholeshestack_charlie_apas-internal-api is updated. I'd check the application/container logs to see whether the new recipient format is causing the service to fail startup or validation.
+Investigated Sentry indexing capabilities. Verified that indexed custom fields such as TraceIdentifier are available in Discover and can be added as columns. Tested for the requested X-Test-* headers (X-Test-Run-ID, X-Test-Request-ID, X-Test-Case-ID, etc.) and these fields are not currently available in Discover, indicating they are not being indexed by Sentry. Current assessment is that the application is not sending these values as Sentry tags/fields. Additional development work will likely be required to promote the desired header values to Sentry tags before they can be searched or filtered within Sentry.
 
 
 
-Can you send me the exact change you made to the recipient list (before and after)? I want to verify whether the application supports names in addition to email addresses before I dig further into the deployment logs.
 
 
-
-That makes sense. Based on the deployment logs, I didn't see any indication that the JSON or separator character was causing the failure. The service update was being paused after deployment, which aligns with an application-level validation failure on the recipient list. Glad you were able to identify the validator.
+Investigated Sentry event indexing using Discover. Verified that fields stored as Tags (e.g. TraceIdentifier) are available in Discover and searchable. Fields stored under Additional Data (e.g. RequestId, ConnectionId, ActionId) are not available as Discover fields and do not appear to be indexed for search. The requested X-Test-* headers (X-Test-Case-ID, X-Test-Name, X-Test-Repo, X-Test-Request-ID, X-Test-Run-ID, X-Test-Spec) are not currently present as indexed Sentry fields/tags. Additional application instrumentation would likely be required to promote these values to Sentry tags before they can be searched or filtered within Discover.
