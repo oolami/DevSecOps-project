@@ -61,3 +61,25 @@ New for DigiCert:
 
 Reviewed existing TeamCity “NSX-ALB Certificate Issue” automation. Current workflow appears to support internal certificate issuance through SILAC SubCA using certReq, not external DigiCert certificates. However, the job provides a reusable automation pattern for the external certificate workflow, including TeamCity parameters, PowerShell execution, NSX-ALB authentication, CSR generation, artifact handling, and certificate upload to NSX-ALB. DigiCert-specific automation remains to be investigated for certificate request, domain validation/pre-validation, approval/billing workflow, certificate retrieval, and Fastly updates.
 
+
+
+
+Reviewed the existing TeamCity "NSX-ALB Certificate Issue" automation referenced in this spike.
+
+The current workflow appears to support internal certificate issuance through the SILAC SubCA using certReq and NSX-ALB APIs, rather than external DigiCert certificates.
+
+The implementation provides a useful automation pattern that can potentially be leveraged for external certificate automation, including:
+
+* TeamCity parameterized execution
+* PowerShell orchestration
+* NSX-ALB authentication and API integration
+* CSR generation
+* Artifact handling between workflow steps
+* Certificate upload and deployment to NSX-ALB
+
+Further investigation is required to determine how DigiCert APIs can be integrated into this workflow for certificate requests, domain validation/pre-validation, certificate retrieval, approval requirements, billing considerations, and Fastly certificate updates.
+
+
+
+
+Reviewed existing TeamCity "NSX-ALB Certificate Issue" automation. Confirmed NSX-ALB supports API-driven CSR generation and certificate upload operations through PowerShell automation. Existing implementation currently targets SILAC SubCA issuance but demonstrates a reusable pattern for future external certificate automation workflows.
