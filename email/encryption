@@ -1,7 +1,63 @@
-Investigated Sentry indexing capabilities. Verified that indexed custom fields such as TraceIdentifier are available in Discover and can be added as columns. Tested for the requested X-Test-* headers (X-Test-Run-ID, X-Test-Request-ID, X-Test-Case-ID, etc.) and these fields are not currently available in Discover, indicating they are not being indexed by Sentry. Current assessment is that the application is not sending these values as Sentry tags/fields. Additional development work will likely be required to promote the desired header values to Sentry tags before they can be searched or filtered within Sentry.
+This existing TeamCity job is for internal certificate automation using SILAC SubCA, not DigiCert external certs.
+
+But yes — you can use it as a working pattern/template for the external DigiCert automation.
+
+Current internal flow
+
+TeamCity
+  ↓
+PowerShell
+  ↓
+NSX-ALB API creates CSR
+  ↓
+certReq submits CSR to SILAC SubCA
+  ↓
+Certificate is issued
+  ↓
+PowerShell uploads cert back to NSX-ALB
 
 
 
+External DigiCert flow would be similar, but replace the CA step
+
+TeamCity
+  ↓
+PowerShell
+  ↓
+NSX-ALB API creates CSR
+  ↓
+DigiCert API submits CSR / requests cert
+  ↓
+Domain validation / approval
+  ↓
+DigiCert API downloads issued cert
+  ↓
+PowerShell uploads cert back to NSX-ALB
+  ↓
+Fastly API updates cert if needed
 
 
-Investigated Sentry event indexing using Discover. Verified that fields stored as Tags (e.g. TraceIdentifier) are available in Discover and searchable. Fields stored under Additional Data (e.g. RequestId, ConnectionId, ActionId) are not available as Discover fields and do not appear to be indexed for search. The requested X-Test-* headers (X-Test-Case-ID, X-Test-Name, X-Test-Repo, X-Test-Request-ID, X-Test-Run-ID, X-Test-Spec) are not currently present as indexed Sentry fields/tags. Additional application instrumentation would likely be required to promote these values to Sentry tags before they can be searched or filtered within Discover.
+
+Reusable:
+- TeamCity parameter structure
+- PowerShell orchestration pattern
+- NSX-ALB login/session handling
+- CSR creation through NSX-ALB API
+- Certificate upload back to NSX-ALB
+- Artifact handling between steps
+
+
+
+New for DigiCert:
+- DigiCert API authentication
+- Submit CSR to DigiCert
+- Domain validation / pre-validation
+- Approval and billing workflow
+- Download issued certificate
+- Fastly certificate/key update
+- Expiration monitoring/alert trigger
+
+
+
+Reviewed existing TeamCity “NSX-ALB Certificate Issue” automation. Current workflow appears to support internal certificate issuance through SILAC SubCA using certReq, not external DigiCert certificates. However, the job provides a reusable automation pattern for the external certificate workflow, including TeamCity parameters, PowerShell execution, NSX-ALB authentication, CSR generation, artifact handling, and certificate upload to NSX-ALB. DigiCert-specific automation remains to be investigated for certificate request, domain validation/pre-validation, approval/billing workflow, certificate retrieval, and Fastly updates.
+
