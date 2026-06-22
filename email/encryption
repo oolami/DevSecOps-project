@@ -98,3 +98,18 @@ We retested after the deployment and attempted to provision multiple WorkSpaces.
 Could the service team please review the provisioning workflow logs and verify that the latest changes were successfully deployed in the us-west-2 region? We are continuing to test on our side and can provide additional details if needed.
 
 Thank you,
+
+
+
+
+
+
+Hello Support Team,
+
+We are still experiencing the issue after the deployment. Newly provisioned WorkSpaces remain in Pending status for several hours and do not transition to Available.
+
+We have observed this behavior with multiple newly created WorkSpaces in the us-west-2 region. Could you please review the provisioning workflow logs and backend service logs for the affected WorkSpaces and advise what is preventing the provisioning process from completing?
+
+We are available to provide additional information and perform further testing as needed.
+
+Thank you.
