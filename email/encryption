@@ -1,115 +1,18 @@
-This existing TeamCity job is for internal certificate automation using SILAC SubCA, not DigiCert external certs.
-
-But yes — you can use it as a working pattern/template for the external DigiCert automation.
-
-Current internal flow
-
-TeamCity
-  ↓
-PowerShell
-  ↓
-NSX-ALB API creates CSR
-  ↓
-certReq submits CSR to SILAC SubCA
-  ↓
-Certificate is issued
-  ↓
-PowerShell uploads cert back to NSX-ALB
+await sendMsTeamsMessage(
+  reservation.userName,
+  reservation.reservedAtTs,
+  env
+)
 
 
+if (await redisApi.setEnvReservation(env, { ...reservation, lastReminderAtTs: now })) {
+  logger.info("Updated lastReminderAtTs for %s and sending notification to %s", env, reservation.userName)
 
-External DigiCert flow would be similar, but replace the CA step
-
-TeamCity
-  ↓
-PowerShell
-  ↓
-NSX-ALB API creates CSR
-  ↓
-DigiCert API submits CSR / requests cert
-  ↓
-Domain validation / approval
-  ↓
-DigiCert API downloads issued cert
-  ↓
-PowerShell uploads cert back to NSX-ALB
-  ↓
-Fastly API updates cert if needed
-
-
-
-Reusable:
-- TeamCity parameter structure
-- PowerShell orchestration pattern
-- NSX-ALB login/session handling
-- CSR creation through NSX-ALB API
-- Certificate upload back to NSX-ALB
-- Artifact handling between steps
-
-
-
-New for DigiCert:
-- DigiCert API authentication
-- Submit CSR to DigiCert
-- Domain validation / pre-validation
-- Approval and billing workflow
-- Download issued certificate
-- Fastly certificate/key update
-- Expiration monitoring/alert trigger
-
-
-
-Reviewed existing TeamCity “NSX-ALB Certificate Issue” automation. Current workflow appears to support internal certificate issuance through SILAC SubCA using certReq, not external DigiCert certificates. However, the job provides a reusable automation pattern for the external certificate workflow, including TeamCity parameters, PowerShell execution, NSX-ALB authentication, CSR generation, artifact handling, and certificate upload to NSX-ALB. DigiCert-specific automation remains to be investigated for certificate request, domain validation/pre-validation, approval/billing workflow, certificate retrieval, and Fastly updates.
-
-
-
-
-Reviewed the existing TeamCity "NSX-ALB Certificate Issue" automation referenced in this spike.
-
-The current workflow appears to support internal certificate issuance through the SILAC SubCA using certReq and NSX-ALB APIs, rather than external DigiCert certificates.
-
-The implementation provides a useful automation pattern that can potentially be leveraged for external certificate automation, including:
-
-* TeamCity parameterized execution
-* PowerShell orchestration
-* NSX-ALB authentication and API integration
-* CSR generation
-* Artifact handling between workflow steps
-* Certificate upload and deployment to NSX-ALB
-
-Further investigation is required to determine how DigiCert APIs can be integrated into this workflow for certificate requests, domain validation/pre-validation, certificate retrieval, approval requirements, billing considerations, and Fastly certificate updates.
-
-
-
-
-Reviewed existing TeamCity "NSX-ALB Certificate Issue" automation. Confirmed NSX-ALB supports API-driven CSR generation and certificate upload operations through PowerShell automation. Existing implementation currently targets SILAC SubCA issuance but demonstrates a reusable pattern for future external certificate automation workflows.
-
-
-
-
-
-
-
-
-Hi Jorge,
-
-We retested after the deployment and attempted to provision multiple WorkSpaces. However, the newly created WorkSpaces are still not completing provisioning successfully. One of the test WorkSpaces has remained in Pending status for several hours and has not transitioned to Available.
-
-Could the service team please review the provisioning workflow logs and verify that the latest changes were successfully deployed in the us-west-2 region? We are continuing to test on our side and can provide additional details if needed.
-
-Thank you,
-
-
-
-
-
-
-Hello Support Team,
-
-We are still experiencing the issue after the deployment. Newly provisioned WorkSpaces remain in Pending status for several hours and do not transition to Available.
-
-We have observed this behavior with multiple newly created WorkSpaces in the us-west-2 region. Could you please review the provisioning workflow logs and backend service logs for the affected WorkSpaces and advise what is preventing the provisioning process from completing?
-
-We are available to provide additional information and perform further testing as needed.
-
-Thank you.
+  await sendMsTeamsMessage(
+    reservation.userName,
+    reservation.reservedAtTs,
+    env
+  )
+} else {
+  logger.warn("Failed to update lastReminderAtTs for %s", env)
+}
