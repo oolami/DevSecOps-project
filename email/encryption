@@ -41,3 +41,18 @@ const res = await fetch(config.msTeamsWebhookUrl, {
 if (!res.ok) {
     logger.warn("Response status code is %d", res.status)
 }
+
+
+
+
+
+
+
+
+} else {
+        logger.warn("Failed to update lastReminderAtTs for %s", env)
+    }
+}
+}
+
+const sendMsTeamsMessage = async (userName: string, reservedAtTs: number, envName: string) => {
