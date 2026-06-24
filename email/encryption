@@ -1,37 +1,7 @@
-await sendMsTeamsMessage(
-  reservation.userName,
-  reservation.reservedAtTs,
-  env
-)
-
-
-if (await redisApi.setEnvReservation(env, { ...reservation, lastReminderAtTs: now })) {
-  logger.info("Updated lastReminderAtTs for %s and sending notification to %s", env, reservation.userName)
-
-  await sendMsTeamsMessage(
-    reservation.userName,
-    reservation.reservedAtTs,
-    env
-  )
-} else {
-  logger.warn("Failed to update lastReminderAtTs for %s", env)
+    } else {
+        logger.warn("Failed to update lastReminderAtTs for %s", env)
+    }
+}
 }
 
-
-
-
-
-
-
-
-if (await redisApi.setEnvReservation(env, { ...reservation, lastReminderAtTs: now })) {
-  logger.info("Updated lastReminderAtTs for %s and sending notification to %s", env, reservation.userName)
-
-  await sendMsTeamsMessage(
-    reservation.userName,
-    reservation.reservedAtTs,
-    env
-  )
-} else {
-  logger.warn("Failed to update lastReminderAtTs for %s", env)
-}
+const sendMsTeamsMessage = async (...)
