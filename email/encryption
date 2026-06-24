@@ -62,3 +62,30 @@ const getEnvReservationTtl = async (envName: string): Promise<number> => {
     return -1
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+return {
+  init,
+  getIsReady,
+  getMsrRepoTags,
+  setMsrRepoTags,
+  getEnvReservation,
+  getEnvReservationTtl,
+  getAllEnvReservations,
+  setEnvReservation,
+  removeEnvReservation,
+}
