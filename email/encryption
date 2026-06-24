@@ -1,58 +1,49 @@
-    } else {
-        logger.warn("Failed to update lastReminderAtTs for %s", env)
-    }
-}
-}
+ const sendMsTeamsMessage = async (userName: string, reservedAtTs: number, envName: string) => {
+  const message = `
+⚠️ CICD Environment Reservation Expiration Reminder
 
-const sendMsTeamsMessage = async (...)
+Environment: ${envName}
+Reserved By: ${userName}
 
+This environment reservation will expire in approximately 1 day.
 
+If you still need this environment, please re-reserve it or extend the reservation before it expires.
 
+If it is no longer needed, no action is required.
+`
 
+  if (!config.msTeamsWebhookUrl) {
+    logger.warn("Can't send message to %s about %s env reservation", userName, envName)
+    return
+  }
 
-
-
-const res = await fetch(config.msTeamsWebhookUrl, {
+  const res = await fetch(config.msTeamsWebhookUrl, {
     method: "POST",
     headers: {
-        "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-        type: "message",
-        attachments: [
-            {
-                contentType: "application/vnd.microsoft.card.adaptive",
-                content: {
-                    type: "AdaptiveCard",
-                    version: "1.4",
-                    body: [
-                        {
-                            type: "TextBlock",
-                            text: message,
-                            wrap: true
-                        }
-                    ]
-                }
-            }
-        ]
-    })
-})
+      type: "message",
+      attachments: [
+        {
+          contentType: "application/vnd.microsoft.card.adaptive",
+          content: {
+            type: "AdaptiveCard",
+            version: "1.4",
+            body: [
+              {
+                type: "TextBlock",
+                text: message,
+                wrap: true,
+              },
+            ],
+          },
+        },
+      ],
+    }),
+  })
 
-if (!res.ok) {
+  if (!res.ok) {
     logger.warn("Response status code is %d", res.status)
+  }
 }
-
-
-
-
-
-
-
-
-} else {
-        logger.warn("Failed to update lastReminderAtTs for %s", env)
-    }
-}
-}
-
-const sendMsTeamsMessage = async (userName: string, reservedAtTs: number, envName: string) => {
