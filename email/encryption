@@ -47,3 +47,18 @@ If it is no longer needed, no action is required.
     logger.warn("Response status code is %d", res.status)
   }
 }
+
+
+
+
+
+
+
+const getEnvReservationTtl = async (envName: string): Promise<number> => {
+  try {
+    return await client.ttl(`${envReservationPrefix}${envName}`)
+  } catch (e) {
+    logger.error("failed to get ttl for env reservation %s %o", envName, e)
+    return -1
+  }
+}
