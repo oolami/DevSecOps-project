@@ -89,3 +89,8 @@ return {
   setEnvReservation,
   removeEnvReservation,
 }
+
+
+
+
+client.on("error", (err: Error) => logger.error(...))
