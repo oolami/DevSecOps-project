@@ -1,8 +1,4 @@
-I agree. Since **WHC-3373 is specifically about researching NSX-ALB API capabilities for DigiCert certificate management and deployment automation**, you should keep the findings focused on **what can be reused for a DigiCert workflow**. Don't mix in Fastly yet—that belongs in WHC-3374.
 
-Here's a revised investigation update.
-
----
 
 ### Investigation Findings
 
