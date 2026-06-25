@@ -1,96 +1,44 @@
- const sendMsTeamsMessage = async (userName: string, reservedAtTs: number, envName: string) => {
-  const message = `
-⚠️ CICD Environment Reservation Expiration Reminder
+I agree. Since **WHC-3373 is specifically about researching NSX-ALB API capabilities for DigiCert certificate management and deployment automation**, you should keep the findings focused on **what can be reused for a DigiCert workflow**. Don't mix in Fastly yet—that belongs in WHC-3374.
 
-Environment: ${envName}
-Reserved By: ${userName}
+Here's a revised investigation update.
 
-This environment reservation will expire in approximately 1 day.
+---
 
-If you still need this environment, please re-reserve it or extend the reservation before it expires.
+### Investigation Findings
 
-If it is no longer needed, no action is required.
-`
+Reviewed the existing TeamCity **"NSX-ALB Certificate Issue"** automation to determine whether it can serve as the foundation for automating external DigiCert certificate deployment into NSX-ALB.
 
-  if (!config.msTeamsWebhookUrl) {
-    logger.warn("Can't send message to %s about %s env reservation", userName, envName)
-    return
-  }
+**Findings**
 
-  const res = await fetch(config.msTeamsWebhookUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      type: "message",
-      attachments: [
-        {
-          contentType: "application/vnd.microsoft.card.adaptive",
-          content: {
-            type: "AdaptiveCard",
-            version: "1.4",
-            body: [
-              {
-                type: "TextBlock",
-                text: message,
-                wrap: true,
-              },
-            ],
-          },
-        },
-      ],
-    }),
-  })
+* Existing automation demonstrates that NSX-ALB supports API-driven certificate management through PowerShell.
+* The workflow successfully authenticates to the NSX-ALB Controller using its REST API.
+* TeamCity parameters are used to provide certificate details such as Common Name (CN) and Subject Alternative Names (SANs).
+* The automation generates a CSR directly through NSX-ALB APIs and stores the generated CSR as a TeamCity build artifact.
+* After certificate issuance, the workflow uploads the signed certificate back into NSX-ALB through REST API calls.
+* The overall TeamCity → PowerShell → NSX-ALB automation pattern is reusable for an external DigiCert certificate lifecycle.
 
-  if (!res.ok) {
-    logger.warn("Response status code is %d", res.status)
-  }
-}
+**Current Gaps for DigiCert Automation**
 
+The existing implementation is designed for the internal SILAC SubCA and does **not** currently automate the external DigiCert workflow.
 
+The following capabilities were **not identified** during the investigation:
 
+* DigiCert CertCentral API integration for certificate requests.
+* Automated DigiCert domain validation or pre-validation.
+* Automated retrieval/download of issued certificates from DigiCert.
+* End-to-end DigiCert certificate issuance workflow.
+* Automated validation that the deployed certificate is actively serving traffic after upload.
+* Separate automation to verify certificate thumbprint, serial number, or HTTPS endpoint after deployment.
 
+**Conclusion**
 
+The existing TeamCity implementation confirms that **NSX-ALB supports the required API capabilities for CSR generation, authentication, and certificate upload**, making it a strong foundation for DigiCert automation. However, additional development is required to integrate DigiCert APIs and automate the complete external certificate lifecycle from request through deployment validation.
 
+---
 
-const getEnvReservationTtl = async (envName: string): Promise<number> => {
-  try {
-    return await client.ttl(`${envReservationPrefix}${envName}`)
-  } catch (e) {
-    logger.error("failed to get ttl for env reservation %s %o", envName, e)
-    return -1
-  }
-}
+I would also add one recommendation at the end of the ticket:
 
+> **Recommendation:** Reuse the existing TeamCity and PowerShell framework for NSX-ALB interactions, replacing the internal SubCA issuance step with DigiCert CertCentral API calls while retaining the existing CSR generation and certificate upload pattern.
 
+This keeps the investigation tightly scoped to **NSX-ALB + DigiCert**, leaving Fastly entirely out of this ticket.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-return {
-  init,
-  getIsReady,
-  getMsrRepoTags,
-  setMsrRepoTags,
-  getEnvReservation,
-  getEnvReservationTtl,
-  getAllEnvReservations,
-  setEnvReservation,
-  removeEnvReservation,
-}
-
-
-
-
-client.on("error", (err: Error) => logger.error(...))
