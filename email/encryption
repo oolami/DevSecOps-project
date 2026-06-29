@@ -1,40 +1,4 @@
+variables('Attachments')?[0]?['content']
 
 
-### Investigation Findings
-
-Reviewed the existing TeamCity **"NSX-ALB Certificate Issue"** automation to determine whether it can serve as the foundation for automating external DigiCert certificate deployment into NSX-ALB.
-
-**Findings**
-
-* Existing automation demonstrates that NSX-ALB supports API-driven certificate management through PowerShell.
-* The workflow successfully authenticates to the NSX-ALB Controller using its REST API.
-* TeamCity parameters are used to provide certificate details such as Common Name (CN) and Subject Alternative Names (SANs).
-* The automation generates a CSR directly through NSX-ALB APIs and stores the generated CSR as a TeamCity build artifact.
-* After certificate issuance, the workflow uploads the signed certificate back into NSX-ALB through REST API calls.
-* The overall TeamCity → PowerShell → NSX-ALB automation pattern is reusable for an external DigiCert certificate lifecycle.
-
-**Current Gaps for DigiCert Automation**
-
-The existing implementation is designed for the internal SILAC SubCA and does **not** currently automate the external DigiCert workflow.
-
-The following capabilities were **not identified** during the investigation:
-
-* DigiCert CertCentral API integration for certificate requests.
-* Automated DigiCert domain validation or pre-validation.
-* Automated retrieval/download of issued certificates from DigiCert.
-* End-to-end DigiCert certificate issuance workflow.
-* Automated validation that the deployed certificate is actively serving traffic after upload.
-* Separate automation to verify certificate thumbprint, serial number, or HTTPS endpoint after deployment.
-
-**Conclusion**
-
-The existing TeamCity implementation confirms that **NSX-ALB supports the required API capabilities for CSR generation, authentication, and certificate upload**, making it a strong foundation for DigiCert automation. However, additional development is required to integrate DigiCert APIs and automate the complete external certificate lifecycle from request through deployment validation.
-
----
-
-I would also add one recommendation at the end of the ticket:
-
-> **Recommendation:** Reuse the existing TeamCity and PowerShell framework for NSX-ALB interactions, replacing the internal SubCA issuance step with DigiCert CertCentral API calls while retaining the existing CSR generation and certificate upload pattern.
-
-This keeps the investigation tightly scoped to **NSX-ALB + DigiCert**, leaving Fastly entirely out of this ticket.
-
+triggerBody()?['attachments']?[0]?['content']
