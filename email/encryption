@@ -41,3 +41,16 @@ I see the WorkSpaces client is reporting high latency (276 ms) and an unhealthy 
 Hi Doug, I approved the SQL Data Correction build, but it failed during execution. The log shows sqlcmd could not connect to SQL Server: Login timeout expired, TCP Provider error code 0x102, and network-related or instance-specific error occurred while establishing a connection.
 
 It looks like a SQL connectivity/target DB access issue rather than an approval or script syntax issue. Can you please verify the SQL server/instance is reachable from the TeamCity agent and that the connection details are correct?
+
+
+
+
+
+
+I approved a SQL Data Correction for AnnuityUvIntake_PROD, but the build failed during execution with:
+
+Login timeout expired
+TCP Provider error code 0x102
+A network-related or instance-specific error occurred while establishing a connection
+
+I compared the Dev and Prod SQL Data Correction configurations and the TeamCity settings appear consistent. Since the Prod databases were recently migrated to AAG, I wanted to confirm whether doc-sqlequiflife.com is still the correct SQL endpoint/listener for AnnuityUvIntake_PROD, or if the SQL Data Correction job should now be pointing to a different AAG listener or connection target.
