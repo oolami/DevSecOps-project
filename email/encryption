@@ -34,3 +34,10 @@ Use DigiCert APIs to automate certificate renewal and certificate retrieval. Onc
 
 
 I see the WorkSpaces client is reporting high latency (276 ms) and an unhealthy network connection. Are you currently connected to VPN? Also, are you using home WiFi or a corporate network? If possible, please try disconnecting VPN and retrying, or test from a different network to see if the behavior changes.
+
+
+
+
+Hi Doug, I approved the SQL Data Correction build, but it failed during execution. The log shows sqlcmd could not connect to SQL Server: Login timeout expired, TCP Provider error code 0x102, and network-related or instance-specific error occurred while establishing a connection.
+
+It looks like a SQL connectivity/target DB access issue rather than an approval or script syntax issue. Can you please verify the SQL server/instance is reachable from the TeamCity agent and that the connection details are correct?
