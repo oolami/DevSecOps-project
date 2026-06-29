@@ -8,3 +8,15 @@ triggerBody()?['attachments']?[0]?['content']
 first(variables('Attachments'))['content']
 
 json(first(variables('Attachments'))['content'])
+
+
+
+
+
+
+triggerBody()?['attachments']
+
+triggerOutputs()?['body']?['attachments']
+
+
+first(variables('Attachments'))['content']
