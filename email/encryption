@@ -29,3 +29,8 @@ Validation
 
 
 Use DigiCert APIs to automate certificate renewal and certificate retrieval. Once the certificate has been issued, separate automation workflows will deploy the certificate to the target platform, such as Fastly or NSX-ALB.
+
+
+
+
+I see the WorkSpaces client is reporting high latency (276 ms) and an unhealthy network connection. Are you currently connected to VPN? Also, are you using home WiFi or a corporate network? If possible, please try disconnecting VPN and retrying, or test from a different network to see if the behavior changes.
