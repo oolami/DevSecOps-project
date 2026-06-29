@@ -1,22 +1,38 @@
-variables('Attachments')?[0]?['content']
+Certificate nearing expiration
+↓
+TeamCity job triggered manually or by schedule/alert
+↓
+Script calls DigiCert API to renew existing certificate/order
+↓
+Script checks renewal/order status
+↓
+Script downloads renewed certificate once issued
+↓
+Certificate is passed to deployment workflow
 
 
-triggerBody()?['attachments']?[0]?['content']
 
 
+Investigated DigiCert CertCentral automation capabilities related to external certificate renewal workflows.
 
-first(variables('Attachments'))['content']
+Scope of this investigation is limited to automating the renewal lifecycle for existing DigiCert-managed external certificates and does not include domain validation or pre-validation activities, which are owned by the SysAdmin team.
 
-json(first(variables('Attachments'))['content'])
+Areas investigated:
 
+* Certificate renewal API capabilities
+* Certificate order and renewal status tracking
+* Certificate retrieval/download APIs
+* Renewal workflow dependencies
+* Approval workflow considerations
+* Billing and payment dependencies
 
+Initial findings indicate DigiCert CertCentral APIs provide capabilities to support automated certificate renewal requests, status tracking, and retrieval of issued certificates for downstream deployment workflows.
 
+Potential dependencies requiring additional validation include:
 
+* DigiCert account approval workflows
+* Billing and payment processes associated with certificate renewals
+* Inputs and prerequisites required to support automated certificate renewal requests.
 
-
-triggerBody()?['attachments']
-
-triggerOutputs()?['body']?['attachments']
-
-
-first(variables('Attachments'))['content']
+Recommendation:
+Leverage DigiCert CertCentral APIs for certificate renewal and retrieval operations, with deployment automation handled separately through downstream platform integrations such as Fastly and NSX-ALB workflows.
