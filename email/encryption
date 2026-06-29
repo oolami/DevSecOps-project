@@ -13,26 +13,19 @@ Certificate is passed to deployment workflow
 
 
 
-Investigated DigiCert CertCentral automation capabilities related to external certificate renewal workflows.
 
-Scope of this investigation is limited to automating the renewal lifecycle for existing DigiCert-managed external certificates and does not include domain validation or pre-validation activities, which are owned by the SysAdmin team.
 
-Areas investigated:
 
-* Certificate renewal API capabilities
-* Certificate order and renewal status tracking
-* Certificate retrieval/download APIs
-* Renewal workflow dependencies
-* Approval workflow considerations
-* Billing and payment dependencies
+Certificate Expiring
+        ↓
+DigiCert API Renewal
+        ↓
+Download Renewed Certificate
+        ↓
+NSX-ALB API Upload
+        ↓
+Validation
 
-Initial findings indicate DigiCert CertCentral APIs provide capabilities to support automated certificate renewal requests, status tracking, and retrieval of issued certificates for downstream deployment workflows.
 
-Potential dependencies requiring additional validation include:
 
-* DigiCert account approval workflows
-* Billing and payment processes associated with certificate renewals
-* Inputs and prerequisites required to support automated certificate renewal requests.
-
-Recommendation:
-Leverage DigiCert CertCentral APIs for certificate renewal and retrieval operations, with deployment automation handled separately through downstream platform integrations such as Fastly and NSX-ALB workflows.
+Use DigiCert APIs to automate certificate renewal and certificate retrieval. Once the certificate has been issued, separate automation workflows will deploy the certificate to the target platform, such as Fastly or NSX-ALB.
