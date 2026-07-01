@@ -31,3 +31,17 @@ docker service ps wholeshestack_prod_action-note-api --no-trunc
 dmesg | grep -i kill
 
 journalctl | grep -i oom
+
+
+
+
+I inspected the Action Note container and found multiple Swarm task failures during the incident window. The service experienced repeated non-zero exit (137) events and Docker automatically replaced the failed tasks, which explains why the service appeared to recover on its own.
+
+The previous container was marked unhealthy after several failed health checks (Health check exceeded timeout (3s)), and Swarm terminated and recreated it. I don't currently see application exceptions in the container logs, so the next step is determining whether these health check failures were caused by SQL connectivity issues, resource pressure, or another shared dependency affecting multiple services during the 6:39–7:40 timeframe.
+
+
+
+
+I inspected the Action Note container and service history. The failed tasks received SIGTERM and shut down gracefully rather than crashing outright. Combined with the earlier failed health checks and repeated task replacements in Swarm, it appears the service became unhealthy long enough for Swarm to cycle the containers automatically.
+
+Since Sentry was reporting SQL communication link failures during the same window, my current suspicion is that a dependency issue caused the application to become unresponsive, eventually triggering health check failures and automated container replacement.
