@@ -1,1 +1,4 @@
-The SQL Data Correction pipeline uses its own dedicated SQL connection configuration (doc-sqlequiflife.com) whereas the standard Data Corrections pipeline does not use these settings. Since the failure occurred during SQL connection establishment and not script execution, and given the recent AAG migration, I want to verify whether the SQL Data Corrections TeamCity configuration still points to the correct production SQL listener.
+LogicMonitor shows action-note-api healthy and returning 200 responses, but Sentry indicates intermittent ODBC communication link failures during POST /action_notes operations. This appears to be occurring during SQL transactions rather than at the API layer itself.
+
+
+I'll investigate the hosting instance/container, application logs, and determine which SQL listener/backend the service is using to see whether there were failovers, network interruptions, or connection pool issues around the time of the errors.
