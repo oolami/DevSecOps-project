@@ -1,4 +1,17 @@
-LogicMonitor shows action-note-api healthy and returning 200 responses, but Sentry indicates intermittent ODBC communication link failures during POST /action_notes operations. This appears to be occurring during SQL transactions rather than at the API layer itself.
+2fcd48f32cc8
 
 
-I'll investigate the hosting instance/container, application logs, and determine which SQL listener/backend the service is using to see whether there were failovers, network interruptions, or connection pool issues around the time of the errors.
+docker logs 2fcd48f32cc8
+
+
+docker stats 2fcd48f32cc8
+
+
+docker ps | findstr action
+
+docker ps --format "table {{.ID}}\t{{.Image}}\t{{.Names}}" | findstr action
+
+
+
+docker inspect <container_id>
+docker logs --since 3h <container_id>
