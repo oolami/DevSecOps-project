@@ -15,3 +15,19 @@ docker ps --format "table {{.ID}}\t{{.Image}}\t{{.Names}}" | findstr action
 
 docker inspect <container_id>
 docker logs --since 3h <container_id>
+
+
+
+Found the Sentry server_name container and inspected it. The Action Note container (wholeshestack_prod_action-note-api) was marked unhealthy and eventually exited with code 137 after multiple failed health checks (Health check exceeded timeout (3s)).
+
+This suggests the service became unresponsive long enough for Docker Swarm to mark it unhealthy and replace it, which aligns with the self-recovery behavior we observed. Next step is reviewing service/task history and container logs around the 6:39-7:40 window to determine whether SQL connectivity issues caused the application to hang or whether resource pressure contributed to the health check failures.
+
+
+
+docker service ps wholeshestack_prod_action-note-api
+
+docker service ps wholeshestack_prod_action-note-api --no-trunc
+
+dmesg | grep -i kill
+
+journalctl | grep -i oom
