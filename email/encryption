@@ -45,3 +45,14 @@ The previous container was marked unhealthy after several failed health checks (
 I inspected the Action Note container and service history. The failed tasks received SIGTERM and shut down gracefully rather than crashing outright. Combined with the earlier failed health checks and repeated task replacements in Swarm, it appears the service became unhealthy long enough for Swarm to cycle the containers automatically.
 
 Since Sentry was reporting SQL communication link failures during the same window, my current suspicion is that a dependency issue caused the application to become unresponsive, eventually triggering health check failures and automated container replacement.
+
+
+
+
+The new environment reservation expiration notifications have been successfully rolled out and are now active in the Software Engineering - Silac channel.
+
+Environment reservations are configured to expire after 14 days, with reminder notifications being automatically sent approximately 1 day before expiration.
+
+Additional CICD Dashboard enhancements are planned and will be released iteratively over time.
+
+Please reach out to the DevOps team with any questions or feedback regarding this feature.
