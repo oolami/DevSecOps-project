@@ -1,1 +1,4 @@
 I disabled the scheduled Integration, STE Nightly, and Preprod Nightly triggers. I noticed there's also a Finish Build Trigger that runs after Wholeshestack-Integration completes. Did you want that disabled as well, or were you only referring to the scheduled testing triggers?
+
+
+Disabled the scheduled Integration, STE Nightly, Preprod Nightly, and Postdeploy/Finish Build triggers for both APAS API and APAS UI as requested.
