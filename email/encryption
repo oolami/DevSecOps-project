@@ -1,1 +1,5 @@
 Hi Sergey, I'm reviewing the existing TeamCity database projects. I noticed we have a Vertafore Agents DB project, but the ticket refers to Agent Rewards. Can you confirm if the Agent Rewards database is the Vertafore Agents DB project, or is this a different database that needs a new TeamCity restore workflow?
+
+
+
+Since this is a different database, could you clarify what restore workflow you're expecting for the AgentRewards database? Should it have a new TeamCity Database project similar to AnnuityUvIntake/IntakeApi, and which build configurations are needed (e.g., Restore Prod to Base, Backup Base, Restore Base to Env, etc.)?
