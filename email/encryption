@@ -1,20 +1,5 @@
-Hi Sergey, I'm reviewing the existing TeamCity database projects. I noticed we have a Vertafore Agents DB project, but the ticket refers to Agent Rewards. Can you confirm if the Agent Rewards database is the Vertafore Agents DB project, or is this a different database that needs a new TeamCity restore workflow?
+Investigation update:
 
-
-
-Since this is a different database, could you clarify what restore workflow you're expecting for the AgentRewards database? Should it have a new TeamCity Database project similar to AnnuityUvIntake/IntakeApi, and which build configurations are needed (e.g., Restore Prod to Base, Backup Base, Restore Base to Env, etc.)?
-
-
-
-message.Path:"*/login/user_information*" AND message.StatusCode:200
-
-
-message.Path:*login* AND message.StatusCode:200
-
-/login AND message.StatusCode:(200 OR 302)
-
-
-message.StatusCode:200 OR message.StatusCode:302
-
-
-Hi Dennis, I was helping Brant investigate whether the compromised Portal accounts have logged in since the June 30 leak. I checked the Portal-related logs in Kibana, but the login requests don't appear to populate the username/user credentials, so I can't correlate activity to those specific accounts. Do you know if there's another audit source we use for Portal login history (SQL audit tables, application audit logs, identity provider logs, etc.) that I should check?
+Reviewed the existing TeamCity database restore projects for AnnuityUvIntake, IntakeApi DB, and Vertafore Agents DB.
+Confirmed with the requester that AgentRewards is a separate database and that the expected restore workflow should be similar to AnnuityUvIntake/IntakeApi.
+Currently waiting on additional information regarding the TeamCity configuration source (VCS repository) and the AgentRewards database details (source/target database information) before implementation can begin.
