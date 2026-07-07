@@ -1,5 +1,1 @@
-Investigation update:
-
-Reviewed the existing TeamCity database restore projects for AnnuityUvIntake, IntakeApi DB, and Vertafore Agents DB.
-Confirmed with the requester that AgentRewards is a separate database and that the expected restore workflow should be similar to AnnuityUvIntake/IntakeApi.
-Currently waiting on additional information regarding the TeamCity configuration source (VCS repository) and the AgentRewards database details (source/target database information) before implementation can begin.
+Reviewed the TeamCity build logs. The TeamCity agent and CI pipeline executed successfully; however, the build failed during the Build docker image (Command Line) step with exit code 1. The logs contain application-level lint/test output, including a Deno lint violation in src/app_modules/PolicyManagement/CustomPayees/Add.spec.tsx (Async arrow function has no 'await' expression) and other test/runtime messages. Based on the investigation, this appears to be an application code/lint issue rather than a TeamCity or CI/CD infrastructure issue. Returning to the development team for code review.
