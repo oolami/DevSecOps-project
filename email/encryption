@@ -15,3 +15,6 @@ message.Path:*login* AND message.StatusCode:200
 
 
 message.StatusCode:200 OR message.StatusCode:302
+
+
+Hi Dennis, I was helping Brant investigate whether the compromised Portal accounts have logged in since the June 30 leak. I checked the Portal-related logs in Kibana, but the login requests don't appear to populate the username/user credentials, so I can't correlate activity to those specific accounts. Do you know if there's another audit source we use for Portal login history (SQL audit tables, application audit logs, identity provider logs, etc.) that I should check?
