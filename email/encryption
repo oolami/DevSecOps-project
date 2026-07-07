@@ -10,3 +10,8 @@ message.Path:"*/login/user_information*" AND message.StatusCode:200
 
 
 message.Path:*login* AND message.StatusCode:200
+
+/login AND message.StatusCode:(200 OR 302)
+
+
+message.StatusCode:200 OR message.StatusCode:302
