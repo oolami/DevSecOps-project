@@ -3,3 +3,10 @@ Hi Sergey, I'm reviewing the existing TeamCity database projects. I noticed we h
 
 
 Since this is a different database, could you clarify what restore workflow you're expecting for the AgentRewards database? Should it have a new TeamCity Database project similar to AnnuityUvIntake/IntakeApi, and which build configurations are needed (e.g., Restore Prod to Base, Backup Base, Restore Base to Env, etc.)?
+
+
+
+message.Path:"*/login/user_information*" AND message.StatusCode:200
+
+
+message.Path:*login* AND message.StatusCode:200
