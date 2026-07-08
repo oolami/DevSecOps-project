@@ -2,3 +2,7 @@ I disabled the scheduled Integration, STE Nightly, and Preprod Nightly triggers.
 
 
 Disabled the scheduled Integration, STE Nightly, Preprod Nightly, and Postdeploy/Finish Build triggers for both APAS API and APAS UI as requested.
+
+
+
+Hi Brant, I wanted to give you an update. I investigated the Portal logs in Kibana, but it doesn't appear to log or populate the username/credentials for Portal login requests, so I wasn't able to verify whether those specific accounts authenticated after the leak date. I'm currently reaching out to the Sustained Engineering team to see if there's another audit log or data source we can use to verify the login history. I'll keep you posted once I have an update.
