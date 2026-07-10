@@ -1,8 +1,14 @@
-I disabled the scheduled Integration, STE Nightly, and Preprod Nightly triggers. I noticed there's also a Finish Build Trigger that runs after Wholeshestack-Integration completes. Did you want that disabled as well, or were you only referring to the scheduled testing triggers?
+Implemented configurable environment reservation expiration and reminder functionality.
 
+Completed:
 
-Disabled the scheduled Integration, STE Nightly, Preprod Nightly, and Postdeploy/Finish Build triggers for both APAS API and APAS UI as requested.
+* Updated the default environment reservation expiration from 1 week to 2 weeks (14 days).
+* Added automated Microsoft Teams reminder notifications that are sent approximately 1 day before a reservation expires.
+* Updated the notification workflow to post reminders to the Software Engineering - Silac Teams chat.
+* Modified the reservation reminder logic to preserve the existing reservation TTL while recording reminder state, ensuring reminder notifications do not extend reservation duration.
 
+Validation:
 
-
-Hi Brant, I wanted to give you an update. I investigated the Portal logs in Kibana, but it doesn't appear to log or populate the username/credentials for Portal login requests, so I wasn't able to verify whether those specific accounts authenticated after the leak date. I'm currently reaching out to the Sustained Engineering team to see if there's another audit log or data source we can use to verify the login history. I'll keep you posted once I have an update.
+* Verified Teams reminder notifications are delivered successfully.
+* Verified reservation TTL is preserved after reminder notifications.
+* Reservation expiration remains automatic based on the configured TTL.
