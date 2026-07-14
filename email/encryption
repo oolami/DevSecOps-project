@@ -130,3 +130,10 @@ CI=true npx playwright test --reporter=line,junit,html
 
 
 Hi Raul, I added the Playwright E2E build step to the ArcHub Business Integration TeamCity configuration. Whenever you have a chance, could you validate that the implementation looks correct and run a test build? I also wanted to confirm whether the tests are expected to start the backend in Test mode and the frontend on http://localhost:5173, or if there's a different approach you had in mind.
+
+
+
+
+Hi Ryan, I added the Playwright E2E build step to the ARC Hub Business Integration TeamCity configuration, and Raul confirmed the localhost approach is correct. However, the build is failing because the TeamCity agent is running Node v18.17.1, while the frontend dependencies require Node 20+. Vite fails with TypeError: crypto.hash is not a function, so the frontend never starts on localhost:5173.
+
+Do we have an Integration TeamCity agent with Node 20/22 available that this build should run on, or is there a standard way we update the Node version on the existing agent?
