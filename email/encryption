@@ -137,3 +137,16 @@ Hi Raul, I added the Playwright E2E build step to the ArcHub Business Integratio
 Hi Ryan, I added the Playwright E2E build step to the ARC Hub Business Integration TeamCity configuration, and Raul confirmed the localhost approach is correct. However, the build is failing because the TeamCity agent is running Node v18.17.1, while the frontend dependencies require Node 20+. Vite fails with TypeError: crypto.hash is not a function, so the frontend never starts on localhost:5173.
 
 Do we have an Integration TeamCity agent with Node 20/22 available that this build should run on, or is there a standard way we update the Node version on the existing agent?
+
+
+
+
+Hi Kristina,
+
+My apologies for charging time to the incorrect WBS code.
+
+I was working on troubleshooting some AWS Elastic Disaster Recovery (DRS) issues in the Ohio DR account, and I mistakenly used that WBS while logging my time.
+
+Could you please point me to the correct WBS code that I should use for this work? Once I have the correct code, I'll update my time entry accordingly.
+
+Sorry again for the inconvenience, and thank you for your help.
