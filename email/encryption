@@ -1,14 +1,3 @@
-Implemented configurable environment reservation expiration and reminder functionality.
+Hi Raul, I'm working on WHC-3422. I checked both the main and develop branches of arc-hub-business, and I don't see any Playwright configuration or E2E test scripts. I also found the playwright-cross-browser repository, but it appears to contain generic admin/intake cross-browser tests.
 
-Completed:
-
-* Updated the default environment reservation expiration from 1 week to 2 weeks (14 days).
-* Added automated Microsoft Teams reminder notifications that are sent approximately 1 day before a reservation expires.
-* Updated the notification workflow to post reminders to the Software Engineering - Silac Teams chat.
-* Modified the reservation reminder logic to preserve the existing reservation TTL while recording reminder state, ensuring reminder notifications do not extend reservation duration.
-
-Validation:
-
-* Verified Teams reminder notifications are delivered successfully.
-* Verified reservation TTL is preserved after reminder notifications.
-* Reservation expiration remains automatic based on the configured TTL.
+Could you let me know where the ArcHub Business Playwright test suite is located? Is it in another repository or branch, or is it intended to be added to arc-hub-business?
