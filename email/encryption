@@ -5,3 +5,12 @@ Could you let me know where the ArcHub Business Playwright test suite is located
 
 
 Thanks for the clarification. I spoke with Ryan, and he mentioned the AgentRewards database will first need to go through the obfuscation process to create a refresh before we can add the TeamCity restore workflow. He also mentioned that Justin Stonecipher is currently working on a version for the IntakeApi DB and suggested checking with him to see if that implementation can be adapted for the AgentRewards database. Once the obfuscated refresh process is available, I can proceed with creating the TeamCity restore workflow similar to AnnuityUvIntake/IntakeApi.
+
+
+
+
+Investigation update:
+
+Confirmed with the requester that AgentRewards is a separate database and should have a TeamCity restore workflow similar to AnnuityUvIntake/IntakeApi.
+Discussed the implementation with Ryan. The AgentRewards database will first require an obfuscated refresh before a TeamCity restore workflow can be created.
+Justin Stonecipher is currently working on a similar obfuscation solution for the IntakeApi database. Waiting for confirmation on whether that implementation can be reused or adapted for AgentRewards before proceeding with the TeamCity configuration.
