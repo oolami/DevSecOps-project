@@ -1,16 +1,114 @@
-Hi Raul, I'm working on WHC-3422. I checked both the main and develop branches of arc-hub-business, and I don't see any Playwright configuration or E2E test scripts. I also found the playwright-cross-browser repository, but it appears to contain generic admin/intake cross-browser tests.
-
-Could you let me know where the ArcHub Business Playwright test suite is located? Is it in another repository or branch, or is it intended to be added to arc-hub-business?
+Playwright
 
 
+#!/usr/bin/env bash
+set -eu
+set -o pipefail
 
-Thanks for the clarification. I spoke with Ryan, and he mentioned the AgentRewards database will first need to go through the obfuscation process to create a refresh before we can add the TeamCity restore workflow. He also mentioned that Justin Stonecipher is currently working on a version for the IntakeApi DB and suggested checking with him to see if that implementation can be adapted for the AgentRewards database. Once the obfuscated refresh process is available, I can proceed with creating the TeamCity restore workflow similar to AnnuityUvIntake/IntakeApi.
+ROOT_DIR="%teamcity.build.checkoutDir%"
+FRONTEND_DIR="$ROOT_DIR/frontend"
+E2E_DIR="$ROOT_DIR/e2e"
+
+FRONTEND_PID=""
+BACKEND_PID=""
+
+cleanup() {
+  echo "Cleaning up ArcHub Playwright test processes..."
+
+  if [[ -n "${FRONTEND_PID}" ]] && kill -0 "${FRONTEND_PID}" 2>/dev/null; then
+    kill "${FRONTEND_PID}" || true
+    wait "${FRONTEND_PID}" 2>/dev/null || true
+  fi
+
+  if [[ -n "${BACKEND_PID}" ]] && kill -0 "${BACKEND_PID}" 2>/dev/null; then
+    kill "${BACKEND_PID}" || true
+    wait "${BACKEND_PID}" 2>/dev/null || true
+  fi
+}
+
+trap cleanup EXIT INT TERM
+
+echo "Node version:"
+node --version
+
+echo "npm version:"
+npm --version
+
+echo "Installing frontend dependencies..."
+cd "$FRONTEND_DIR"
+npm ci
+
+echo "Installing E2E dependencies..."
+cd "$E2E_DIR"
+npm ci
+
+echo "Installing Playwright Chromium..."
+npx playwright install chromium
+
+echo "Starting ArcHub backend in Test authentication mode..."
+cd "$ROOT_DIR/backend/ArcHub.Api"
+
+Authentication__Mode=Test \
+ASPNETCORE_ENVIRONMENT=Test \
+dotnet run --no-launch-profile > "$ROOT_DIR/archub-backend.log" 2>&1 &
+
+BACKEND_PID=$!
+
+echo "Starting ArcHub frontend on port 5173..."
+cd "$FRONTEND_DIR"
+
+npm run dev -- --host 127.0.0.1 --port 5173 --strictPort \
+  > "$ROOT_DIR/archub-frontend.log" 2>&1 &
+
+FRONTEND_PID=$!
+
+echo "Waiting for ArcHub frontend..."
+
+for attempt in $(seq 1 60); do
+  if curl --fail --silent --show-error http://127.0.0.1:5173/ >/dev/null; then
+    echo "ArcHub frontend is ready."
+    break
+  fi
+
+  if ! kill -0 "$FRONTEND_PID" 2>/dev/null; then
+    echo "Frontend process exited before becoming ready."
+    cat "$ROOT_DIR/archub-frontend.log" || true
+    exit 1
+  fi
+
+  if [[ "$attempt" -eq 60 ]]; then
+    echo "Frontend did not become ready within 120 seconds."
+    cat "$ROOT_DIR/archub-frontend.log" || true
+    cat "$ROOT_DIR/archub-backend.log" || true
+    exit 1
+  fi
+
+  sleep 2
+done
+
+echo "Running Playwright tests..."
+cd "$E2E_DIR"
+
+CI=true npx playwright test
 
 
 
 
-Investigation update:
 
-Confirmed with the requester that AgentRewards is a separate database and should have a TeamCity restore workflow similar to AnnuityUvIntake/IntakeApi.
-Discussed the implementation with Ryan. The AgentRewards database will first require an obfuscated refresh before a TeamCity restore workflow can be created.
-Justin Stonecipher is currently working on a similar obfuscation solution for the IntakeApi database. Waiting for confirmation on whether that implementation can be reused or adapted for AgentRewards before proceeding with the TeamCity configuration.
+
+
+
+Build Feature:
+
+XML report processing
+Report type: JUnit
+Monitoring rules: e2e/test-results/*.xml
+
+
+
+Artifacts Path:
+
+e2e/playwright-report => playwright-report
+e2e/test-results => playwright-test-results
+archub-frontend.log
+archub-backend.log
