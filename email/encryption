@@ -112,3 +112,11 @@ e2e/playwright-report => playwright-report
 e2e/test-results => playwright-test-results
 archub-frontend.log
 archub-backend.log
+
+
+
+
+cd "$E2E_DIR"
+
+PLAYWRIGHT_JUNIT_OUTPUT_NAME=test-results/playwright-results.xml \
+CI=true npx playwright test --reporter=line,junit,html
