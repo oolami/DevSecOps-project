@@ -1,3 +1,7 @@
 Hi Raul, I'm working on WHC-3422. I checked both the main and develop branches of arc-hub-business, and I don't see any Playwright configuration or E2E test scripts. I also found the playwright-cross-browser repository, but it appears to contain generic admin/intake cross-browser tests.
 
 Could you let me know where the ArcHub Business Playwright test suite is located? Is it in another repository or branch, or is it intended to be added to arc-hub-business?
+
+
+
+Thanks for the clarification. I spoke with Ryan, and he mentioned the AgentRewards database will first need to go through the obfuscation process to create a refresh before we can add the TeamCity restore workflow. He also mentioned that Justin Stonecipher is currently working on a version for the IntakeApi DB and suggested checking with him to see if that implementation can be adapted for the AgentRewards database. Once the obfuscated refresh process is available, I can proceed with creating the TeamCity restore workflow similar to AnnuityUvIntake/IntakeApi.
