@@ -120,3 +120,13 @@ cd "$E2E_DIR"
 
 PLAYWRIGHT_JUNIT_OUTPUT_NAME=test-results/playwright-results.xml \
 CI=true npx playwright test --reporter=line,junit,html
+
+
+
+
+
+
+
+
+
+Hi Raul, I added the Playwright E2E build step to the ArcHub Business Integration TeamCity configuration. Whenever you have a chance, could you validate that the implementation looks correct and run a test build? I also wanted to confirm whether the tests are expected to start the backend in Test mode and the frontend on http://localhost:5173, or if there's a different approach you had in mind.
