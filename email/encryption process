@@ -1,20 +1,7 @@
-Grace Arolawun
-Olamidearolawun08@gmail.com
+Hi Holly,
 
-Dear Hiring Team,
+I reviewed the Colorado DRS environment. All 9 source servers are showing Healthy replication status and are Ready for recovery. I also verified the DRS replication servers in EC2, and the three running replication servers appear to be expected for this environment.
 
-I am excited to apply for the Senior DevOps Engineer position at Ursa Space Systems. As a DevOps and AWS Disaster Recovery Engineer with over eight years of experience designing, automating, and supporting secure cloud infrastructure, I was immediately drawn to Ursa’s mission of building highly scalable infrastructure that powers satellite intelligence and AI-driven geospatial platforms.
+I also searched for the instance ID referenced in the LogicMonitor incident (i-0064c7e41490b860c) but was unable to locate it in the EC2 console (including DRS replication servers) or in the DRS source servers. It may have been a temporary DRS replication server that was already terminated and cleaned up before I investigated, especially since the incident has already been closed.
 
-In my current role, I design and automate AWS Disaster Recovery solutions that improve resilience across production environments while reducing recovery time and operational risk. I have extensive hands-on experience building Infrastructure as Code with Terraform, automating cloud operations with Python and AWS services, implementing CI/CD pipelines using TeamCity and Jenkins, and deploying secure cloud-native infrastructure following DevSecOps best practices. My work routinely involves IAM, networking, monitoring, disaster recovery testing, infrastructure automation, and collaborating closely with software engineering teams to improve deployment reliability and operational efficiency.
-
-One aspect of this opportunity that particularly excites me is Ursa’s emphasis on building infrastructure that is secure by default, observable, and resilient under production workloads. Throughout my career, I have enjoyed solving complex infrastructure challenges—from automating large-scale disaster recovery environments and infrastructure provisioning to improving deployment pipelines and strengthening cloud security. I thrive in environments where reliability, automation, and continuous improvement are core engineering principles.
-
-Beyond the technical requirements, I value collaborative engineering cultures where DevOps serves as a bridge between development and operations. I enjoy mentoring teammates, documenting processes, and helping establish repeatable engineering practices that enable teams to deliver software faster and more confidently.
-
-I would welcome the opportunity to contribute my AWS, Terraform, automation, CI/CD, and cloud infrastructure expertise to Ursa Space Systems while continuing to grow alongside an innovative engineering organization tackling challenging technical problems.
-
-Thank you for your time and consideration. I look forward to the opportunity to discuss how my background and passion for cloud engineering can contribute to Ursa Space Systems’ continued success.
-
-Sincerely,
-
-Grace Arolawun
+At this time, I don't see any active issues with DRS replication in the Colorado account.
