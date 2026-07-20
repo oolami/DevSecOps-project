@@ -1,1 +1,5 @@
 Hi Josh, I'm working on configuring the Sentry integration for the APAS PagerDuty Technical Service. I checked the available Sentry projects and don't see a project named APAS; I only see apas-external-api. Can you confirm whether apas-external-api is the Sentry project whose qualifying alerts should be routed to the APAS PagerDuty service, or if there are additional APAS-related Sentry projects that should be included?
+
+
+
+Hi Ryan, I'm currently working on the ticket to configure the Sentry integration for the APAS PagerDuty Technical Service. I reached out to Josh to confirm which Sentry projects should be connected, and he mentioned that you've been working with him on identifying the applicable projects. Could you confirm which projects should be included? Alternatively, if you'd prefer to take over this ticket since you've already been working with Josh on the setup, I'm happy to assign it to you.
