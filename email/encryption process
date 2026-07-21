@@ -1,7 +1,1 @@
-Hi Holly,
 
-I reviewed the Colorado DRS environment. All 9 source servers are showing Healthy replication status and are Ready for recovery. I also verified the DRS replication servers in EC2, and the three running replication servers appear to be expected for this environment.
-
-I also searched for the instance ID referenced in the LogicMonitor incident (i-0064c7e41490b860c) but was unable to locate it in the EC2 console (including DRS replication servers) or in the DRS source servers. It may have been a temporary DRS replication server that was already terminated and cleaned up before I investigated, especially since the incident has already been closed.
-
-At this time, I don't see any active issues with DRS replication in the Colorado account.
