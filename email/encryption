@@ -31,3 +31,455 @@ The recommended workflow is expiration monitoring, trigger the DigiCert renewal,
 The main items that remain outside the automation are domain validation, which SysAdmin will own, and ensuring private keys are retrieved and handled through our approved secrets-management process.
 
 Overall, the spike confirmed that the renewal and deployment workflow is technically automatable, and I didn't identify a technical blocker. The next phase would be implementation — building and testing the actual API integration and automation workflow.”
+
+
+
+
+
+We're automating everything from detecting an expiring certificate, renewing it through DigiCert, retrieving the issued certificate, deploying it to Fastly or the applicable downstream platform, and validating the replacement — with domain validation remaining under SysAdmin ownership.”
+
+
+Research/feasibility spike: COMPLETE ✅
+
+Technical feasibility: CONFIRMED ✅
+
+Implementation: NOT YET BUILT
+
+Production automation: NOT YET DEPLOYED
+
+
+
+
+
+
+
+
+
+
+
+
+SSL Certificate Rotation Automation Spike – Summary
+1. What was the goal of the spike?
+
+The goal of this spike was to determine whether we can automate the current SSL certificate renewal process instead of relying on manual certificate renewal and deployment.
+
+The research focused on the three main technologies involved:
+
+DigiCert CertCentral – where our external certificates are issued and renewed.
+Fastly – where several of our externally facing domains are currently served and where the external certificates are deployed.
+NSX-ALB – which also supports certificate management and is relevant for certificates terminating internally/on the load balancer.
+TeamCity – our existing automation platform, which can orchestrate the entire process.
+
+The important outcome is that we do not need to build the automation completely from scratch.
+
+We already have an existing TeamCity certificate workflow that gives us a reusable automation pattern.
+
+2. What did we find in TeamCity?
+
+We identified an existing TeamCity build configuration called:
+
+NSX-ALB Certificate Issue
+
+It currently has three main steps:
+
+Step 1 – Create CSR
+
+TeamCity calls the NSX-ALB API and creates the Certificate Signing Request.
+
+Step 2 – Issue Certificate
+
+The existing process submits the CSR to our internal SILAC SubCA using certreq.
+
+Step 3 – Upload Certificate
+
+Once the certificate is issued, TeamCity uses the NSX-ALB API again to upload the signed certificate.
+
+So today the workflow is essentially:
+
+TeamCity → NSX-ALB CSR → SILAC SubCA → NSX-ALB certificate upload
+
+The important finding is that this workflow is currently designed for internal certificates, not external DigiCert certificates.
+
+However, the overall orchestration pattern is reusable.
+
+3. What can we reuse?
+
+We should not simply copy the existing automation exactly because the certificate authority is different.
+
+The reusable portions are:
+
+TeamCity build structure
+PowerShell execution pattern
+TeamCity parameters
+Secret/credential handling pattern
+NSX-ALB authentication
+CSR generation logic
+Certificate artifact handling
+NSX-ALB certificate upload API logic
+Build failure handling
+
+The main component that changes is the certificate issuance/renewal step.
+
+Currently:
+
+CSR → SILAC SubCA using certreq
+
+For external certificates, this becomes:
+
+CSR → DigiCert CertCentral API → Retrieve issued certificate
+
+Therefore, the existing TeamCity job gives us a strong starting point rather than requiring a completely new framework.
+
+4. What did we find about DigiCert?
+
+DigiCert provides CertCentral APIs that support the certificate lifecycle operations required for automation.
+
+The intended responsibility of DigiCert in the new workflow is:
+
+Receive the certificate renewal request.
+Process the renewal.
+Provide certificate/order status.
+Allow the automation to retrieve/download the newly issued certificate.
+
+So DigiCert becomes the automated replacement for the manual certificate issuance portion of the process.
+
+Proposed DigiCert portion
+
+TeamCity → DigiCert API → Renew certificate → Poll/check issuance status → Download certificate
+
+The certificate can then be passed to the platform where it needs to be deployed.
+
+5. What about Domain Validation?
+
+We specifically separated domain validation/pre-validation from the DevOps automation scope.
+
+The SysAdmin team will own the domain-validation portion.
+
+Therefore, our renewal automation should assume that the required domain validation is already maintained.
+
+That keeps the automation scope focused on:
+
+Renew → Retrieve → Deploy → Validate
+
+rather than trying to automate the complete DigiCert domain-validation lifecycle as part of this implementation.
+
+6. What did we find about Fastly?
+
+During the research we confirmed that several of the external SILAC services/domains are currently routed through Fastly.
+
+Examples visible in Fastly include:
+
+Portal
+Sentry
+Upload
+Media
+TeamCity
+Privacy
+
+This is important because it means that for these externally facing certificates, Fastly is part of the deployment path.
+
+Therefore, after DigiCert renews the certificate, the automation needs to determine whether that certificate should be deployed to Fastly.
+
+The target workflow becomes:
+
+DigiCert → Certificate retrieved → Fastly certificate update → TLS validation
+
+7. What about NSX-ALB?
+
+NSX-ALB still has an important role.
+
+Our investigation confirmed that NSX-ALB supports API-based certificate operations.
+
+The existing TeamCity automation already demonstrates API-based:
+
+Authentication
+CSR generation
+Certificate creation/upload
+
+So where a certificate terminates on NSX-ALB, we can automate the NSX-ALB portion as well.
+
+However, not every external certificate necessarily needs both Fastly and NSX-ALB deployment.
+
+That needs to be driven by the certificate/domain inventory.
+
+In other words:
+
+Fastly-terminated certificate
+
+DigiCert → Fastly
+
+NSX-ALB-terminated certificate
+
+DigiCert → NSX-ALB
+
+If architecture requires both
+
+DigiCert → Fastly + NSX-ALB
+
+The automation should therefore be configuration-driven rather than assuming every certificate follows exactly the same deployment path.
+
+8. Proposed End-to-End Automation
+
+The recommended implementation is:
+
+1. Certificate expiration monitoring
+
+Identify certificates approaching the agreed renewal threshold.
+
+For example:
+
+Certificate approaching expiration → initiate renewal workflow
+
+2. TeamCity starts renewal
+
+TeamCity becomes the orchestration engine.
+
+It receives parameters identifying:
+
+Certificate
+Common Name
+SANs
+DigiCert certificate/order information
+Deployment target
+Fastly information if applicable
+NSX-ALB information if applicable
+3. Generate or obtain CSR
+
+Generate the CSR according to the certificate requirements.
+
+The existing NSX-ALB TeamCity CSR implementation can be reused where appropriate.
+
+4. Submit renewal to DigiCert
+
+Use DigiCert CertCentral API to submit the renewal request.
+
+5. Wait for issuance
+
+TeamCity checks the DigiCert order/certificate status.
+
+Once DigiCert reports that the certificate has been issued, continue.
+
+6. Retrieve certificate
+
+Download the issued certificate and required certificate chain.
+
+7. Deploy certificate
+
+Based on the certificate configuration:
+
+Fastly target
+
+→ update certificate through Fastly automation/API.
+
+NSX-ALB target
+
+→ use the existing NSX-ALB API upload pattern.
+
+Potentially:
+
+Both
+
+→ update both systems.
+
+8. Validate deployment
+
+After deployment, automation should verify that the endpoint is actually presenting the expected certificate.
+
+This is an important improvement over the existing TeamCity job.
+
+During our investigation of the current NSX-ALB process, we did not identify a dedicated post-deployment certificate validation step.
+
+The existing build successfully creates/issues/uploads the certificate, but that alone doesn't prove that the endpoint is serving the new certificate.
+
+So implementation should add:
+
+Deployment → TLS handshake/check → Read certificate → Verify expiration/serial/thumbprint → Success
+
+9. The Biggest Gap Identified
+
+I would emphasize this point to your manager.
+
+The current internal certificate automation proves that certificate operations can be automated, but it does not represent a complete external DigiCert renewal workflow.
+
+The main gaps are:
+
+Gap 1 – DigiCert integration
+
+The existing process uses SILAC SubCA.
+
+We need to replace that certificate issuance portion with DigiCert CertCentral API integration.
+
+Gap 2 – Fastly deployment
+
+The existing TeamCity workflow uploads certificates to NSX-ALB.
+
+External domains terminating at Fastly require a separate Fastly deployment workflow.
+
+Gap 3 – Certificate-to-platform mapping
+
+We need a definitive inventory identifying:
+
+Which certificates terminate on Fastly?
+
+Which terminate on NSX-ALB?
+
+Are there any certificates that require deployment to both?
+
+This mapping should drive the automation.
+
+Gap 4 – Post-deployment validation
+
+The current NSX-ALB workflow doesn't appear to contain a dedicated TLS endpoint validation stage.
+
+That should be added during implementation.
+
+Gap 5 – Error handling and rollback
+
+We need to define what happens if:
+
+DigiCert renewal fails
+DigiCert issuance takes longer than expected
+certificate download fails
+Fastly deployment fails
+NSX-ALB deployment fails
+deployment succeeds but TLS validation fails
+
+The existing certificate should remain available until the new certificate is confirmed working.
+
+10. Technical Debt / Questions Before Implementation
+
+These don't prevent us from closing the spike.
+
+They become implementation tasks/technical decisions.
+
+Certificate inventory
+
+We need to finalize:
+
+Certificate CN
+SANs
+DigiCert certificate/order identifier
+expiration date
+deployment target
+Fastly service/domain
+NSX-ALB virtual service/certificate object where applicable
+Renewal threshold
+
+We need agreement on:
+
+How many days before expiration should automation start?
+
+For example, an agreed operational threshold such as 30–45 days.
+
+DigiCert authentication
+
+Determine:
+
+API credentials/service account
+where credentials will be securely stored
+TeamCity secure parameter/CyberArk integration
+minimum permissions required
+Fastly authentication
+
+Determine:
+
+API token/service account
+permissions required
+secure storage mechanism
+NSX-ALB authentication
+
+The existing workflow already provides a pattern, but we should confirm whether the existing automation credentials should be reused or whether a dedicated automation account is required.
+
+Deployment ownership
+
+Determine how the automation decides:
+
+Fastly / NSX-ALB / Both
+
+This should ideally come from configuration rather than hard-coded logic.
+
+Validation
+
+Define the success criteria:
+
+The new certificate must be deployed and the actual endpoint must present the expected certificate before TeamCity marks the renewal successful.
+
+Notifications
+
+Determine who should be notified for:
+
+renewal initiated
+renewal successful
+renewal failed
+deployment failed
+certificate approaching expiration without successful renewal
+11. Recommended Implementation Architecture
+
+I would present the design like this:
+
+Certificate Expiration Monitoring
+             |
+             v
+          TeamCity
+             |
+             v
+      Generate / Obtain CSR
+             |
+             v
+    DigiCert CertCentral API
+             |
+             v
+      Certificate Renewal
+             |
+             v
+     Retrieve Certificate
+             |
+             v
+     Determine Deployment
+        Target(s)
+          /      \
+         /        \
+        v          v
+     Fastly     NSX-ALB
+        \          /
+         \        /
+          v      v
+       TLS Validation
+             |
+             v
+      Success / Alert
+
+That is essentially the proposed architecture resulting from the spike.
+
+12. What I Would Tell Your Manager
+
+You can explain it this way:
+
+“The spike confirmed that automating the external certificate renewal lifecycle is technically feasible. We identified DigiCert CertCentral as the certificate renewal and retrieval component, TeamCity as the orchestration layer, and Fastly or NSX-ALB as the downstream deployment targets depending on where each certificate terminates.
+
+We also found an existing NSX-ALB TeamCity certificate automation that we can reuse as an implementation pattern. It already handles CSR generation, PowerShell orchestration, parameterization, API authentication and NSX-ALB certificate upload. The existing workflow currently uses the internal SILAC SubCA, so the external implementation will replace that issuance portion with DigiCert API calls.
+
+For certificates terminating through Fastly, we'll need a separate downstream Fastly deployment step. Domain validation is being treated separately and will remain owned by SysAdmin.
+
+The main implementation work now is integrating DigiCert APIs, implementing the Fastly certificate update workflow, establishing certificate-to-platform mapping, and adding post-deployment TLS validation and failure handling. Based on the research, I believe we have enough information to close the spike and move into implementation.”
+
+13. Bottom Line
+What the spike proved
+
+✅ DigiCert can provide the certificate renewal/retrieval automation layer.
+
+✅ NSX-ALB certificate operations can be automated through APIs.
+
+✅ Existing TeamCity automation provides a reusable implementation pattern.
+
+✅ Fastly must be included for externally terminated domains.
+
+✅ TeamCity can serve as the central orchestration layer.
+
+What is intentionally outside this automation
+
+Domain validation/pre-validation → SysAdmin ownership
+
+What implementation now needs to build
+
+DigiCert integration + Fastly integration + NSX-ALB integration where required + TLS validation + monitoring/error handling.
