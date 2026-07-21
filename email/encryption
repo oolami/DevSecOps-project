@@ -14,3 +14,20 @@ Recommendation: Integrate Fastly Custom TLS APIs as the downstream deployment st
 Domain validation will remain owned by SysAdmin and is outside the scope of this automation. Private-key handling must use the approved secure secrets-management process.
 
 Conclusion: Fastly certificate updates can be automated through the available APIs. No technical blocker was identified during the spike.
+
+
+
+
+“I completed the SSL certificate automation spike. The objective was to determine whether we can automate the certificate renewal process from DigiCert through our downstream platforms instead of manually renewing and deploying certificates.
+
+For DigiCert, I confirmed that CertCentral provides APIs that can support the renewal and certificate retrieval portion of the workflow. Domain validation will remain with SysAdmin, so I'm not including that as part of our automation.
+
+I also investigated the downstream deployment platforms. For the external domains routed through Fastly, I verified that we're currently using DigiCert-issued, self-managed certificates. I reviewed the certificates currently deployed for TeamCity, Sentry, Portal, Media, Upload and Privacy.
+
+Fastly provides Custom TLS APIs that allow us to upload private keys, upload or replace certificates, manage TLS domains and update TLS activations. So once DigiCert issues a renewed certificate, we can automate the downstream Fastly deployment instead of manually replacing the certificate.
+
+The recommended workflow is expiration monitoring, trigger the DigiCert renewal, wait for issuance, retrieve the renewed certificate securely, deploy it through the appropriate downstream platform API, and then validate the new certificate and expiration date.
+
+The main items that remain outside the automation are domain validation, which SysAdmin will own, and ensuring private keys are retrieved and handled through our approved secrets-management process.
+
+Overall, the spike confirmed that the renewal and deployment workflow is technically automatable, and I didn't identify a technical blocker. The next phase would be implementation — building and testing the actual API integration and automation workflow.”
