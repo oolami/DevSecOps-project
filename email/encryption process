@@ -21,3 +21,18 @@ Invoke-WebRequest https://oidc.us-east-1.amazonaws.com
 
 
 Were there any recent changes to outbound SSL inspection, proxy configuration, or corporate CA certificates for AWS endpoints? AWS CLI SSO login is now failing certificate validation against oidc.us-east-1.amazonaws.com with CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate.”
+
+
+Test-Path C:\netskope\netskope-cert-bundle.pem
+
+Get-Item C:\netskope\netskope-cert-bundle.pem
+
+
+aws configure get ca_bundle
+echo $env:AWS_CA_BUNDLE
+echo $env:REQUESTS_CA_BUNDLE
+
+Get-Item C:\netskope\netskope-cert-bundle.pem |
+Select Name,Length,LastWriteTime
+
+curl.exe -v https://oidc.us-east-1.amazonaws.com
