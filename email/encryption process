@@ -36,3 +36,10 @@ Get-Item C:\netskope\netskope-cert-bundle.pem |
 Select Name,Length,LastWriteTime
 
 curl.exe -v https://oidc.us-east-1.amazonaws.com
+
+
+
+
+Hi team, I’m running into an SSL certificate validation issue when attempting aws sso login on one of the Windows servers. The AWS CLI is returning CERTIFICATE_VERIFY_FAILED – unable to get local issuer certificate when connecting to the AWS OIDC endpoint.
+
+I checked the certificate configuration and both AWS_CA_BUNDLE and REQUESTS_CA_BUNDLE are pointing to C:\netskope\netskope-cert-bundle.pem. Has anyone seen this issue recently, or are there any recent Netskope/certificate changes that could be affecting the CA bundle on the server?
