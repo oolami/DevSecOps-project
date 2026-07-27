@@ -10,3 +10,9 @@ dnf --disablerepo='*' --enablerepo=nodesource list available nodejs --showduplic
 
 
 cat /etc/yum.repos.d/nodesource-el8.repo
+
+
+sudo -n true && echo "sudo access OK" || echo "sudo requires authentication"
+
+
+rpm -q nodejs
