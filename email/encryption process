@@ -43,3 +43,8 @@ sudo dnf install nodejs
 
 
 curl -I https://rpm.nodesource.com/pub_24.x/nodistro/nodejs/x86_64/repodata/repomd.xml
+
+
+
+
+Update on tca02: I configured the NodeSource 24.x repo, but DNF is failing while retrieving the repository metadata. I tested the failing metadata URL directly with curl and confirmed it returns HTTP/2 403 AccessDenied, while the main repomd.xml is accessible. Node 18.17.1 is still intact and I haven't proceeded with the Node 24 installation. It looks like the specific NodeSource repo metadata object is being denied upstream. I'm holding here before making any additional changes.
