@@ -1,1 +1,1 @@
-Hey Ryan, quick question before I take the snapshot of tca01-03. Do you know which account/credentials we use to access vCenter (vcsa.silacins.com)? My regular credentials aren’t working, and I checked CyberArk but couldn’t find a vCenter-related account. Is there a privileged account I should be using?
+dnf --disablerepo='*' --enablerepo=nodesource-nodejs list available nodejs --showduplicates
