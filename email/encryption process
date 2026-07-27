@@ -6,3 +6,6 @@ ls -l /etc/yum.repos.d/nodesource-el8.repo*
 
 curl -fsSL https://rpm.nodesource.com/setup_24.x -o /tmp/nodesource_setup.sh
 
+
+head -20 /tmp/nodesource_setup.sh
+
