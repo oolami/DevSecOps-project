@@ -18,3 +18,10 @@ sudo dnf makecache
 
 
 sudo dnf --showduplicates list nodejs
+
+
+
+cat /etc/yum.repos.d/nodesource-nodejs.repo
+
+
+curl -I https://rpm.nodesource.com/pub_24.x/nodistro/nodejs/x86_64/repodata/repomd.xml
