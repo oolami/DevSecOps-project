@@ -16,3 +16,7 @@ sudo -n true && echo "sudo access OK" || echo "sudo requires authentication"
 
 
 rpm -q nodejs
+
+
+sudo -l
+
