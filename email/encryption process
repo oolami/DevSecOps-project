@@ -4,3 +4,6 @@ dnf --disablerepo='*' --enablerepo=nodesource-nodejs list available nodejs --sho
 dnf repolist --all | grep -i node
 
 grep -R "^\[.*\]" /etc/yum.repos.d/ | grep -i node
+
+
+dnf --disablerepo='*' --enablerepo=nodesource list available nodejs --showduplicates
