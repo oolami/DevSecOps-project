@@ -57,3 +57,7 @@ WS SSO login is failing SSL certificate validation against the configured Netsko
 Yes, I’m still seeing the issue today. One additional finding: the C:\netskope\netskope-cert-bundle.pem file shows a LastWriteTime of 7/22/2026 at 9:18 AM, which is around when this issue started occurring.
 
 Could we have the Netskope/Security or Cloud team verify whether there was a certificate rotation, CA bundle update, GPO, or security policy change around that time that could be impacting AWS CLI certificate trust validation?
+
+
+
+I also noticed that the Netskope CA bundle (C:\netskope\netskope-cert-bundle.pem) has a LastWriteTime of 7/22/2026 at 9:18 AM, indicating the bundle was modified or redeployed around that time. Can the Netskope/Security team confirm whether there was a certificate rotation or CA bundle/policy update on 7/22?
