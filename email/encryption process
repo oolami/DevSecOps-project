@@ -48,3 +48,12 @@ I checked the certificate configuration and both AWS_CA_BUNDLE and REQUESTS_CA_B
 
 
 WS SSO login is failing SSL certificate validation against the configured Netskope CA bundle. Connectivity to the AWS OIDC endpoint over 443 is successful, and SSO proceeds when certificate verification is bypassed, indicating the issue is with the Netskope certificate trust chain/CA bundle rather than AWS connectivity or SSO permissions.
+
+
+
+
+
+
+Yes, I’m still seeing the issue today. One additional finding: the C:\netskope\netskope-cert-bundle.pem file shows a LastWriteTime of 7/22/2026 at 9:18 AM, which is around when this issue started occurring.
+
+Could we have the Netskope/Security or Cloud team verify whether there was a certificate rotation, CA bundle update, GPO, or security policy change around that time that could be impacting AWS CLI certificate trust validation?
