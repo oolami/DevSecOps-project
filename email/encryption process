@@ -7,3 +7,6 @@ grep -R "^\[.*\]" /etc/yum.repos.d/ | grep -i node
 
 
 dnf --disablerepo='*' --enablerepo=nodesource list available nodejs --showduplicates
+
+
+cat /etc/yum.repos.d/nodesource-el8.repo
