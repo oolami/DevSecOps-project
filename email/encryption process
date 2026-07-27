@@ -11,3 +11,10 @@ head -20 /tmp/nodesource_setup.sh
 
 
 sudo bash /tmp/nodesource_setup.sh
+
+
+sudo dnf clean all
+sudo dnf makecache
+
+
+sudo dnf --showduplicates list nodejs
