@@ -25,3 +25,7 @@ I also ran the certificate checks you requested and attached the PowerShell outp
 
 
 Hi Tyler, I was able to SSH into tca02 successfully using my ADM account, but sudo -l shows that my ADM account may not run sudo on the agent. I’ve attached the output below. Could you please check if the sudo access/group membership has applied correctly?
+
+
+
+I’ve completed the pre-upgrade checks on tca02 and confirmed it’s currently on Node 18.17.1 with the NodeSource repo available for Node 18. I’m ready to proceed with the Node 24 upgrade, but I’m currently working with Tyler on getting the sudo access applied to my ADM account. Once that’s resolved, I’ll proceed with the upgrade and testing.
