@@ -51,3 +51,8 @@ Update on tca02: I configured the NodeSource 24.x repo, but DNF is failing while
 
 
 The NodeSource 24.x repo is currently returning a 403 AccessDenied for one of its metadata files. Since the original build failure only requires a newer Node version, would you prefer that I test Node 22 LTS on tca02 instead, or hold for Node 24?
+
+
+
+sudo dnf clean all
+sudo dnf --disablerepo='*' --enablerepo=nodesource-nodejs makecache
