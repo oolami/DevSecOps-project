@@ -20,3 +20,8 @@ I tested the temporary AWS Identity Center credentials by setting the environmen
 When I run the same command with --no-verify-ssl, it succeeds and returns the expected GMS-CloudEngDR assumed role. So the temporary credentials bypass the SSO login step, but the AWS CLI is still unable to validate the SSL certificate when connecting to the AWS STS endpoint.
 
 I also ran the certificate checks you requested and attached the PowerShell output. It appears the Netskope certificate is present in the local root store.
+
+
+
+
+Hi Tyler, I was able to SSH into tca02 successfully using my ADM account, but sudo -l shows that my ADM account may not run sudo on the agent. I’ve attached the output below. Could you please check if the sudo access/group membership has applied correctly?
