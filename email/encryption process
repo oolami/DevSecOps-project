@@ -22,3 +22,10 @@ sudo -l
 
 
 Hi Ryan, I’ve disabled tca02 and completed the pre-upgrade vCenter snapshot. I confirmed it’s currently running Node 18.17.1 and the NodeSource repo is configured for Node 18. I’m ready to proceed with the Node 24 upgrade, but the TeamCity teamcity account requires a password for sudo. What’s the normal process for getting elevated/root access on these build agents? Is there a privileged account I should use instead?
+
+
+Got it. I realized the TeamCity web terminal isn't an SSH session. I tried SSHing to tca02 from WSL, but authentication is being denied. What username/domain format do you normally use when SSHing to the TeamCity agent nodes?
+
+
+
+Hi Ryan, I’m able to reach tca02-corp-xmi over SSH using ssh arolawun@tca02-corp-xmi, but my domain password is being denied. Do these agents require a different domain username format or SSH key authentication?
