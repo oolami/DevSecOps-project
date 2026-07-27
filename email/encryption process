@@ -1,13 +1,11 @@
-I’m working on upgrading the TeamCity build agents to Node.js 24.
+Hi Chris,
 
-I’m currently unable to authenticate to tca02-corp-xmi via SSH using my domain account. The server is reachable over port 22, but authentication is denied.
+I tested the temporary AWS Identity Center credentials by setting the AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SESSION_TOKEN environment variables as suggested.
 
-Can you please verify whether my domain account is a member of the appropriate Sudoers/access group for the TeamCity agent nodes and add the required access if needed?
+Unfortunately, it does not appear to resolve the issue. When I run aws sts get-caller-identity using those credentials, the AWS CLI still fails with:
 
-Target server: tca02-corp-xmi (10.100.68.12)
+CERTIFICATE_VERIFY_FAILED – unable to get local issuer certificate
 
-This access is required to perform the Node.js upgrade and validate the build agent.
+I also tested the same command with --no-verify-ssl, and it succeeds and returns my expected GMS-CloudEngDR assumed role. This confirms the temporary credentials themselves are valid, but AWS CLI certificate validation is still failing when making the HTTPS request to the AWS STS endpoint.
 
-
-
-Request Sudoers/SSH access to TeamCity build agent servers
+I also ran the certificate checks you requested. I’ve attached the PowerShell output showing the results. It looks like the Netskope certificate exists in the local root store, but the AWS CLI is still unable to validate the certificate chain.
