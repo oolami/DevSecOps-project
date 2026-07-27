@@ -20,8 +20,26 @@ sudo dnf makecache
 sudo dnf --showduplicates list nodejs
 
 
-
 cat /etc/yum.repos.d/nodesource-nodejs.repo
+
+
+
+
+
+
+
+
+
+curl -fL \
+https://rpm.nodesource.com/pub_24.x/nodistro/nodejs/x86_64/repodata/repomd.xml \
+-o /tmp/repomd.xml
+
+
+ls -lh /tmp/repomd.xml
+
+sudo dnf -v --disablerepo='*' --enablerepo=nodesource-nodejs makecache
+
+sudo dnf install nodejs
 
 
 curl -I https://rpm.nodesource.com/pub_24.x/nodistro/nodejs/x86_64/repodata/repomd.xml
