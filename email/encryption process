@@ -9,3 +9,14 @@ CERTIFICATE_VERIFY_FAILED – unable to get local issuer certificate
 I also tested the same command with --no-verify-ssl, and it succeeds and returns my expected GMS-CloudEngDR assumed role. This confirms the temporary credentials themselves are valid, but AWS CLI certificate validation is still failing when making the HTTPS request to the AWS STS endpoint.
 
 I also ran the certificate checks you requested. I’ve attached the PowerShell output showing the results. It looks like the Netskope certificate exists in the local root store, but the AWS CLI is still unable to validate the certificate chain.
+
+
+
+
+Hi Chris,
+
+I tested the temporary AWS Identity Center credentials by setting the environment variables as suggested. The credentials themselves appear to be valid; however, aws sts get-caller-identity still fails with CERTIFICATE_VERIFY_FAILED – unable to get local issuer certificate.
+
+When I run the same command with --no-verify-ssl, it succeeds and returns the expected GMS-CloudEngDR assumed role. So the temporary credentials bypass the SSO login step, but the AWS CLI is still unable to validate the SSL certificate when connecting to the AWS STS endpoint.
+
+I also ran the certificate checks you requested and attached the PowerShell output. It appears the Netskope certificate is present in the local root store.
