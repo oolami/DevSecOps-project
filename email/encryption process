@@ -9,3 +9,5 @@ curl -fsSL https://rpm.nodesource.com/setup_24.x -o /tmp/nodesource_setup.sh
 
 head -20 /tmp/nodesource_setup.sh
 
+
+sudo bash /tmp/nodesource_setup.sh
