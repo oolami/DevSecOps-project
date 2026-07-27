@@ -1,31 +1,13 @@
-dnf --disablerepo='*' --enablerepo=nodesource-nodejs list available nodejs --showduplicates
+I’m working on upgrading the TeamCity build agents to Node.js 24.
 
+I’m currently unable to authenticate to tca02-corp-xmi via SSH using my domain account. The server is reachable over port 22, but authentication is denied.
 
-dnf repolist --all | grep -i node
+Can you please verify whether my domain account is a member of the appropriate Sudoers/access group for the TeamCity agent nodes and add the required access if needed?
 
-grep -R "^\[.*\]" /etc/yum.repos.d/ | grep -i node
+Target server: tca02-corp-xmi (10.100.68.12)
 
-
-dnf --disablerepo='*' --enablerepo=nodesource list available nodejs --showduplicates
-
-
-cat /etc/yum.repos.d/nodesource-el8.repo
-
-
-sudo -n true && echo "sudo access OK" || echo "sudo requires authentication"
-
-
-rpm -q nodejs
-
-
-sudo -l
-
-
-Hi Ryan, I’ve disabled tca02 and completed the pre-upgrade vCenter snapshot. I confirmed it’s currently running Node 18.17.1 and the NodeSource repo is configured for Node 18. I’m ready to proceed with the Node 24 upgrade, but the TeamCity teamcity account requires a password for sudo. What’s the normal process for getting elevated/root access on these build agents? Is there a privileged account I should use instead?
-
-
-Got it. I realized the TeamCity web terminal isn't an SSH session. I tried SSHing to tca02 from WSL, but authentication is being denied. What username/domain format do you normally use when SSHing to the TeamCity agent nodes?
+This access is required to perform the Node.js upgrade and validate the build agent.
 
 
 
-Hi Ryan, I’m able to reach tca02-corp-xmi over SSH using ssh arolawun@tca02-corp-xmi, but my domain password is being denied. Do these agents require a different domain username format or SSH key authentication?
+Request Sudoers/SSH access to TeamCity build agent servers
