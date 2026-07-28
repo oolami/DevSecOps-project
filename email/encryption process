@@ -56,3 +56,9 @@ The NodeSource 24.x repo is currently returning a 403 AccessDenied for one of it
 
 sudo dnf clean all
 sudo dnf --disablerepo='*' --enablerepo=nodesource-nodejs makecache
+
+
+
+sudo dnf repoquery --installed nodejs
+
+sudo dnf repoquery --latest-limit 3 nodejs
