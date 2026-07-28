@@ -20,6 +20,10 @@ Copy-Item `
 Get-Item C:\netskope\netskope-cert-bundle.pem |
 Select Name,Length,LastWriteTime
 
+
+
+
+
 $env:AWS_CA_BUNDLE
 $env:REQUESTS_CA_BUNDLE
 
@@ -31,3 +35,11 @@ Get-ChildItem C:\netskope
 
 Get-Item C:\netskope\netskope-cert-bundle.pem |
 Select Name,Length,LastWriteTime
+
+
+
+
+Get-ChildItem C:\Temp | Select-Object Name,FullName,Length
+
+
+Copy-Item "C:\Temp\*.pem" "C:\netskope\netskope-cert-bundle.pem"
