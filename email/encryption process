@@ -91,3 +91,11 @@ sudo grep -RniE 'exclude|excludepkgs|includepkgs|nodejs' /etc/dnf /etc/yum.conf 
 sudo dnf versionlock delete nodejs
 
 sudo dnf versionlock list
+
+
+
+sudo dnf --disableexcludes=all install nodejs-2:24.18.0-1nodesource.x86_64 -y
+
+node --version
+npm --version
+rpm -q nodejs
