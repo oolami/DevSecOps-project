@@ -86,3 +86,8 @@ sudo dnf versionlock list
 sudo dnf module list nodejs
 
 sudo grep -RniE 'exclude|excludepkgs|includepkgs|nodejs' /etc/dnf /etc/yum.conf /etc/yum.repos.d 2>/dev/null
+
+
+sudo dnf versionlock delete nodejs
+
+sudo dnf versionlock list
