@@ -67,3 +67,13 @@ sudo dnf repoquery --latest-limit 3 nodejs
 
 
 sudo dnf install nodejs-2:24.18.0-1nodesource.x86_64 --assumeno
+
+
+
+
+sudo grep -Rni "exclude.*nodejs\|nodejs.*exclude" /etc/dnf /etc/yum.conf /etc/yum.repos.d 2>/dev/null
+
+sudo dnf config-manager --dump | grep -i exclude
+
+
+sudo dnf --disableexcludes=all install nodejs-2:24.18.0-1nodesource.x86_64 --assumeno
