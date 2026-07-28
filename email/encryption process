@@ -110,3 +110,69 @@ sudo systemctl list-units --type=service | grep -i teamcity
 
 
 ps -ef | grep -i '[t]eamcity'
+
+
+
+
+
+
+
+Hi Raul, I’ve completed the Node 24 upgrade on tca02 and temporarily configured ARC Hub-Business to run specifically on that agent. The agent is ready for testing. Can you please run the ArcHub Business test on your end and let me know if you encounter any issues?
+
+
+
+Yesterday I worked on the Node.js 24 upgrade testing on the tca02 TeamCity agent. Initially, the NodeSource 24 repository was returning a 403 Access Denied while DNF was trying to retrieve repository metadata, even though the repository itself was reachable. That repository issue later cleared and Node 24 packages became available.
+
+I then found that the server had Node 18 version-locked, which prevented DNF from upgrading to Node 24. I identified and removed the Node 18 version lock, then successfully upgraded the agent from Node 18.17.1 to Node 24.18.0.
+
+I verified Node, npm, and the installed RPM version, restarted the TeamCity agent service, and confirmed it came back successfully. I’ve now restricted ARC Hub-Business to tca02 so we can test specifically against Node 24. The next step is for Raul to run the ArcHub Business tests and then monitor for any compatibility issues before we roll Node 24 out to the remaining agents.
+
+
+
+Node 24 Upgrade – tca02 Testing Update
+
+Completed the initial Node.js 24 upgrade on the tca02-corp-xmi TeamCity agent.
+
+Pre-upgrade / investigation:
+
+Confirmed tca02 was running Node.js 18.17.1.
+Confirmed NodeSource repository configuration was present.
+Took/confirmed a VM snapshot for rollback prior to making the upgrade.
+Disabled the TeamCity agent during maintenance.
+
+Issues encountered:
+
+NodeSource 24 repository initially returned HTTP 403 AccessDenied while DNF attempted to retrieve repository metadata.
+Direct connectivity/repository testing showed the repository endpoint was reachable, indicating the failure was related to repository metadata access rather than general server connectivity.
+After the repository became available, DNF could see Node 24 packages but would not upgrade the installed Node 18 package.
+Investigation identified an existing DNF version lock on nodejs-2:18.17.1-1nodesource.*, which was preventing Node from being upgraded.
+
+Resolution:
+
+Refreshed DNF/NodeSource repository metadata.
+Verified Node 24 packages were available from the nodesource-nodejs repository.
+Removed the existing Node 18 DNF version lock.
+Upgraded Node.js from 18.17.1 to 24.18.0.
+
+Post-upgrade validation:
+
+node --version → v24.18.0
+npm --version → 11.6.0
+RPM package → nodejs-24.18.0-1nodesource.x86_64
+Restarted teamcityagent.service.
+Verified the TeamCity agent service restarted successfully.
+Verified the TeamCity agent process is running.
+
+TeamCity test configuration:
+
+Added an ARC Hub-Business agent requirement for teamcity.agent.name = tca02-corp-xmi.
+Confirmed TeamCity now reports only tca02 as compatible with the ARC Hub-Business configuration.
+This isolates Node 24 testing to tca02 without impacting the remaining TeamCity agents.
+
+Next steps:
+
+Enable tca02 in TeamCity.
+Have Raul execute ARC Hub-Business testing against the upgraded agent.
+Monitor the build/test results for Node 24 compatibility issues.
+If testing remains stable, remove the temporary test restriction as appropriate and proceed with the Node 24 upgrade on the remaining TeamCity agents.
+Retain the VM snapshot during the validation period and remove it once the Node 24 rollout is confirmed stable.
