@@ -99,3 +99,9 @@ sudo dnf --disableexcludes=all install nodejs-2:24.18.0-1nodesource.x86_64 -y
 node --version
 npm --version
 rpm -q nodejs
+
+
+
+sudo systemctl status teamcity-agent
+
+sudo systemctl list-units --type=service | grep -i teamcity
