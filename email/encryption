@@ -43,3 +43,7 @@ Get-ChildItem C:\Temp | Select-Object Name,FullName,Length
 
 
 Copy-Item "C:\Temp\*.pem" "C:\netskope\netskope-cert-bundle.pem"
+
+
+
+Copy-Item "C:\Temp\netskope-cert-bundle .pem" "C:\netskope\netskope-cert-bundle.pem"
