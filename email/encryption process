@@ -62,3 +62,8 @@ sudo dnf --disablerepo='*' --enablerepo=nodesource-nodejs makecache
 sudo dnf repoquery --installed nodejs
 
 sudo dnf repoquery --latest-limit 3 nodejs
+
+
+
+
+sudo dnf install nodejs-2:24.18.0-1nodesource.x86_64 --assumeno
