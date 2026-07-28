@@ -105,3 +105,8 @@ rpm -q nodejs
 sudo systemctl status teamcity-agent
 
 sudo systemctl list-units --type=service | grep -i teamcity
+
+
+
+
+ps -ef | grep -i '[t]eamcity'
