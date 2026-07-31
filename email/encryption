@@ -206,3 +206,29 @@ Update the Virtual Service.
 Deploy to Fastly if routed through Fastly.
 Validate both origin/internal and public endpoints.
 Document production-readiness findings.
+
+
+
+
+
+
+
+
+
+
+
+
+
+TeamCity → CSR/private key in NSX-ALB → DigiCert renewal and approval → certificate imported back into NSX-ALB → Virtual Service updated → Fastly updated when applicable → endpoint validation
+
+
+Clone and parameterize the existing TeamCity job.
+Automate NSX-ALB discovery and CSR creation.
+Test internal certificate import and Virtual Service update.
+Add live validation and rollback.
+Build DigiCert renewal integration.
+Add the invoice and SysAdmin approval wait state.
+Automate NSX-ALB external certificate completion.
+Add conditional Fastly deployment.
+Pilot one external domain.
+Roll out certificate by certificate.
