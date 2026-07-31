@@ -219,7 +219,13 @@ Document production-readiness findings.
 
 
 
-TeamCity → CSR/private key in NSX-ALB → DigiCert renewal and approval → certificate imported back into NSX-ALB → Virtual Service updated → Fastly updated when applicable → endpoint validation
+TeamCity → Generate CSR using the private key stored in NSX-ALB → Submit renewal request to DigiCert → SysAdmin approval and billing workflow → Retrieve issued certificate and chain → Import the renewed certificate into NSX-ALB → Update the applicable NSX-ALB Virtual Service → If the domain is routed through Fastly, replace the certificate and key in Fastly → Validate the live endpoint.
+
+
+
+
+Automate the current external certificate renewal process using TeamCity, DigiCert, NSX-ALB, and Fastly, while retaining SysAdmin ownership of certificate approval and the billing workflow.
+
 
 
 Clone and parameterize the existing TeamCity job.
