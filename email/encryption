@@ -1,49 +1,208 @@
-C:\netskope
+Implement External SSL Certificate Renewal Automation
 
-Get-Item C:\netskope\netskope-cert-bundle.pem |
-Select Name,Length,LastWriteTime
+Objective
 
-Rename-Item `
-  C:\netskope\netskope-cert-bundle.pem `
-  netskope-cert-bundle.old
-
-Get-ChildItem C:\netskope
+Automate the current external certificate renewal process using TeamCity, DigiCert, NSX-ALB and Fastly while retaining SysAdmin approval and billing ownership.
 
 
 
 
-Copy-Item `
-  "$env:USERPROFILE\Downloads\netskope-cert-bundle.pem" `
-  "C:\netskope\netskope-cert-bundle.pem"
+Story 1 — Parameterize the existing TeamCity certificate workflow
 
+Description
 
-Get-Item C:\netskope\netskope-cert-bundle.pem |
-Select Name,Length,LastWriteTime
+Extend or clone the existing Maintenance / NSX-ALB Certificate Issue configuration for external certificate renewal.
 
+Tasks
 
+Add operation parameter:
+Renew
+Reissue
+NewOrder
+DeployOnly
+Add certificate CN and SAN parameters.
+Add DigiCert order ID or certificate ID.
+Add NSX-ALB certificate-template identifier.
+Add NSX-ALB Virtual Service identifier.
+Add Fastly-routed boolean.
+Add Fastly TLS certificate/domain identifier.
+Add dry-run mode.
+Add secure API credential references.
+Preserve existing internal certificate behavior.
 
+Acceptance criteria
 
+Renewal and new-order paths are clearly differentiated.
+TeamCity validates required parameters before execution.
+Existing internal workflow is not broken.
+No private keys are written to build logs or normal artifacts.
+Story 2 — Automate NSX-ALB CSR generation and certificate discovery
 
-$env:AWS_CA_BUNDLE
-$env:REQUESTS_CA_BUNDLE
+Description
 
+Reuse the existing TeamCity and NSX-ALB process to generate the CSR from the private key stored in NSX-ALB and identify all related certificate objects.
 
+Tasks
 
-Copy-Item "C:\Temp\netskope-cert-bundle.pem" "C:\netskope\netskope-cert-bundle.pem"
+Find the current NSX-ALB certificate/template by CN or UUID.
+Capture the current certificate metadata.
+Capture the current Virtual Service binding.
+Generate or retrieve the CSR using the existing private key.
+Validate CSR CN and SANs.
+Publish only the CSR as a TeamCity artifact.
+Record the current certificate for rollback.
 
-Get-ChildItem C:\netskope
+Acceptance criteria
 
-Get-Item C:\netskope\netskope-cert-bundle.pem |
-Select Name,Length,LastWriteTime
+CSR is generated from the intended NSX-ALB certificate object.
+Private key remains protected in NSX-ALB.
+CN and SANs are verified before submission.
+Current Virtual Service binding is recorded.
+Story 3 — Automate DigiCert renewal and certificate retrieval
 
+Description
 
+Automate the normal renewal path against the existing DigiCert order.
 
+Tasks
 
-Get-ChildItem C:\Temp | Select-Object Name,FullName,Length
+Locate the latest DigiCert order for the domain.
+Confirm the order is eligible for renewal.
+Submit the renewal using the generated CSR.
+Apply the correct product and term.
+Use the new invoice/account-balance workflow.
+Record SysAdmin approval status.
+Poll the DigiCert order until issued.
+Download the certificate and chain.
+Handle pending approval, validation, rejection and timeout states.
 
+Acceptance criteria
 
-Copy-Item "C:\Temp\*.pem" "C:\netskope\netskope-cert-bundle.pem"
+The workflow renews an existing certificate rather than creating a new order by default.
+SysAdmin approval remains a controlled dependency.
+Issued certificate and chain are retrieved automatically.
+DigiCert order and request IDs are captured for audit purposes.
+Story 4 — Automate NSX-ALB certificate import and Virtual Service update
 
+Description
 
+Complete the NSX-ALB portion after DigiCert issues the renewed certificate.
 
-Copy-Item "C:\Temp\netskope-cert-bundle .pem" "C:\netskope\netskope-cert-bundle.pem"
+Tasks
+
+Locate the temporary certificate template containing the private key.
+Import the renewed certificate.
+Validate the certificate and key match.
+Create or update the final application certificate object.
+Follow the required naming convention.
+Preserve the old certificate until validation succeeds.
+Update the target Virtual Service SSL certificate binding.
+Verify the new certificate is selected and the old one is removed only when safe.
+Save and re-query the configuration.
+
+Acceptance criteria
+
+Renewed certificate is successfully combined with the existing private key.
+Target Virtual Service references the new certificate.
+Previous certificate remains available for rollback.
+The endpoint presents the new certificate after the update.
+Story 5 — Automate conditional Fastly certificate replacement
+
+Description
+
+When the domain is listed as Fastly-routed, deploy the renewed certificate and key to Fastly after the NSX-ALB step.
+
+Tasks
+
+Maintain a managed list or mapping of Fastly-routed domains.
+Export or securely obtain the private key from NSX-ALB.
+Prevent the key from appearing in TeamCity logs or retained artifacts.
+Find the existing Fastly TLS certificate.
+Replace the certificate and key.
+Preserve the existing TLS activation.
+Validate both the primary and www hostname.
+Remove unused private keys only after successful deployment.
+
+Acceptance criteria
+
+Fastly deployment executes only for mapped Fastly domains.
+Certificate and key are replaced through API.
+Existing activation remains functional.
+The public endpoint presents the expected renewed certificate.
+Story 6 — Add validation, rollback and reporting
+
+Description
+
+Make live endpoint validation—not API upload success—the final success criterion.
+
+Tasks
+
+Run OpenSSL or an equivalent TLS inspection.
+Capture:
+Serial number
+Expiration date
+Issuer
+SANs
+Thumbprint
+Compare the live certificate with the DigiCert-issued artifact.
+Validate the NSX-ALB endpoint.
+Validate the Fastly endpoint when applicable.
+Restore the previous Virtual Service binding if NSX-ALB validation fails.
+Retain or restore the previous Fastly certificate if external validation fails.
+Publish TeamCity status.
+Notify Teams/Jira.
+
+Acceptance criteria
+
+Pipeline succeeds only after live validation passes.
+Rollback steps are documented and testable.
+Failures identify the affected domain, certificate and deployment target.
+Results are auditable.
+Story 7 — Pilot the internal NSX-ALB automation
+
+This should be your first practical test.
+
+Objective
+
+Use the existing TeamCity script with a low-risk internal certificate to automate issuance, NSX-ALB import, Virtual Service update and validation.
+
+Tasks
+
+Select a non-production or low-risk internal Virtual Service.
+Clone the existing TeamCity job.
+Run discovery and CSR generation in dry-run mode.
+Issue a SILAC CA certificate using the existing internal process.
+Automate NSX-ALB certificate import.
+Automate Virtual Service certificate binding.
+Validate with OpenSSL.
+Test rollback.
+Document gaps before connecting DigiCert and Fastly.
+
+Why this pilot makes sense
+
+It tests the hardest reusable infrastructure pieces first:
+
+TeamCity orchestration
+NSX-ALB authentication
+Certificate object discovery
+Private-key handling
+Certificate import
+Virtual Service update
+Validation
+Rollback
+
+You can prove those without waiting for DigiCert billing and SysAdmin approval.
+
+Story 8 — Pilot one external DigiCert renewal
+
+After the internal pilot succeeds:
+
+Select one approved low-risk external domain.
+Generate CSR from NSX-ALB.
+Renew its existing DigiCert order.
+Complete SysAdmin approval.
+Import the certificate back into NSX-ALB.
+Update the Virtual Service.
+Deploy to Fastly if routed through Fastly.
+Validate both origin/internal and public endpoints.
+Document production-readiness findings.
