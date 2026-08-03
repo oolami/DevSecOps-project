@@ -8,3 +8,8 @@ sudo /opt/pbis/bin/config --show RequireMembershipOf
 
 
 sudo /opt/pbis/bin/config --list | grep -i RequireMembershipOf
+
+
+sudo /opt/pbis/bin/find-group-by-name A636561167788\\SSHADMIN
+
+sudo /opt/pbis/bin/find-by-sid <group SID>
