@@ -1,3 +1,10 @@
 sudo grep -Ei "AllowUsers|AllowGroups|DenyUsers|DenyGroups" /etc/ssh/sshd_config
 
 sudo tail -50 /var/log/secure
+
+
+
+sudo /opt/pbis/bin/config --show RequireMembershipOf
+
+
+sudo /opt/pbis/bin/config --list | grep -i RequireMembershipOf
