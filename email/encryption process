@@ -13,3 +13,15 @@ sudo /opt/pbis/bin/config --list | grep -i RequireMembershipOf
 sudo /opt/pbis/bin/find-group-by-name A636561167788\\SSHADMIN
 
 sudo /opt/pbis/bin/find-by-sid <group SID>
+
+
+
+sudo /opt/pbis/bin/ad-cache --delete-all
+sudo /opt/pbis/bin/lwsm restart lsass
+
+
+sudo /opt/pbis/bin/config --detail RequireMembershipOf
+
+sudo /opt/pbis/bin/find-by-sid S-1-5-21-3410555521-1833910143-4068955176-132610
+
+sudo tail -100 /var/log/secure
