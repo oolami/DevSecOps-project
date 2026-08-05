@@ -1,27 +1,3 @@
-sudo grep -Ei "AllowUsers|AllowGroups|DenyUsers|DenyGroups" /etc/ssh/sshd_config
+The DR S3 bucket has been created and configured to match the Prod bucket (versioning enabled, SSE-S3 encryption, bucket key enabled, and Block Public Access configured). The bucket is ready on the DR side.
 
-sudo tail -50 /var/log/secure
-
-
-
-sudo /opt/pbis/bin/config --show RequireMembershipOf
-
-
-sudo /opt/pbis/bin/config --list | grep -i RequireMembershipOf
-
-
-sudo /opt/pbis/bin/find-group-by-name A636561167788\\SSHADMIN
-
-sudo /opt/pbis/bin/find-by-sid <group SID>
-
-
-
-sudo /opt/pbis/bin/ad-cache --delete-all
-sudo /opt/pbis/bin/lwsm restart lsass
-
-
-sudo /opt/pbis/bin/config --detail RequireMembershipOf
-
-sudo /opt/pbis/bin/find-by-sid S-1-5-21-3410555521-1833910143-4068955176-132610
-
-sudo tail -100 /var/log/secure
+The remaining work is to create the cross-account IAM replication role and configure the replication rule from the Prod account. I know Erik typically handles the IAM role creation, but since he's out of the office this week, is there anyone else who can assist with creating the IAM role for the S3 bucket replication so we can continue with the setup?
