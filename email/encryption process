@@ -1,3 +1,8 @@
-The DR S3 bucket has been created and configured to match the Prod bucket (versioning enabled, SSE-S3 encryption, bucket key enabled, and Block Public Access configured). The bucket is ready on the DR side.
+Hi [Manager’s Name],
 
-The remaining work is to create the cross-account IAM replication role and configure the replication rule from the Prod account. I know Erik typically handles the IAM role creation, but since he's out of the office this week, is there anyone else who can assist with creating the IAM role for the S3 bucket replication so we can continue with the setup?
+As requested, I’ve attached my updated resume for your review and promotion consideration.
+
+Thank you again for the opportunity and for considering me. Please let me know if you need any additional information from me.
+
+Best,
+Grace
