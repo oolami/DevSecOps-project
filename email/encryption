@@ -84,3 +84,154 @@ else {
         throw "Renew was requested but no existing NSX-ALB certificate object was found."
     }
 }
+
+
+
+
+validate certificate request ; 
+
+$ErrorActionPreference = "Stop"
+
+$Operation        = "%Operation%"
+$CertificateType  = "%CertificateType%"
+$CommonName       = "%CommonName%"
+$DryRun           = "%DryRun%"
+$RotatePrivateKey = "%RotatePrivateKey%"
+
+$validOperations = @(
+    "Renew",
+    "Reissue",
+    "NewOrder",
+    "DeployOnly"
+)
+
+$validTypes = @(
+    "Internal",
+    "External"
+)
+
+Write-Host "====================================="
+Write-Host "Certificate Automation Request"
+Write-Host "====================================="
+Write-Host "Operation        : $Operation"
+Write-Host "Certificate Type : $CertificateType"
+Write-Host "Common Name      : $CommonName"
+Write-Host "Dry Run          : $DryRun"
+Write-Host "Rotate Key       : $RotatePrivateKey"
+Write-Host "====================================="
+
+if ($Operation -notin $validOperations) {
+    throw "Invalid Operation: $Operation"
+}
+
+if ($CertificateType -notin $validTypes) {
+    throw "Invalid CertificateType: $CertificateType"
+}
+
+if ([string]::IsNullOrWhiteSpace($CommonName)) {
+    throw "CommonName is required."
+}
+
+if ($Operation -eq "Renew" -and $RotatePrivateKey -eq "true") {
+    Write-Warning "Private key rotation has been requested for a renewal."
+}
+
+Write-Host "Input validation completed successfully."
+
+
+
+
+
+NSX-ALB; 
+
+$ErrorActionPreference = "Stop"
+
+$nsxHost       = "%NSX-ALB-Host%"
+$nsxUsername   = "%NSX-ALB-Username%"
+$nsxPassword   = "%NSX-ALB-Password%"
+$nsxVersion    = "%NSX-ALB-Version%"
+$commonName    = "%CommonName%"
+$operation     = "%Operation%"
+
+Write-Host "Searching NSX-ALB for certificate objects related to: $commonName"
+
+$headers = @{
+    "Content-Type"  = "application/json"
+    "X-Avi-Version" = $nsxVersion
+}
+
+$signInBody = @{
+    username = $nsxUsername
+    password = $nsxPassword
+} | ConvertTo-Json
+
+$signInResponse = Invoke-WebRequest `
+    -Uri "$nsxHost/login" `
+    -SessionVariable session `
+    -Method POST `
+    -Headers $headers `
+    -Body $signInBody
+
+if ($signInResponse.StatusCode -ne 200) {
+    throw "NSX-ALB authentication failed."
+}
+
+Write-Host "Successfully authenticated to NSX-ALB."
+
+$csrfCookie = $session.Cookies.GetAllCookies() |
+    Where-Object { $_.Name -eq "csrftoken" } |
+    Select-Object -First 1
+
+if ($csrfCookie) {
+    $headers["X-CSRFToken"] = $csrfCookie.Value
+}
+
+$headers["Referer"] = $nsxHost
+
+# Query certificate objects
+$response = Invoke-WebRequest `
+    -Uri "$nsxHost/api/sslkeyandcertificate" `
+    -WebSession $session `
+    -Headers $headers `
+    -Method GET
+
+if ($response.StatusCode -ne 200) {
+    throw "Failed to retrieve certificate objects from NSX-ALB."
+}
+
+$data = $response.Content | ConvertFrom-Json
+
+# Current process uses names that may contain the CN plus an expiration date,
+# therefore filter by CN rather than requiring an exact name match.
+$matches = @(
+    $data.results |
+    Where-Object {
+        $_.name -like "*$commonName*"
+    }
+)
+
+Write-Host "Matching certificate objects found: $($matches.Count)"
+
+foreach ($cert in $matches) {
+    Write-Host "-------------------------------------"
+    Write-Host "Name : $($cert.name)"
+    Write-Host "UUID : $($cert.uuid)"
+    Write-Host "Type : $($cert.type)"
+
+    if ($cert.certificate) {
+        Write-Host "Subject : $($cert.certificate.subject)"
+        Write-Host "Issuer  : $($cert.certificate.issuer)"
+    }
+}
+
+if ($matches.Count -eq 0) {
+
+    if ($operation -eq "Renew") {
+        Write-Warning "No existing NSX-ALB certificate object was found for renewal."
+    }
+    else {
+        Write-Host "No existing certificate found. This may be expected for operation: $operation"
+    }
+}
+
+Write-Host "NSX-ALB certificate discovery completed."
