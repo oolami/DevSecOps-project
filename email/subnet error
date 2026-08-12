@@ -1,385 +1,108 @@
-def assign_subnet_az_mapping(df):
-"""
-STRICT mapping:
-source AZ suffix letter -> DR subnet in DR AZ with same suffix letter
-a->a, b->b, c->c (NO fallback)
-Example: us-east-1a must map to a subnet in us-west-2a
-"""
+Intro;
 
-# --- collect unique source AZs from CSV ---
-src_azs = []
-for ind in df.index:
-az = str(df['Availability Zone'][ind]) if 'Availability Zone' in df.columns else ""
-if az and az.lower() != "nan" and az not in src_azs:
-src_azs.append(az)
-src_azs = sorted(src_azs)
+"I'm a cybersecurity and DevOps professional with over seven years of experience working in cloud infrastructure, Linux administration, automation, security and technical operations. I've worked extensively with AWS and Azure environments, CI/CD pipelines, Python, infrastructure automation, containerized environments and troubleshooting complex technical systems.
 
-# --- ensure mapper exists on the module used later ---
-if not hasattr(create_placeholder_instance, "az_mapper") or not isinstance(create_placeholder_instance.az_mapper, dict):
-create_placeholder_instance.az_mapper = {}
+A major part of my work has always involved analyzing information carefully, identifying inconsistencies, following technical requirements and validating that outputs meet expected standards. That attention to detail translates very well into AI data labeling and annotation.
 
-# --- validate DR subnet discovery ---
-dr_subnets = dr_application_subnets.get("Subnets", [])
-if not dr_subnets:
-raise RuntimeError(
-"No DR subnets found (dr_application_subnets['Subnets'] is empty). "
-"Fix the DR subnet filters (describe_subnets) so it returns the DR application subnets."
-)
+I've also developed hands-on familiarity with generative AI and AI evaluation, including working with prompts, reviewing AI-generated responses and content, comparing outputs against specific instructions, identifying inaccuracies or inconsistencies, and determining whether an output satisfies the requested criteria.
 
-# --- index DR subnets by AZ letter suffix ---
-dr_by_letter = {}
-for s in dr_subnets:
-dr_az = str(s.get("AvailabilityZone", ""))
-subnet_id = s.get("SubnetId")
-if not dr_az or not subnet_id:
-continue
-letter = dr_az[-1] # a/b/c
-dr_by_letter.setdefault(letter, []).append(s)
+What interests me about data labeling is that the quality of an AI system is heavily dependent on the quality of the data and human feedback used to train and evaluate it. I enjoy structured analytical work, and I think my combination of technical experience, cybersecurity mindset, attention to detail and ability to follow complex guidelines would allow me to contribute effectively in this role."
 
-# Track already-used subnet IDs to prevent duplicates
-used_subnet_ids = set(v for v in create_placeholder_instance.az_mapper.values() if v)
 
-# --- strict mapping for each source AZ ---
-for src_az in src_azs:
-letter = src_az[-1] # a/b/c
-candidates = [s for s in dr_by_letter.get(letter, []) if s.get("SubnetId") not in used_subnet_ids]
+Q: "If we gave you an AI-generated image and the prompt someone used to make it, what kind of things would you look at to decide whether the image actually matches what was asked for?"
 
-if not candidates:
-available_letters = sorted(set(dr_by_letter.keys()))
-available_azs = sorted(set(str(s.get("AvailabilityZone")) for s in dr_subnets if s.get("AvailabilityZone")))
-raise RuntimeError(
-f"STRICT AZ mapping failed: source AZ '{src_az}' requires DR AZ letter '{letter}', "
-f"but no UNUSED DR subnet was found in an AZ ending with '{letter}'.\n"
-f"DR letters available: {available_letters}\n"
-f"DR AZs seen: {available_azs}\n"
-f"Used subnet IDs: {sorted(list(used_subnet_ids))}\n"
-f"Fix: ensure DR has an application subnet in us-west-2{letter} (or correct your subnet filters)."
-)
+A: First, I would break the prompt into its individual requirements and compare each requirement against the generated image.
 
-# Deterministic pick: smallest subnet id (or adjust sorting if you prefer Name tag ordering)
-chosen = sorted(candidates, key=lambda x: x.get("SubnetId"))[0]
-create_placeholder_instance.az_mapper[src_az] = chosen["SubnetId"]
-used_subnet_ids.add(chosen["SubnetId"])
+I would look at the main subject, the number of objects or people requested, their attributes, actions, relationships, location or background, colors, composition, style, text and any other constraints specifically mentioned in the prompt.
 
-print("STRICT AZ mapper (source AZ -> DR SubnetId):", create_placeholder_instance.az_mapper)
-print("DR subnet AZs:", sorted(set(s.get("AvailabilityZone") for s in dr_subnets if s.get("AvailabilityZone"))))
+I would also look for contradictions or missing elements. For example, if the prompt asks for three people but the image contains four, or asks for a red car and the generated car is blue, that would be a mismatch.
 
+Beyond basic prompt compliance, I would check image quality and consistency—for example distorted objects, incorrect anatomy, duplicated elements, unreadable text or physically impossible relationships.
 
+Most importantly, I would evaluate according to the provided labeling guidelines rather than my personal preference. If something is genuinely ambiguous, I would follow the escalation or uncertainty process defined by the project instead of guessing."
 
+EX: Example prompt:
 
+"A golden retriever wearing a red scarf sitting beside a blue bicycle in a snowy park, watercolor style."
 
+You would check:
 
+Is it a golden retriever?
+Is it wearing a red scarf?
+Is it sitting?
+Is there a blue bicycle?
+Is the dog beside the bicycle?
+Is the setting a snowy park?
+Does it look like watercolor?
+Are there obvious generation defects?
+Are any requested elements missing?
 
 
+Q : Do you have AI experience?"
 
+A : Yes. My primary professional background is in cybersecurity, DevOps and cloud engineering, but I've also gained hands-on experience working with generative AI systems. I've worked with prompts and AI-generated content and have experience reviewing outputs for accuracy, relevance, completeness and instruction adherence.
 
-Create placeholder
+I'm comfortable comparing an AI response or generated image against a set of requirements, identifying discrepancies, and providing structured feedback. My technical background also helps because I'm accustomed to validation, troubleshooting and working according to detailed standards rather than making assumptions."
 
+Q: Have you trained an AI model?"
 
-def get_dr_instance_subnet(source_instance_az):
-try:
-return az_mapper[source_instance_az]
-except KeyError:
-raise RuntimeError(
-f"AZ mapping missing for source AZ '{source_instance_az}'. "
-f"Current az_mapper keys: {sorted(list(az_mapper.keys()))}. "
-"Make sure assign_subnet_az_mapping(df) ran and populated the mapping."
-)
 
+A: "I haven't been responsible for developing or training a machine-learning model from scratch. 
 
+ My experience is more on the human evaluation and applied-AI side—working with AI systems, prompting them, reviewing outputs and evaluating whether responses meet specific requirements. I'm also familiar with how labeled and annotated data contributes to model training and evaluation."
 
+A: What exactly is data labeling?
 
+Data labeling is the process of assigning meaningful labels, categories or annotations to raw data so that machine-learning systems can learn from or be evaluated against that data.
 
 
-Replace;
+"How do you ensure accuracy when labeling data?"
 
-dr_application_subnets = client.describe_subnets(Filters=[
-{"Name": "tag:Name", "Values": ["6365611...customer-applications-..."]}
-])
+"I start by understanding the labeling guidelines and definitions before beginning the task. I evaluate each item against those guidelines consistently rather than relying on intuition alone.
 
+I also perform a second review when an example is borderline or contains multiple conditions. If something is ambiguous, I check the documentation and use the project's escalation process rather than guessing.
 
+I would also pay attention to recurring mistakes so I can prevent them in future tasks. For me, consistency is just as important as speed because inconsistent labels can reduce the quality of the dataset."
 
+Q: "How would you evaluate an AI-generated answer?"
 
-With:
+A: I would first identify what the user's prompt requires and then evaluate the response against those requirements. I would check instruction following, factual accuracy, relevance, completeness, clarity, internal consistency and safety. I would separate personal preference from objective quality and apply whatever rubric or guidelines the project provides.
 
-# Get all subnets in the DR VPC, then filter in Python by Name tag contains 'customer-applications'
-all_dr_subnets = client.describe_subnets(
-Filters=[{"Name": "vpc-id", "Values": [vpc_id]}]
-).get("Subnets", [])
 
-def _tag_value(tags, key):
-for t in tags or []:
-if t.get("Key") == key:
-return t.get("Value")
-return ""
+Q: What is supervised learning?
 
-dr_application_subnets = {
-"Subnets": [
-s for s in all_dr_subnets
-if "customer-applications" in _tag_value(s.get("Tags"), "Name")
-]
-}
+A: "Supervised learning is a machine-learning approach where a model learns from labeled examples containing both the input and the expected output.
 
+Q: What makes high-quality labeled data?
 
+A: Accurate
 
+Correct labels.
 
+Consistent
 
+Same rules across examples.
 
+Complete
 
+Required information isn't missing.
 
+Relevant
 
+Labels reflect the task.
 
+Unbiased
 
-New:
+Avoid subjective assumptions.
 
-def assign_subnet_az_mapping(df):
-"""
-STRICT mapping:
-source AZ suffix letter -> DR subnet in DR AZ with same suffix letter
-a->a, b->b, c->c (NO fallback)
-Example: us-east-1a must map to a subnet in us-west-2a
-"""
+Guideline-compliant
 
-# --- collect unique source AZs from CSV ---
-src_azs = []
-for ind in df.index:
-az = str(df['Availability Zone'][ind]) if 'Availability Zone' in df.columns else ""
-if az and az.lower() != "nan" and az not in src_azs:
-src_azs.append(az)
-src_azs = sorted(src_azs)
+Follow the annotation specification.
 
-# --- ensure mapper exists on module used later ---
-if (not hasattr(create_placeholder_instance, "az_mapper")
-or not isinstance(create_placeholder_instance.az_mapper, dict)):
-create_placeholder_instance.az_mapper = {}
 
-# --- validate DR subnet discovery ---
-dr_subnets = dr_application_subnets.get("Subnets", [])
-if not dr_subnets:
-raise RuntimeError(
-"No DR subnets found (dr_application_subnets['Subnets'] is empty). "
-"Fix the DR subnet discovery (describe_subnets) so it returns DR application subnets."
-)
 
-# --- index DR subnets by AZ suffix (a/b/c) ---
-dr_by_letter = {}
-for s in dr_subnets:
-dr_az = str(s.get("AvailabilityZone", ""))
-subnet_id = s.get("SubnetId")
-if not dr_az or not subnet_id:
-continue
-letter = dr_az[-1] # a/b/c...
-dr_by_letter.setdefault(letter, []).append(s)
+Q: Why are you interested in Workada?
 
-used_subnet_ids = set(v for v in create_placeholder_instance.az_mapper.values() if v)
+A: I'm interested in Workada because the role combines technology with structured human judgment. AI systems depend heavily on high-quality training and evaluation data, and I find the human side of that process interesting.
 
-# --- strict mapping for each source AZ ---
-for src_az in src_azs:
-letter = src_az[-1] # a/b/c...
-candidates = [s for s in dr_by_letter.get(letter, []) if s.get("SubnetId") not in used_subnet_ids]
-
-if not candidates:
-available_letters = sorted(dr_by_letter.keys())
-available_azs = sorted({str(s.get("AvailabilityZone")) for s in dr_subnets if s.get("AvailabilityZone")})
-raise RuntimeError(
-f"STRICT AZ mapping failed: source AZ '{src_az}' requires DR AZ letter '{letter}',\n"
-f"but no UNUSED DR subnet was found in an AZ ending with '{letter}'.\n"
-f"DR letters available: {available_letters}\n"
-f"DR AZs seen: {available_azs}\n"
-f"Used subnet IDs: {sorted(list(used_subnet_ids))}\n"
-f"Fix: ensure DR has an application subnet in the correct AZ (e.g., us-west-2{letter}) "
-f"and your subnet discovery returns it."
-)
-
-# deterministic choice
-chosen = sorted(candidates, key=lambda x: x.get("SubnetId", ""))[0]
-create_placeholder_instance.az_mapper[src_az] = chosen["SubnetId"]
-used_subnet_ids.add(chosen["SubnetId"])
-
-
-
-
-
-def assign_subnet_az_mapping(df):
-
-# STRICT AZ mapping rule
-# a -> a
-# b -> b
-# c -> c
-# Example:
-# us-east-1a -> us-west-2a
-
-
-
-
-
-final fix:
-
-
-def assign_subnet_az_mapping(df):
-# STRICT mapping:
-# source AZ suffix letter -> DR subnet in DR AZ with same suffix letter
-# a->a, b->b, c->c (NO fallback)
-# Example: us-east-1a must map to a subnet in us-west-2a
-
-# --- collect unique source AZs from CSV ---
-src_azs = []
-for ind in df.index:
-az = str(df["Availability Zone"][ind]) if "Availability Zone" in df.columns else ""
-if az and az.lower() != "nan" and az not in src_azs:
-src_azs.append(az)
-src_azs = sorted(src_azs)
-
-# --- ensure mapper exists on the module used later ---
-if (not hasattr(create_placeholder_instance, "az_mapper")
-or not isinstance(create_placeholder_instance.az_mapper, dict)):
-create_placeholder_instance.az_mapper = {}
-
-# --- validate DR subnet discovery ---
-dr_subnets = dr_application_subnets.get("Subnets", [])
-if not dr_subnets:
-raise RuntimeError(
-"No DR subnets found (dr_application_subnets['Subnets'] is empty). "
-"Fix the DR subnet discovery (describe_subnets filters) so it returns the DR application subnets."
-)
-
-# --- index DR subnets by AZ suffix (a/b/c) ---
-dr_by_letter = {}
-for s in dr_subnets:
-dr_az = str(s.get("AvailabilityZone", ""))
-subnet_id = s.get("SubnetId")
-if not dr_az or not subnet_id:
-continue
-letter = dr_az[-1] # a/b/c...
-dr_by_letter.setdefault(letter, []).append(s)
-
-# Track already-used subnet IDs to prevent duplicates
-used_subnet_ids = set(v for v in create_placeholder_instance.az_mapper.values() if v)
-
-# --- strict mapping for each source AZ ---
-for src_az in src_azs:
-letter = src_az[-1] # a/b/c...
-
-candidates = [
-s for s in dr_by_letter.get(letter, [])
-if s.get("SubnetId") not in used_subnet_ids
-]
-
-if not candidates:
-available_letters = sorted(set(dr_by_letter.keys()))
-available_azs = sorted(set(str(s.get("AvailabilityZone", "")) for s in dr_subnets if s.get("AvailabilityZone")))
-raise RuntimeError(
-f"STRICT AZ mapping failed: source AZ '{src_az}' requires DR AZ letter '{letter}', "
-f"but no UNUSED DR subnet was found in an AZ ending with '{letter}'.\n"
-f"DR letters available: {available_letters}\n"
-f"DR AZs seen: {available_azs}\n"
-f"Used subnet IDs: {sorted(list(used_subnet_ids))}\n"
-f"Fix: ensure DR has an application subnet in us-west-2{letter} (or correct your subnet filters)."
-)
-
-# Deterministic pick: smallest subnet id (stable)
-chosen = sorted(candidates, key=lambda x: x.get("SubnetId", ""))[0]
-create_placeholder_instance.az_mapper[src_az] = chosen["SubnetId"]
-used_subnet_ids.add(chosen["SubnetId"])
-
-
-
-
-
-
-
-
-
-
-Hi Erik and Chris,
-
-While attempting to restore FSx in the Oklahoma DR account, the restore job failed due to a permission limitation on the IAM role currently used for the restore process.
-
-The role being used is **gms-backup-iam-role**, and the error indicates that the role does not have sufficient permissions to create the required service-linked role for Amazon FSx during the restore operation.
-
-Error summary:
-The role **gms-backup-iam-role** is not authorized to perform **iam:CreateServiceLinkedRole** for the FSx service role (**AWSServiceRoleForAmazonFSx**), which is required during the restore process.
-
-Could you please review the permissions for this role and add the necessary access so the FSx restore can proceed in the OK DR environment?
-
-This is currently blocking the FSx restore as part of the DR exercise.
-
-Please let me know once the permission has been added so I can retry the restore.
-
-Thank you,
-Olamide Arolawun
-Advisor Cloud Engineer
-Gainwell Technologies
-
-
-
-Permission Required for FSx Restore in OK DR Environment
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Hi Ryan — I’ve started looking into the *“Unlock Dev Env in CICD-Dashboard after a certain timeframe”* ticket and wanted to get a better understanding of how the CICD dashboard is set up.
-
-From what I can see, the goal is to prevent environments from being reserved for long periods when someone forgets to release them. I’m planning to look into two things for the solution:
-
-1. Restoring or identifying the previous alerting mechanism that notified DevOps when an environment had been reserved for too long.
-2. Evaluating whether we could add some form of expiration or auto-release logic after a defined timeframe.
-
-Before going too far down the wrong path, I was hoping you might be able to walk me through how the dashboard currently handles environment reservations and where that data lives (DB/app logic/etc.). I’m also curious how the email/notification integration was originally implemented for alerts.
-
-If you have some time, even a quick walkthrough would really help me understand the architecture so I can approach the ticket the right way. Thanks!
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-index = 0
-raw_status = df.loc[ind, column]
-
-if pd.isna(raw_status) or str(raw_status).strip() == "":
-    statuses = ['Placeholder'] * len(loadbalancers)
-elif len(statuses) < len(loadbalancers):
-    statuses.extend(['Placeholder'] * (len(loadbalancers) - len(statuses)))
-
-
-
-
-
-
-
-for index, loadbalancer in enumerate(loadbalancers):
-    if loadbalancer == lb and index < len(statuses):
-        statuses[index] = new_status
-
-
-
-
-
-if isinstance(statuses, str):
-    statuses = [s.strip() for s in statuses.split(';')] if statuses.strip() else []
-
-
-
-
-
-if isinstance(statuses, str):
-    statuses = [s.strip() for s in statuses.split(';')] if statuses.strip() else []
+My background has been very technical, but a large part of my work already involves reviewing outputs, identifying inconsistencies, following standards and validating results. I see this as an opportunity to apply those skills directly to AI while gaining deeper exposure to AI evaluation and data quality.
