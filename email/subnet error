@@ -2,7 +2,19 @@ I am in the process of buying a home and my mortgage lender needs to complete a 
 
 
 
+Followed up with Raul regarding final validation of the Playwright E2E integration. The previous test execution was not successful and additional testing is required before the ticket can be closed.
+
+Raul’s team is currently focused on the higher-priority Meridian project and requested that testing be paused for now.
+
+Moving this ticket to Blocked pending availability to resume Playwright testing. Once testing resumes, we will rerun the TeamCity build, review any remaining failures, and complete final validation.
 
 
 
-Hi [Name], I'm currently going through mortgage underwriting with Chase, and they need to complete a verification of employment. Their processor mentioned that they have attempted to contact the company but haven't received a response yet. Are you able to assist with employment verification, or is there a specific HR contact/service that Chase should use?
+
+
+
+
+
+
+
+Hi [Name], I'm currently going through mortgage underwriting with Chase, and they need to complete a verification of employment. Their processor mentioned that they have attempted to contact the company but haven't received a response yet. Are you able to assist with employment verification, or is there a specific HR contact/service that Chase should us
