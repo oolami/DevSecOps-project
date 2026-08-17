@@ -10,3 +10,7 @@ Based on the comparison, the base image reference appears to be the key differen
 
 
 Thanks, Konny. That makes sense. Did your changes also include the update to cicd/tests.Dockerfile to use ARG BASE_IMAGE / FROM ${BASE_IMAGE}? I’m trying to confirm whether that change was intentional, since the resolved Email-API image isn’t available in MSR when the test step runs.
+
+
+
+Not at this point. I’m still tracing where the tests.Dockerfile change came from and whether it’s part of the expected CI/CD setup. I noticed the difference while comparing your failed build with a previous successful Email-API build. Let me confirm the intended configuration before we make any changes.
