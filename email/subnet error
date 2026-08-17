@@ -15,3 +15,9 @@ sftp -i .\nasdaq_datalink enterpriseapps@silacins.com@sftp.data.nasdaq.com
 
 pwd
 ls
+
+
+
+
+Hi Brent, I’m testing the SFTP connection and received the first-time host verification prompt for sftp.data.nasdaq.com. Can you confirm whether this is the expected Nasdaq SFTP host key fingerprint?
+SHA256:...
