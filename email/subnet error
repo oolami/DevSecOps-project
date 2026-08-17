@@ -4,4 +4,9 @@ The failing branch’s `tests.Dockerfile` uses `ARG BASE_IMAGE` / `FROM ${BASE_I
 
 I compared it against a recent successful Email-API build, where `tests.Dockerfile` references `msr.silacins.com/silac-tc/python-base:fastapi-1.1` directly, and the test step completes successfully.
 
-Based on the comparison, the base image reference appears to be the key difference. Before making any changes, can someone confirm the intended behavior here? Should the test container still be based on `python-base:fastapi-1.1`, or is the newly built Email-API image expected to be available in MSR at this point in the pipeline?
+Based on the comparison, the base image reference appears to be the key difference. Before making any changes, can someone confirm the intended behavior here? Should the test container still be based on `python-base:fastapi-1.1`, or is the newly built Email-API image expected to be available in MSR at this point in the pipeline
+
+
+
+
+Thanks, Konny. That makes sense. Did your changes also include the update to cicd/tests.Dockerfile to use ARG BASE_IMAGE / FROM ${BASE_IMAGE}? I’m trying to confirm whether that change was intentional, since the resolved Email-API image isn’t available in MSR when the test step runs.
