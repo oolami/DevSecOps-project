@@ -2,3 +2,8 @@ mkdir C:\Temp\NasdaqSFTP
 cd C:\Temp\NasdaqSFTP
 
 ssh-keygen -t rsa -b 4096 -C "enterpriseapps@silacins.com" -f nasdaq_datalink
+
+
+Get-Content .\nasdaq_datalink.pub
+
+ssh-keygen -lf .\nasdaq_datalink.pub
