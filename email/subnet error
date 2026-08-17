@@ -1,20 +1,7 @@
-I am in the process of buying a home and my mortgage lender needs to complete a standard employment verification. They left a voicemail but haven't been able to reach anyone. Could you please let me know the best email address, phone number, or fax where they should send the Request for Verification of Employment (Form 1005)? Time is of the essence for my closing timeline."
+I did some troubleshooting on the Email-API build failure and narrowed it down to the **Run tests** step.
 
+The failing branch’s `tests.Dockerfile` uses `ARG BASE_IMAGE` / `FROM ${BASE_IMAGE}`, which is resolving to `msr.silacins.com/silac-tc/email-api:3.27-rc-1-gae71ed0`. The test build then fails because that image/tag isn’t found in MSR.
 
+I compared it against a recent successful Email-API build, where `tests.Dockerfile` references `msr.silacins.com/silac-tc/python-base:fastapi-1.1` directly, and the test step completes successfully.
 
-Followed up with Raul regarding final validation of the Playwright E2E integration. The previous test execution was not successful and additional testing is required before the ticket can be closed.
-
-Raul’s team is currently focused on the higher-priority Meridian project and requested that testing be paused for now.
-
-Moving this ticket to Blocked pending availability to resume Playwright testing. Once testing resumes, we will rerun the TeamCity build, review any remaining failures, and complete final validation.
-
-
-
-
-
-
-
-
-
-
-Hi [Name], I'm currently going through mortgage underwriting with Chase, and they need to complete a verification of employment. Their processor mentioned that they have attempted to contact the company but haven't received a response yet. Are you able to assist with employment verification, or is there a specific HR contact/service that Chase should us
+Based on the comparison, the base image reference appears to be the key difference. Before making any changes, can someone confirm the intended behavior here? Should the test container still be based on `python-base:fastapi-1.1`, or is the newly built Email-API image expected to be available in MSR at this point in the pipeline?
