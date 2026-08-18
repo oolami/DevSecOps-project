@@ -1,41 +1,23 @@
-Hi team, quick confirmation before I proceed with the deployment portion of the Nasdaq SFTP change.
+Title
 
-The 4096-bit SSH key pair has been generated, the public key has been added to the Nasdaq account, and I’ve successfully validated SFTP connectivity/authentication and directory access. I’ve also added the TeamCity parameters for MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64 and MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_PATH.
+Update Email-API Test Build to Use Local Docker Builder
 
-For the remaining deployment work, is the expected approach to have the Wholeshestack pipeline decode/provision the private key as a Docker Swarm secret, mount it into market-index-api, and have MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_PATH point to that mounted file? I just want to confirm the preferred secret-handling pattern before making the deployment configuration changes.
+Description
 
+Issue:
+The Email-API TeamCity pipeline was failing during the Run tests step when building the test container.
 
+The test Dockerfile uses the Email-API image generated during Step 1 as its BASE_IMAGE. Although Step 1 successfully built and imported the image into the TeamCity agent’s local Docker store, Step 2 was using the dkrb01-corp-xm1 remote BuildKit builder.
 
+Because the remote builder could not access the image stored locally on the TeamCity agent, it attempted to resolve the Email-API image from MSR. The image had not yet been pushed to MSR because the registry push occurs after successful testing, resulting in an image not found failure.
 
-Hi Ryan, I traced the Email-API test failure to Step 2 using the dkrb01-corp-xm1 remote builder, which can’t see the image built locally in Step 1. Would it be safe for the test build only to use the agent’s default/local Docker builder so it can access that image?
+Root Cause:
+The application image produced in Step 1 was available in the TeamCity agent’s local Docker image store but was not accessible to the remote dkrb01-corp-xm1 builder being used by docker compose build tests.
 
-
-
-
-Thanks Ryan, that makes sense. I currently have the key stored as a secure/password TeamCity parameter so the value is masked. I’ll make sure the deployment keeps the private key out of the build/deploy logs and only exposes it inside the market-index-api container. I’ll hold on the deployment changes until we confirm whether there’s an existing SOP/pattern I should follow for creating and mounting the secret.
-
-
-
+Change Implemented:
+Updated the Run tests build step so that only the test container build uses the TeamCity agent’s default/local Docker builder:
 BUILDX_BUILDER=default docker compose build tests
 
-docker image inspect "$BASE_IMAGE"
-docker buildx ls
-
-
-
-
-echo "##teamcity[blockOpened name='tests']"
-
-docker buildx ls
-
-if docker image inspect "$BASE_IMAGE" >/dev/null 2>&1; then
-    echo "BASE_IMAGE exists in agent local Docker store: $BASE_IMAGE"
-else
-    echo "BASE_IMAGE NOT found in agent local Docker store: $BASE_IMAGE"
-fi
-
-BUILDX_BUILDER=default docker compose build tests
-
-echo "##teamcity[blockClosed name='tests']"
+This scopes the builder selection specifically to the test build without changing the builder configuration for the rest of the pipeline or other builds running on the agent.
 
 
