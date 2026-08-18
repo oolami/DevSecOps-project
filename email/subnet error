@@ -47,5 +47,8 @@ env.MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64
 
 
 
-Hi Brent, I’m testing the SFTP connection and received the first-time host verification prompt for sftp.data.nasdaq.com. Can you confirm whether this is the expected Nasdaq SFTP host key fingerprint?
-SHA256:...
+$bytes = [System.IO.File]::ReadAllBytes("C:\Temp\NasdaqSFTP\nasdaq_datalink")
+
+$b64 = [Convert]::ToBase64String($bytes)
+
+$b64 | Set-Clipboard
