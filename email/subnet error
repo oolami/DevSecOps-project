@@ -1,54 +1,24 @@
-mkdir C:\Temp\NasdaqSFTP
-cd C:\Temp\NasdaqSFTP
+Progress update:
 
-ssh-keygen -t rsa -b 4096 -C "enterpriseapps@silacins.com" -f nasdaq_datalink
+* Generated a new 4096-bit RSA SSH key pair for the Nasdaq Data Link SFTP integration using the enterpriseapps@silacins.com account.
+* Coordinated with Brent to add the generated public key to the Nasdaq Data Link account.
+* Contacted Nasdaq support regarding the initial SFTP host-key fingerprint prompt. Nasdaq confirmed the supported SSH key-generation method but was unable to independently verify the server fingerprint.
+* Successfully completed a manual SFTP connectivity/authentication test to:
+    * Host: sftp.data.nasdaq.com
+    * Port: 22
+    * Authentication: SSH private key
+* Confirmed successful login and access to the Nasdaq SFTP directories using pwd and ls.
+* Added the following Dev TeamCity parameters in preparation for application deployment:
+    * env.MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64 — stored as a secure/password parameter.
+    * env.MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_PATH — configured as /run/secrets/market-index-api-nasdaq-private-key.
+* Existing MARKET_INDEX_API_NASDAQ_PASSWORD has been left in place for now until the new SSH-key implementation is fully validated.
 
+Remaining work:
 
-Get-Content .\nasdaq_datalink.pub
+* Update the deployment configuration to decode/provision the private key as a file-based secret for market-index-api.
+* Mount the private-key secret into the market-index-api container at the configured path.
+* Deploy the updated configuration to Dev.
+* Validate the Nasdaq SFTP connection and file access from the running market-index-api service.
+* Promote through the required higher environments after successful Dev validation.
 
-ssh-keygen -lf .\nasdaq_datalink.pub
-
-
-cd C:\Temp\NasdaqSFTP
-
-sftp -i .\nasdaq_datalink enterpriseapps@silacins.com@sftp.data.nasdaq.com
-
-pwd
-ls
-
-
-
-    Name: env.MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_PATH
-* Kind: Environment variable (env.)
-* Value type: Text
-* Value: /run/secrets/market-index-api-nasdaq-private-key
-
-
-
-
-
-
-
-cd C:\Temp\NasdaqSFTP
-
-$bytes = [System.IO.File]::ReadAllBytes(".\nasdaq_datalink")
-
-[Convert]::ToBase64String($bytes)
-
-
-
-
-
-
-
-env.MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64
-
-
-
-
-
-$bytes = [System.IO.File]::ReadAllBytes("C:\Temp\NasdaqSFTP\nasdaq_datalink")
-
-$b64 = [Convert]::ToBase64String($bytes)
-
-$b64 | Set-Clipboard
+Attached screenshots show the successful manual SFTP authentication/directory access and the new TeamCity parameters.
