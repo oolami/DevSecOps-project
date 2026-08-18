@@ -22,3 +22,20 @@ docker image inspect "$BASE_IMAGE"
 docker buildx ls
 
 
+
+
+echo "##teamcity[blockOpened name='tests']"
+
+docker buildx ls
+
+if docker image inspect "$BASE_IMAGE" >/dev/null 2>&1; then
+    echo "BASE_IMAGE exists in agent local Docker store: $BASE_IMAGE"
+else
+    echo "BASE_IMAGE NOT found in agent local Docker store: $BASE_IMAGE"
+fi
+
+BUILDX_BUILDER=default docker compose build tests
+
+echo "##teamcity[blockClosed name='tests']"
+
+
