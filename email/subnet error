@@ -8,3 +8,8 @@ For the remaining deployment work, is the expected approach to have the Wholeshe
 
 
 Hi Ryan, I traced the Email-API test failure to Step 2 using the dkrb01-corp-xm1 remote builder, which can’t see the image built locally in Step 1. Would it be safe for the test build only to use the agent’s default/local Docker builder so it can access that image?
+
+
+
+
+Thanks Ryan, that makes sense. I currently have the key stored as a secure/password TeamCity parameter so the value is masked. I’ll make sure the deployment keeps the private key out of the build/deploy logs and only exposes it inside the market-index-api container. I’ll hold on the deployment changes until we confirm whether there’s an existing SOP/pattern I should follow for creating and mounting the secret.
