@@ -13,3 +13,12 @@ Hi Ryan, I traced the Email-API test failure to Step 2 using the dkrb01-corp-xm1
 
 
 Thanks Ryan, that makes sense. I currently have the key stored as a secure/password TeamCity parameter so the value is masked. I’ll make sure the deployment keeps the private key out of the build/deploy logs and only exposes it inside the market-index-api container. I’ll hold on the deployment changes until we confirm whether there’s an existing SOP/pattern I should follow for creating and mounting the secret.
+
+
+
+BUILDX_BUILDER=default docker compose build tests
+
+docker image inspect "$BASE_IMAGE"
+docker buildx ls
+
+
