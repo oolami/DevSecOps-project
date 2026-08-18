@@ -1,24 +1,5 @@
-Progress update:
+Hi team, quick confirmation before I proceed with the deployment portion of the Nasdaq SFTP change.
 
-* Generated a new 4096-bit RSA SSH key pair for the Nasdaq Data Link SFTP integration using the enterpriseapps@silacins.com account.
-* Coordinated with Brent to add the generated public key to the Nasdaq Data Link account.
-* Contacted Nasdaq support regarding the initial SFTP host-key fingerprint prompt. Nasdaq confirmed the supported SSH key-generation method but was unable to independently verify the server fingerprint.
-* Successfully completed a manual SFTP connectivity/authentication test to:
-    * Host: sftp.data.nasdaq.com
-    * Port: 22
-    * Authentication: SSH private key
-* Confirmed successful login and access to the Nasdaq SFTP directories using pwd and ls.
-* Added the following Dev TeamCity parameters in preparation for application deployment:
-    * env.MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64 — stored as a secure/password parameter.
-    * env.MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_PATH — configured as /run/secrets/market-index-api-nasdaq-private-key.
-* Existing MARKET_INDEX_API_NASDAQ_PASSWORD has been left in place for now until the new SSH-key implementation is fully validated.
+The 4096-bit SSH key pair has been generated, the public key has been added to the Nasdaq account, and I’ve successfully validated SFTP connectivity/authentication and directory access. I’ve also added the TeamCity parameters for MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64 and MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_PATH.
 
-Remaining work:
-
-* Update the deployment configuration to decode/provision the private key as a file-based secret for market-index-api.
-* Mount the private-key secret into the market-index-api container at the configured path.
-* Deploy the updated configuration to Dev.
-* Validate the Nasdaq SFTP connection and file access from the running market-index-api service.
-* Promote through the required higher environments after successful Dev validation.
-
-Attached screenshots show the successful manual SFTP authentication/directory access and the new TeamCity parameters.
+For the remaining deployment work, is the expected approach to have the Wholeshestack pipeline decode/provision the private key as a Docker Swarm secret, mount it into market-index-api, and have MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_PATH point to that mounted file? I just want to confirm the preferred secret-handling pattern before making the deployment configuration changes.
