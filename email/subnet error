@@ -27,3 +27,7 @@ Hi John, yes — I’m coordinating with Jose on this. The SSH key pair has been
 The only remaining item on my side is confirming/finalizing the Docker Swarm secret pattern for securely mounting the private key into market-index-api. Once that is completed, I can finish the Dev deployment/configuration so Jose can proceed with his validation.
 
 
+
+Updated the default ImageTag parameter from the previous empty/latest behavior to dev for both ARC Hub-Business and ARC Hub-Engineering TeamCity build configurations. Changes have been saved as requested.
+
+
