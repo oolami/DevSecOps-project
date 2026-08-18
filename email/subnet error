@@ -3,3 +3,8 @@ Hi team, quick confirmation before I proceed with the deployment portion of the 
 The 4096-bit SSH key pair has been generated, the public key has been added to the Nasdaq account, and I’ve successfully validated SFTP connectivity/authentication and directory access. I’ve also added the TeamCity parameters for MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64 and MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_PATH.
 
 For the remaining deployment work, is the expected approach to have the Wholeshestack pipeline decode/provision the private key as a Docker Swarm secret, mount it into market-index-api, and have MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_PATH point to that mounted file? I just want to confirm the preferred secret-handling pattern before making the deployment configuration changes.
+
+
+
+
+Hi Ryan, I traced the Email-API test failure to Step 2 using the dkrb01-corp-xm1 remote builder, which can’t see the image built locally in Step 1. Would it be safe for the test build only to use the agent’s default/local Docker builder so it can access that image?
