@@ -21,3 +21,9 @@ BUILDX_BUILDER=default docker compose build tests
 This scopes the builder selection specifically to the test build without changing the builder configuration for the rest of the pipeline or other builds running on the agent.
 
 
+
+Hi John, yes — I’m coordinating with Jose on this. The SSH key pair has been generated, the public key has been added to the Nasdaq account, SFTP connectivity/authentication has been successfully validated, and the required TeamCity parameters are in place.
+
+The only remaining item on my side is confirming/finalizing the Docker Swarm secret pattern for securely mounting the private key into market-index-api. Once that is completed, I can finish the Dev deployment/configuration so Jose can proceed with his validation.
+
+
