@@ -113,3 +113,9 @@ if [ -n "${MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64:-}" ]; then
             | docker secret create "$secret_name" -
     fi
 fi
+
+
+
+
+
+docker compose -f .\wholeshestack.10-keytab.yml config
