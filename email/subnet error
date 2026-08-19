@@ -1,4 +1,4 @@
-hi docker service ls | Select-String market-index-api
+by hi docker service ls | Select-String market-index-api
 
 docker service inspect <service-name> --pretty
 
@@ -76,3 +76,11 @@ docker compose `
   -f .\wholeshestack.20-dev.yml `
   -f .\wholeshestack.30-base.yml `
   config
+
+
+
+Get-Content .\wholeshestack.30-base.yml |
+    Select-Object -Skip 918 -First 25
+
+
+git diff --check
