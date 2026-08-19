@@ -10,3 +10,8 @@ market-index-api-nasdaq-private-key:
 
 
 
+git add wholeshestack.10-keytab.yml wholeshestack.30-base.yml
+git commit -m "WHC-3493 configure Nasdaq private key as external Swarm secret"
+git push
+
+
