@@ -1,3 +1,14 @@
-Thanks Dmytro, that explains what I was seeing. Yes, I was troubleshooting builds #254/#255 and traced the failure to the test build using dkrb01-corp-xm1, which couldn’t resolve the locally built Email-API image. I temporarily scoped the test build to the default builder and confirmed that resolved the failure.
+docker service ls | Select-String market-index-api
 
-Since you’ve now corrected this in the Python-Base template, I’ll reset the Email-API build step so it inherits the template configuration and rerun the build to validate.
+docker service inspect <service-name> --pretty
+
+
+docker service ps <service-name>
+
+
+docker ps --filter "ancestor=msr.silacins.com/silac-tc/market-index-api:dev"
+
+docker ps | Select-String market-index-api
+
+
+docker service ls | Select-String market-index-api
