@@ -84,3 +84,18 @@ Get-Content .\wholeshestack.30-base.yml |
 
 
 git diff --check
+
+
+
+
+x-market-index-api-nasdaq-private-key: &market-index-api-nasdaq-private-key
+  external: true
+
+
+market-index-api-nasdaq-private-key:
+  <<: *market-index-api-nasdaq-private-key
+  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-v1
+
+
+- source: market-index-api-nasdaq-private-key
+  target: /run/secrets/market-index-api-nasdaq-private-key
