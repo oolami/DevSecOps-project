@@ -1,4 +1,4 @@
-docker service ls | Select-String market-index-api
+hi docker service ls | Select-String market-index-api
 
 docker service inspect <service-name> --pretty
 
@@ -63,3 +63,16 @@ if [ -n "${MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64:-}" ]; then
 
     test -s ./secrets/market-index-api-nasdaq-private-key
 fi
+
+
+
+
+
+docker compose -f .\wholeshestack.30-base.yml config
+
+
+
+docker compose `
+  -f .\wholeshestack.20-dev.yml `
+  -f .\wholeshestack.30-base.yml `
+  config
