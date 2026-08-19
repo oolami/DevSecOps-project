@@ -4,3 +4,9 @@ git push
 
 
 
+market-index-api-nasdaq-private-key:
+  external: true
+  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-v1
+
+
+
