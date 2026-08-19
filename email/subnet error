@@ -45,3 +45,21 @@ market-index-api-nasdaq-private-key:
 
 
 git diff -- wholeshestack.30-base.yml
+
+
+
+
+set -eu
+set -o pipefail
+
+if [ -n "${MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64:-}" ]; then
+    mkdir -p ./secrets
+
+    printf '%s' "$MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64" \
+        | base64 -d \
+        > ./secrets/market-index-api-nasdaq-private-key
+
+    chmod 600 ./secrets/market-index-api-nasdaq-private-key
+
+    test -s ./secrets/market-index-api-nasdaq-private-key
+fi
