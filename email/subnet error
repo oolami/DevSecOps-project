@@ -12,3 +12,36 @@ docker ps | Select-String market-index-api
 
 
 docker service ls | Select-String market-index-api
+
+
+
+secrets:
+  - source: market-index-api
+    target: /app/secrets.json
+  - source: market-index-api-nasdaq-private-key
+    target: /run/secrets/market-index-api-nasdaq-private-key
+
+configs:
+  - source: market-index-api
+    target: /app/config.json
+secrets:
+  - source: market-index-api
+    target: /app/secrets.json
+  - source: market-index-api-nasdaq-private-key
+    target: /run/secrets/market-index-api-nasdaq-private-key
+networks:
+  - services
+
+
+
+market-index-api-nasdaq-private-key:
+  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-v1
+  file: ./secrets/market-index-api-nasdaq-private-key
+  labels:
+    <<: *collection-labels
+
+
+
+
+
+git diff -- wholeshestack.30-base.yml
