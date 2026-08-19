@@ -15,3 +15,14 @@ git commit -m "WHC-3493 configure Nasdaq private key as external Swarm secret"
 git push
 
 
+git grep -n "market-index-api-nasdaq-private-key"
+
+git grep -n "<<:.*market-index-api-nasdaq"
+
+
+git status
+git log -1 --oneline
+git rev-parse HEAD
+git rev-parse origin/dev/WHC-3493-nasdaq-secret
+
+
