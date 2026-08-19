@@ -99,3 +99,17 @@ market-index-api-nasdaq-private-key:
 
 - source: market-index-api-nasdaq-private-key
   target: /run/secrets/market-index-api-nasdaq-private-key
+
+
+set -eu
+set -o pipefail
+
+secret_name="wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-v1"
+
+if [ -n "${MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64:-}" ]; then
+    if ! docker secret inspect "$secret_name" >/dev/null 2>&1; then
+        printf '%s' "$MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64" \
+            | base64 -d \
+            | docker secret create "$secret_name" -
+    fi
+fi
