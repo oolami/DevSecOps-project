@@ -107,3 +107,12 @@ echo "$nasdaq_private_key_file file prepared"
 
 
 hash_file MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_HASH ./secrets/market-index-api-nasdaq-private-key
+
+
+
+
+market-index-api-nasdaq-private-key:
+  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-${MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_HASH}
+  file: ./secrets/market-index-api-nasdaq-private-key
+  labels:
+    <<: *collection-labels
