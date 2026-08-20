@@ -81,3 +81,5 @@ Get-Content .\scripts\services\market-index-api.sh
 Get-Content .\scripts\services\market-index-api.sh | Select-Object -First 80
 
 
+
+git grep -n "external: true" -- "*.yml"
