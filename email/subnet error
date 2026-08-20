@@ -26,3 +26,21 @@ git rev-parse HEAD
 git rev-parse origin/dev/WHC-3493-nasdaq-secret
 
 
+
+
+
+
+
+Hi Ryan, I’m still hitting yaml: map merge requires map or sequence of maps as the value in Step 1 – Prepare config, before the new Nasdaq private-key step gets a chance to run.
+
+Initially, I added the Nasdaq private-key definition to wholeshestack.10-keytab.yml using the same anchor pattern as the existing keytab secrets, then referenced that anchor from wholeshestack.30-base.yml.
+
+I removed it from the keytab anchor file after the build started failing on the YAML merge. Since this is an SSH private key rather than a Kerberos keytab, I changed it to a direct external Swarm secret definition in wholeshestack.30-base.yml instead:
+
+market-index-api-nasdaq-private-key:
+  external: true
+  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-v1
+
+The service mount under market-index-api is still in place.
+
+Do we have an existing pattern for non-keytab external Docker Swarm secrets that I should follow here, or is there another file/process where this type of secret is expected to be declared for Prepare config?
