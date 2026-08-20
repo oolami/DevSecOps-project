@@ -83,3 +83,8 @@ Get-Content .\scripts\services\market-index-api.sh | Select-Object -First 80
 
 
 git grep -n "external: true" -- "*.yml"
+
+
+Get-Content .\wholeshestack.30-base.yml | Select-Object -Skip 740 -First 30
+
+Get-Content .\wholeshestack.30-base.yml | Select-Object -Skip 990 -First 30
