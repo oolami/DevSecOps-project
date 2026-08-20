@@ -88,3 +88,19 @@ git grep -n "external: true" -- "*.yml"
 Get-Content .\wholeshestack.30-base.yml | Select-Object -Skip 740 -First 30
 
 Get-Content .\wholeshestack.30-base.yml | Select-Object -Skip 990 -First 30
+
+
+
+
+
+
+
+
+nasdaq_private_key_file="./secrets/${service}-nasdaq-private-key"
+
+printf '%s' "$MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64" \
+  | base64 -d > "$nasdaq_private_key_file"
+
+chmod 600 "$nasdaq_private_key_file"
+
+echo "$nasdaq_private_key_file file prepared"
