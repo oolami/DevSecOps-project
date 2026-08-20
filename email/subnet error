@@ -44,3 +44,31 @@ market-index-api-nasdaq-private-key:
 The service mount under market-index-api is still in place.
 
 Do we have an existing pattern for non-keytab external Docker Swarm secrets that I should follow here, or is there another file/process where this type of secret is expected to be declared for Prepare config?
+
+
+
+
+
+
+Get-ChildItem .\scripts\ | Where-Object { $_.Name -like "*market*index*" }
+
+git grep -n "MARKET_INDEX_API_NASDAQ"
+
+git grep -n "MARKET_INDEX_API" scripts
+
+Get-Content .\scripts\market-index-api.sh
+
+SOME_PASSWORD=${SOME_TEAMCITY_ENV_VAR}
+
+./secrets/<service>.json
+
+
+market-index-api-nasdaq-private-key:
+  external: true
+  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-v1
+
+
+
+Get-ChildItem .\scripts\ | Where-Object { $_.Name -like "*market*index*" }
+
+git grep -n "MARKET_INDEX_API" scripts
