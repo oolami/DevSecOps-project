@@ -104,3 +104,6 @@ printf '%s' "$MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64" \
 chmod 600 "$nasdaq_private_key_file"
 
 echo "$nasdaq_private_key_file file prepared"
+
+
+hash_file MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_HASH ./secrets/market-index-api-nasdaq-private-key
