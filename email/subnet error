@@ -72,3 +72,12 @@ market-index-api-nasdaq-private-key:
 Get-ChildItem .\scripts\ | Where-Object { $_.Name -like "*market*index*" }
 
 git grep -n "MARKET_INDEX_API" scripts
+
+
+
+
+Get-Content .\scripts\services\market-index-api.sh
+
+Get-Content .\scripts\services\market-index-api.sh | Select-Object -First 80
+
+
