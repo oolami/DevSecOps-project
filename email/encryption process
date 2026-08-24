@@ -1,9 +1,4 @@
-Completed the Playwright E2E test integration for ARC Hub-Business.
-
-* Added/configured the TeamCity build step to execute the Playwright E2E test suite as part of the build process.
-* Confirmed the required Playwright dependencies and browser components are available in the build environment.
-* Verified Playwright tests execute through TeamCity and test results/logs are captured as part of the build.
-* Coordinated testing/validation with Raul.
-* Node/TeamCity agent upgrade work was tracked separately under WHC-3450.
-
-Implementation and validation are complete. Closing this ticket.
+NasdaqOptions: {
+    Password: env.MARKET_INDEX_API_NASDAQ_PASSWORD,
+    PrivateKey: env.MARKET_INDEX_API_NASDAQ_PRIVATE_KEY
+},
