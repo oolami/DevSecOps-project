@@ -2,3 +2,8 @@ NasdaqOptions: {
     Password: env.MARKET_INDEX_API_NASDAQ_PASSWORD,
     PrivateKey: env.MARKET_INDEX_API_NASDAQ_PRIVATE_KEY
 },
+
+
+
+
+Hi John, I’m still actively working on the remaining Docker Swarm secret configuration. I should have an update or turnaround on it shortly and will keep you posted.
