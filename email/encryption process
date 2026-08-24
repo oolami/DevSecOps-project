@@ -28,3 +28,14 @@ git push
 
 
 Get-Content "$env:TEMP\nasdaq_private_key" -First 1
+
+
+
+git status
+git grep -n "market-index-api-nasdaq" -- wholeshestack.10-keytab.yml
+git show HEAD:wholeshestack.10-keytab.yml
+
+git grep -n "market-index-api-nasdaq-private-key"
+
+
+git diff origin/dev/deploy...HEAD -- wholeshestack.10-keytab.yml
