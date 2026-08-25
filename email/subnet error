@@ -1,118 +1,37 @@
-git add wholeshestack.10-keytab.yml wholeshestack.30-base.yml
-git commit -m "WHC-3493 configure Nasdaq private key as external Swarm secret"
-git push
+After reviewing the implementation with Ryan, I moved away from creating a separate Docker Swarm secret/keytab entry and switched to the existing Wholeshestack secret-generation pattern. The Nasdaq password and private key are now configured as protected TeamCity environment variables and referenced in scripts/services/market-index-api.sh, so they will be included in the existing generated market-index-api secrets file during deployment.
 
+I also removed the previous standalone Nasdaq secret definition/mount and the additional TeamCity private-key preparation step since they are no longer needed with this approach.
 
+The current blocker is that the deployment is still failing in Step 1 – Prepare config with:
+yaml: map merge requires map or sequence of maps as the value
 
-market-index-api-nasdaq-private-key:
-  external: true
-  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-v1
+The failure occurs before the application deployment starts, so the new Nasdaq credential implementation has not yet been fully tested in Juliet. The next area I was investigating is the YAML merge/anchor processing in wholeshestack.sh / keytab.sh, since the Nasdaq keytab entry itself has already been removed.
 
 
 
-git add wholeshestack.10-keytab.yml wholeshestack.30-base.yml
-git commit -m "WHC-3493 configure Nasdaq private key as external Swarm secret"
-git push
 
 
-git grep -n "market-index-api-nasdaq-private-key"
+Work completed / current status:
 
-git grep -n "<<:.*market-index-api-nasdaq"
+* Generated and validated the Nasdaq SSH key pair and provided the public key for Nasdaq configuration.
+* Initially implemented the private key as a separate Docker Swarm secret and mounted it into market-index-api.
+* Encountered YAML merge failures during Prepare config, and confirmed with Ryan that the keytab mechanism is intended for Kerberos-generated secrets and should not be used for the Nasdaq SSH key.
+* Reviewed the existing Wholeshestack secret-generation process with Ryan and changed the implementation to reuse the standard application-secret pattern.
+* Added the Nasdaq credentials to the market-index-api secret generation:
+    * MARKET_INDEX_API_NASDAQ_PASSWORD
+    * MARKET_INDEX_API_NASDAQ_PRIVATE_KEY
+* Configured the private key in TeamCity as a protected/password environment parameter using the decoded OpenSSH private-key value.
+* Updated scripts/services/market-index-api.sh so NasdaqOptions includes both the existing password and the new private key, allowing the application team to test the new authentication method while retaining the password as fallback.
+* Removed the separate Nasdaq Docker secret declaration/mount and the dedicated TeamCity private-key preparation build step because they are no longer required.
 
+Current blocker:
+Juliet deployment is still failing during Step 1 – Prepare config with:
 
-git status
-git log -1 --oneline
-git rev-parse HEAD
-git rev-parse origin/dev/WHC-3493-nasdaq-secret
+yaml: map merge requires map or sequence of maps as the value
 
+The error occurs before the deployment reaches the application, so the new Nasdaq authentication configuration has not yet been validated end-to-end.
 
 
 
 
 
-
-Hi Ryan, I’m still hitting yaml: map merge requires map or sequence of maps as the value in Step 1 – Prepare config, before the new Nasdaq private-key step gets a chance to run.
-
-Initially, I added the Nasdaq private-key definition to wholeshestack.10-keytab.yml using the same anchor pattern as the existing keytab secrets, then referenced that anchor from wholeshestack.30-base.yml.
-
-I removed it from the keytab anchor file after the build started failing on the YAML merge. Since this is an SSH private key rather than a Kerberos keytab, I changed it to a direct external Swarm secret definition in wholeshestack.30-base.yml instead:
-
-market-index-api-nasdaq-private-key:
-  external: true
-  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-v1
-
-The service mount under market-index-api is still in place.
-
-Do we have an existing pattern for non-keytab external Docker Swarm secrets that I should follow here, or is there another file/process where this type of secret is expected to be declared for Prepare config?
-
-
-
-
-
-
-Get-ChildItem .\scripts\ | Where-Object { $_.Name -like "*market*index*" }
-
-git grep -n "MARKET_INDEX_API_NASDAQ"
-
-git grep -n "MARKET_INDEX_API" scripts
-
-Get-Content .\scripts\market-index-api.sh
-
-SOME_PASSWORD=${SOME_TEAMCITY_ENV_VAR}
-
-./secrets/<service>.json
-
-
-market-index-api-nasdaq-private-key:
-  external: true
-  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-v1
-
-
-
-Get-ChildItem .\scripts\ | Where-Object { $_.Name -like "*market*index*" }
-
-git grep -n "MARKET_INDEX_API" scripts
-
-
-
-
-Get-Content .\scripts\services\market-index-api.sh
-
-Get-Content .\scripts\services\market-index-api.sh | Select-Object -First 80
-
-
-
-git grep -n "external: true" -- "*.yml"
-
-
-Get-Content .\wholeshestack.30-base.yml | Select-Object -Skip 740 -First 30
-
-Get-Content .\wholeshestack.30-base.yml | Select-Object -Skip 990 -First 30
-
-
-
-
-
-
-
-
-nasdaq_private_key_file="./secrets/${service}-nasdaq-private-key"
-
-printf '%s' "$MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_B64" \
-  | base64 -d > "$nasdaq_private_key_file"
-
-chmod 600 "$nasdaq_private_key_file"
-
-echo "$nasdaq_private_key_file file prepared"
-
-
-hash_file MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_HASH ./secrets/market-index-api-nasdaq-private-key
-
-
-
-
-market-index-api-nasdaq-private-key:
-  name: wholeshestack_${STACK_ENV}_market-index-api-nasdaq-private-key-${MARKET_INDEX_API_NASDAQ_PRIVATE_KEY_HASH}
-  file: ./secrets/market-index-api-nasdaq-private-key
-  labels:
-    <<: *collection-labels
