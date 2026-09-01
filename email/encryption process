@@ -1,1 +1,7 @@
-Good morning team! I’m back from PTO today and catching up on the DR exercise activities from yesterday. Please let me know if there are any outstanding restore/validation tasks or anything I can pick up and assist with today. Thanks!
+Hey Matt — I pulled the recent Portal login activity for the three agents and reviewed the originating IPs in Kibana/Interlock and Sentry.
+
+Justin Balik (1379520): identified two originating IPs on 8/19, with different device/browser profiles.
+James Perry (1405730): identified multiple originating IPs on 8/19; activity was consistently Windows/Chrome and matched normal Portal navigation.
+Jacob Buser (2506471): identified multiple originating IPs across 8/28 and 9/1; Sentry showed normal Portal login/navigation activity. I did not find a login event specifically on 8/31 in the available Swarm logs.
+
+I’ve included the supporting exports/results in the folder for review.
