@@ -1,5 +1,1 @@
-Hi Carlos, yes, the branch should be ready to merge from the code/config perspective. There isn’t a separate prod equivalent of the branch that I’m aware of — the same wholeshestack changes should be promoted through pre-prod and prod. The environment-specific piece is the TeamCity Nasdaq parameter values, so those will need to be populated appropriately for each environment before deployment.
-
-
-
-I’ll go ahead and populate the Nasdaq TeamCity parameter values for pre-prod and prod so the deployments can proceed.
+git log origin/master..origin/env-reserve-release --oneline
