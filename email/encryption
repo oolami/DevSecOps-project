@@ -1,1 +1,10 @@
-$PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
+$cookieCollection = $session.Cookies.GetCookies([Uri]$nsxHost)
+$csrfCookie = $cookieCollection["csrftoken"]
+
+if ($null -eq $csrfCookie) {
+    throw "CSRF token cookie was not returned by NSX-ALB."
+}
+
+$headers["X-CSRFToken"] = $csrfCookie.Value
+$headers["Referer"] = $nsxHost
+
