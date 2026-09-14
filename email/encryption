@@ -1,5 +1,1 @@
-Quick clarification — is the DR team supporting
- the MO PBA/Provider+ projects? If so, are we also required to complete the background check and fingerprinting process mentioned in the email?
-
-
-Completed parameterization of the external certificate TeamCity workflow. Added the required operation and certificate/deployment parameters, including support for renewal, reissue, new-order, and deploy-only paths. Required parameter validation was confirmed prior to execution, API credentials are referenced securely, and no private key material is written to standard build logs or artifacts. Existing internal certificate workflow behavior remains unchanged.
+$PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
