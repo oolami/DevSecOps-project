@@ -8,3 +8,68 @@ if ($null -eq $csrfCookie) {
 $headers["X-CSRFToken"] = $csrfCookie.Value
 $headers["Referer"] = $nsxHost
 
+
+
+
+$uri = "$nsxHost/api/sslkeyandcertificate"
+
+$allCertificates = @()
+
+do {
+    $response = Invoke-WebRequest `
+        $uri `
+        -WebSession $session `
+        -Method GET `
+        -Headers $headers
+
+    if ($response.StatusCode -ne 200) {
+        throw "Failed to retrieve NSX-ALB certificates."
+    }
+
+    $data = $response.Content | ConvertFrom-Json
+
+    if ($data.results) {
+        $allCertificates += $data.results
+    }
+
+    if ($data.next) {
+        # NSX-ALB may return next as a relative URL
+        if ($data.next -match '^https?://') {
+            $uri = $data.next
+        }
+        else {
+            $uri = "$nsxHost$($data.next)"
+        }
+    }
+    else {
+        $uri = $null
+    }
+
+} while ($uri)
+
+Write-Host "Total certificate objects retrieved: $($allCertificates.Count)"
+
+$matches = @(
+    $allCertificates | Where-Object {
+        $_.name -like "*$commonName*" -or
+        $_.certificate.subject.common_name -eq $commonName
+    }
+)
+
+Write-Host "Matching certificate objects found: $($matches.Count)"
+
+if ($matches.Count -eq 0) {
+    Write-Warning "No matching certificate was found for $commonName."
+}
+else {
+    foreach ($cert in $matches) {
+        Write-Host "-----------------------------------------"
+        Write-Host "Certificate Name : $($cert.name)"
+        Write-Host "UUID             : $($cert.uuid)"
+        Write-Host "Common Name      : $($cert.certificate.subject.common_name)"
+        Write-Host "Type             : $($cert.type)"
+    }
+}
+
+Write-Host "Discovery completed successfully."
+Write-Host "No NSX-ALB changes were made."
