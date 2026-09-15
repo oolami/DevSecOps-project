@@ -45,3 +45,38 @@ if ($DryRun) {
     Write-Host "No NSX-ALB changes were made."
     exit 0
 }
+
+
+
+
+
+
+
+
+$Expiry = (Get-Date).AddYears(2).ToString("yyyy-MM")
+
+$CsrBodyObject = @{
+    certificate = @{
+        subject = @{
+            common_name      = $CommonName
+            email_address    = "devops@silacins.com"
+            organization     = "SILAC Insurance Company"
+            organization_unit = "DevSecOps"
+            locality         = "Salt Lake City"
+            state            = "Utah"
+            country          = "US"
+        }
+        key_params = @{
+            algorithm = "SSL_KEY_ALGORITHM_RSA"
+            rsa_params = @{
+                key_size = "SSL_KEY_2048_BITS"
+            }
+        }
+        certificate_base64 = $true
+        key_base64         = $true
+        type               = "SSL_CERTIFICATE_TYPE_VIRTUALSERVICE"
+        name               = $CommonName
+    }
+}
+
+$CsrBody = $CsrBodyObject | ConvertTo-Json -Depth 10
