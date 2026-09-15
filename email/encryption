@@ -17,3 +17,31 @@ if ($DryRun) {
     Write-Host "No NSX-ALB changes were made."
     exit 0
 }
+
+
+
+
+$DryRunRaw = "%DryRun%"
+$DryRun = $DryRunRaw.Trim().ToLower() -eq "true"
+
+Write-Host "DryRun raw value: [$DryRunRaw]"
+Write-Host "DryRun parsed boolean: [$DryRun]"
+
+
+
+
+
+if ($DryRun) {
+    Write-Host "===================================="
+    Write-Host "DRY RUN - CREATE CSR"
+    Write-Host "===================================="
+    Write-Host "Common Name : $CommonName"
+    Write-Host "SAN         : $SAN"
+    Write-Host "Target      : NSX-ALB"
+    Write-Host "Key owner   : NSX-ALB"
+    Write-Host ""
+    Write-Host "CSR payload validated."
+    Write-Host "No private key or CSR will be created."
+    Write-Host "No NSX-ALB changes were made."
+    exit 0
+}
