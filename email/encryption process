@@ -1,1 +1,10 @@
+
+Erik reached out with concerns about the 10.134.128.0/23 CIDR I included in the DRS replication subnet ticket. He mentioned that the CIDR appears to be associated with GMS rather than Platform Gainwell. I let him know that I used it based on the existing DRS setup runbook and our previous discussion that the same CIDR is used for DRS across accounts.
+
+He suggested a quick call with the team to clarify the PG networking requirements before proceeding. I’ll set that up so we can confirm the correct CIDR and DR account/VPC configuration.
+
+
+
+
+
 We’re onboarding DRS for Platform Gainwell. I was following the existing DR account setup runbook, which specifies creating the DRS replication subnet using 10.134.128.0/23 and establishing VPC peering between Production and DR. Kishore and Jim had confirmed that this CIDR is used for DRS across the accounts, but I want to make sure we’re using the correct Platform Gainwell DR account/VPC and not a GMS DR account. Can we confirm the correct DR account, VPC and CIDR that should be used for PG?
