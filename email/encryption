@@ -115,3 +115,27 @@ if ($DryRun) {
 certreq -submit -config 'SILAC-SubCA.silacins.com\SILAC' -attrib 'CertificateTemplate:WebServer2YR' '%teamcity.build.id%.csr' '%teamcity.build.id%.crt'
 
 Write-Host "Certificate issued and saved into %teamcity.build.id%.crt file"
+
+
+
+
+
+
+
+$DryRunRaw = "%DryRun%"
+$DryRun = $DryRunRaw.Trim().ToLower() -eq 'true'
+
+Write-Host "DryRun raw value: [$DryRunRaw]"
+Write-Host "DryRun parsed boolean: [$DryRun]"
+
+if ($DryRun) {
+    Write-Host "======================================"
+    Write-Host "DRY RUN - UPLOAD CERTIFICATE"
+    Write-Host "======================================"
+    Write-Host "Certificate file would be: %teamcity.build.id%.crt"
+    Write-Host "Target                     : NSX-ALB"
+    Write-Host ""
+    Write-Host "No certificate will be uploaded."
+    Write-Host "No NSX-ALB changes were made."
+    exit 0
+}
