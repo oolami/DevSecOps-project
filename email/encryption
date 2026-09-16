@@ -151,3 +151,11 @@ set -eu
 set -o pipefail
 
 bash cicd/tests/run-playwright.sh
+
+
+
+
+
+
+
+Hey team, the ARC Hub Playwright E2E tests now require .NET 9 SDK in addition to Node/Playwright. I confirmed .NET is not currently installed on the TeamCity agent (tca02-corp-xmi). What is our standard approach for adding .NET SDK to TeamCity agents? Should it be installed on the agent itself or provided through the build configuration/image?
