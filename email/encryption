@@ -80,3 +80,38 @@ $CsrBodyObject = @{
 }
 
 $CsrBody = $CsrBodyObject | ConvertTo-Json -Depth 10
+
+
+
+
+
+
+
+
+
+
+$DryRunRaw = "%DryRun%"
+$DryRun = $DryRunRaw.Trim().ToLower() -eq 'true'
+
+Write-Host "DryRun raw value: [$DryRunRaw]"
+Write-Host "DryRun parsed boolean: [$DryRun]"
+
+$ErrorActionPreference = 'Stop'
+
+if ($DryRun) {
+    Write-Host "======================================"
+    Write-Host "DRY RUN - ISSUE CERTIFICATE"
+    Write-Host "======================================"
+    Write-Host "Certificate issuance would use:"
+    Write-Host "CA       : SILAC-SubCA.silacins.com\SILAC"
+    Write-Host "Template : WebServer2YR"
+    Write-Host "CSR      : %teamcity.build.id%.csr"
+    Write-Host "Output   : %teamcity.build.id%.crt"
+    Write-Host ""
+    Write-Host "No certificate will be issued."
+    exit 0
+}
+
+certreq -submit -config 'SILAC-SubCA.silacins.com\SILAC' -attrib 'CertificateTemplate:WebServer2YR' '%teamcity.build.id%.csr' '%teamcity.build.id%.crt'
+
+Write-Host "Certificate issued and saved into %teamcity.build.id%.crt file"
