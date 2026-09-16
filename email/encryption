@@ -139,3 +139,15 @@ if ($DryRun) {
     Write-Host "No NSX-ALB changes were made."
     exit 0
 }
+
+
+
+
+
+
+
+#!/usr/bin/env bash
+set -eu
+set -o pipefail
+
+bash cicd/tests/run-playwright.sh
