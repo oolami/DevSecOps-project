@@ -89,3 +89,11 @@ Invoke-RestMethod `
     -Body $body
 
 Write-Host "Certificate successfully replaced on $virtualService"
+
+
+
+
+
+
+$certResult = Get-Content "%teamcity.build.id%.json" -Raw | ConvertFrom-Json
+$certUuid = $certResult.uuid
