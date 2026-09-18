@@ -162,3 +162,94 @@ if (-not $certUuid) {
 $newCertRef = "%NSX-ALB-Host%/api/sslkeyandcertificate/$certUuid"
 
 Write-Host "New certificate UUID: $certUuid"
+
+
+
+
+
+$ErrorActionPreference = "Stop"
+
+$dryRun = "%DryRun%".Trim().ToLower() -eq "true"
+$virtualService = "%VirtualService%"
+
+Write-Host "Virtual Service: $virtualService"
+Write-Host "Dry Run: $dryRun"
+
+$headers = @{
+    "Content-Type"  = "application/json"
+    "X-Avi-Version" = "%NSX-ALB-Version%"
+}
+
+$signInBody = @{
+    username = "%NSX-ALB-Username%"
+    password = "%NSX-ALB-Password%"
+} | ConvertTo-Json
+
+$signInResponse = Invoke-WebRequest `
+    "%NSX-ALB-Host%/login" `
+    -SessionVariable session `
+    -Method POST `
+    -Headers $headers `
+    -Body $signInBody
+
+if ($signInResponse.StatusCode -ne 200) {
+    throw "NSX-ALB login failed."
+}
+
+Write-Host "Successfully authenticated to NSX-ALB."
+
+$vsResponse = Invoke-RestMethod `
+    "%NSX-ALB-Host%/api/virtualservice?name=$virtualService" `
+    -WebSession $session `
+    -Headers $headers
+
+if (-not $vsResponse.results -or $vsResponse.results.Count -eq 0) {
+    throw "Virtual Service '$virtualService' was not found."
+}
+
+$vs = $vsResponse.results[0]
+
+Write-Host "Found Virtual Service: $($vs.name)"
+
+$currentRefs = @($vs.ssl_key_and_certificate_refs)
+
+if ($currentRefs.Count -eq 0) {
+    throw "No certificate is currently assigned to '$virtualService'."
+}
+
+Write-Host "Current certificate reference(s):"
+$currentRefs | ForEach-Object {
+    Write-Host "  $_"
+}
+
+if ($dryRun) {
+    Write-Host "========================================"
+    Write-Host "DRY RUN - VERIFY VS CERTIFICATE"
+    Write-Host "========================================"
+    Write-Host "Virtual Service : $virtualService"
+    Write-Host "Certificate assignment would be verified after replacement."
+    Write-Host "No NSX-ALB changes were made."
+    Write-Host "========================================"
+    exit 0
+}
+
+$certResult = Get-Content "%teamcity.build.id%.json" -Raw | ConvertFrom-Json
+$certUuid = $certResult.uuid
+
+if (-not $certUuid) {
+    throw "Unable to determine uploaded certificate UUID."
+}
+
+$expectedCertRef = "%NSX-ALB-Host%/api/sslkeyandcertificate/$certUuid"
+
+if ($currentRefs -notcontains $expectedCertRef) {
+    throw "Certificate verification failed. Expected certificate UUID '$certUuid' is not assigned to '$virtualService'."
+}
+
+Write-Host "========================================"
+Write-Host "CERTIFICATE VERIFICATION SUCCESSFUL"
+Write-Host "========================================"
+Write-Host "Virtual Service : $virtualService"
+Write-Host "Certificate UUID: $certUuid"
+Write-Host "The renewed certificate is assigned to the Virtual Service."
+Write-Host "========================================"
