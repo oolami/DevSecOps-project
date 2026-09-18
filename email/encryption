@@ -1,382 +1,91 @@
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 
-# ============================================================
-# STEP 6 - UPDATE NSX-ALB VIRTUAL SERVICE CERTIFICATE
-#
-# DryRun = true  -> Discover/validate only. NO VS modification.
-# DryRun = false -> Replace old certificate ref with new ref.
-# ============================================================
+$dryRun = "%DryRun%".Trim().ToLower() -eq "true"
+$virtualService = "%VirtualService%"
 
-$nsxHost     = "%NSX-ALB-Host%"
-$nsxVersion  = "%NSX-ALB-Version%"
-$username    = "%NSX-ALB-Username%"
-$password    = "%NSX-ALB-Password%"
+Write-Host "Virtual Service: $virtualService"
+Write-Host "Dry Run: $dryRun"
 
-$commonName  = "%CommonName%"
-$oldCertName = "%OldCertificateName%"
-$newCertName = "%NewCertificateName%"
-$dryRun      = "%DryRun%"
-
-# Normalize host
-$nsxHost = $nsxHost.TrimEnd("/")
-
-Write-Host "======================================================"
-Write-Host " NSX-ALB Virtual Service Certificate Update"
-Write-Host "======================================================"
-Write-Host "Common Name       : $commonName"
-Write-Host "Old Certificate   : $oldCertName"
-Write-Host "New Certificate   : $newCertName"
-Write-Host "Dry Run           : $dryRun"
-Write-Host "======================================================"
-
-# ------------------------------------------------------------
-# Helper: fail TeamCity cleanly
-# ------------------------------------------------------------
-function Fail-Build {
-    param([string]$Message)
-
-    Write-Host "##teamcity[buildProblem description='$Message']"
-    throw $Message
+# Login to NSX-ALB
+$headers = @{
+    "Content-Type"  = "application/json"
+    "X-Avi-Version" = "%NSX-ALB-Version%"
 }
 
-# ------------------------------------------------------------
-# 1. Login to NSX-ALB
-# ------------------------------------------------------------
-Write-Host "`n[1/7] Authenticating to NSX-ALB..."
-
-$session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-
-$loginBody = @{
-    username = $username
-    password = $password
+$signInBody = @{
+    username = "%NSX-ALB-Username%"
+    password = "%NSX-ALB-Password%"
 } | ConvertTo-Json
 
-try {
-    Invoke-RestMethod `
-        -Uri "$nsxHost/login" `
-        -Method Post `
-        -ContentType "application/json" `
-        -Body $loginBody `
-        -WebSession $session | Out-Null
+$signInResponse = Invoke-WebRequest `
+    "%NSX-ALB-Host%/login" `
+    -SessionVariable session `
+    -Method POST `
+    -Headers $headers `
+    -Body $signInBody
 
-    Write-Host "Authentication successful."
-}
-catch {
-    Fail-Build "Unable to authenticate to NSX-ALB: $($_.Exception.Message)"
+if ($signInResponse.StatusCode -ne 200) {
+    throw "NSX-ALB login failed."
 }
 
-$headers = @{
-    "X-Avi-Version" = $nsxVersion
+$headers["X-CSRFToken"] = $session.Cookies.GetAllCookies()["csrftoken"].Value
+$headers["Referer"] = "%NSX-ALB-Host%/"
+
+# Find selected Virtual Service
+$vsResponse = Invoke-RestMethod `
+    "%NSX-ALB-Host%/api/virtualservice?name=$virtualService" `
+    -WebSession $session `
+    -Headers $headers
+
+if (-not $vsResponse.results -or $vsResponse.results.Count -eq 0) {
+    throw "Virtual Service '$virtualService' was not found."
 }
 
-# ------------------------------------------------------------
-# 2. Find old certificate
-# ------------------------------------------------------------
-Write-Host "`n[2/7] Finding existing certificate..."
+$vs = $vsResponse.results[0]
 
-try {
-    $encodedOld = [uri]::EscapeDataString($oldCertName)
+Write-Host "Found Virtual Service: $($vs.name)"
 
-    $oldResponse = Invoke-RestMethod `
-        -Uri "$nsxHost/api/sslkeyandcertificate?name=$encodedOld" `
-        -Method Get `
-        -Headers $headers `
-        -WebSession $session
+# Find certificate uploaded by Step 5
+$certUuid = Get-Content "%teamcity.build.id%.json" | jq -r '.uuid'
 
-    $oldMatches = @($oldResponse.results)
-
-    if ($oldMatches.Count -ne 1) {
-        Fail-Build "Expected exactly one old certificate named '$oldCertName'; found $($oldMatches.Count)."
-    }
-
-    $oldCert = $oldMatches[0]
-    $oldUuid = $oldCert.uuid
-
-    Write-Host "Old certificate found."
-    Write-Host "Name : $($oldCert.name)"
-    Write-Host "UUID : $oldUuid"
-}
-catch {
-    if ($_.Exception.Message -like "*Expected exactly one*") {
-        throw
-    }
-
-    Fail-Build "Unable to retrieve old certificate: $($_.Exception.Message)"
+if (-not $certUuid) {
+    throw "Unable to determine uploaded certificate UUID."
 }
 
-# ------------------------------------------------------------
-# 3. Find newly uploaded certificate
-# ------------------------------------------------------------
-Write-Host "`n[3/7] Finding newly uploaded certificate..."
+$newCertRef = "%NSX-ALB-Host%/api/sslkeyandcertificate/$certUuid"
 
-try {
-    $encodedNew = [uri]::EscapeDataString($newCertName)
+Write-Host "New certificate UUID: $certUuid"
 
-    $newResponse = Invoke-RestMethod `
-        -Uri "$nsxHost/api/sslkeyandcertificate?name=$encodedNew" `
-        -Method Get `
-        -Headers $headers `
-        -WebSession $session
-
-    $newMatches = @($newResponse.results)
-
-    if ($newMatches.Count -ne 1) {
-        Fail-Build "Expected exactly one new certificate named '$newCertName'; found $($newMatches.Count)."
-    }
-
-    $newCert = $newMatches[0]
-    $newUuid = $newCert.uuid
-
-    Write-Host "New certificate found."
-    Write-Host "Name : $($newCert.name)"
-    Write-Host "UUID : $newUuid"
-}
-catch {
-    if ($_.Exception.Message -like "*Expected exactly one*") {
-        throw
-    }
-
-    Fail-Build "Unable to retrieve new certificate: $($_.Exception.Message)"
-}
-
-if ($oldUuid -eq $newUuid) {
-    Fail-Build "Old and new certificate UUIDs are identical. Refusing to continue."
-}
-
-# ------------------------------------------------------------
-# 4. Discover VS referencing OLD certificate
-# ------------------------------------------------------------
-Write-Host "`n[4/7] Discovering Virtual Service using old certificate..."
-
-try {
-    $virtualServices = @()
-    $page = 1
-
-    do {
-        $response = Invoke-RestMethod `
-            -Uri "$nsxHost/api/virtualservice?page=$page&page_size=200" `
-            -Method Get `
-            -Headers $headers `
-            -WebSession $session
-
-        if ($response.results) {
-            $virtualServices += @($response.results)
-        }
-
-        $page++
-        $morePages = ($response.next -ne $null -and $response.next -ne "")
-    }
-    while ($morePages)
-
-    $matchingVS = @()
-
-    foreach ($vs in $virtualServices) {
-
-        $refs = @($vs.ssl_key_and_certificate_refs)
-
-        foreach ($ref in $refs) {
-            if ($ref -match [regex]::Escape($oldUuid)) {
-                $matchingVS += $vs
-                break
-            }
-        }
-    }
-
-    if ($matchingVS.Count -eq 0) {
-        Fail-Build "No Virtual Service references old certificate '$oldCertName'. No changes were made."
-    }
-
-    if ($matchingVS.Count -gt 1) {
-        Write-Host "Virtual Services found:"
-        foreach ($vs in $matchingVS) {
-            Write-Host " - $($vs.name)"
-        }
-
-        Fail-Build "More than one Virtual Service references '$oldCertName'. Automatic replacement stopped for safety."
-    }
-
-    $targetVS = $matchingVS[0]
-
-    Write-Host "Virtual Service found."
-    Write-Host "Name : $($targetVS.name)"
-    Write-Host "UUID : $($targetVS.uuid)"
-}
-catch {
-    if ($_.Exception.Message -like "*Virtual Service*") {
-        throw
-    }
-
-    Fail-Build "Unable to discover Virtual Service: $($_.Exception.Message)"
-}
-
-# ------------------------------------------------------------
-# 5. Retrieve complete VS configuration
-# ------------------------------------------------------------
-Write-Host "`n[5/7] Retrieving Virtual Service configuration..."
-
-try {
-    $vsConfig = Invoke-RestMethod `
-        -Uri "$nsxHost/api/virtualservice/$($targetVS.uuid)" `
-        -Method Get `
-        -Headers $headers `
-        -WebSession $session
-}
-catch {
-    Fail-Build "Unable to retrieve Virtual Service configuration: $($_.Exception.Message)"
-}
-
-$currentRefs = @($vsConfig.ssl_key_and_certificate_refs)
-
-if ($currentRefs.Count -eq 0) {
-    Fail-Build "Virtual Service contains no SSL certificate references."
-}
-
-Write-Host "`nCurrent SSL certificate references:"
-$currentRefs | ForEach-Object {
+# Show current certificate
+Write-Host "Current certificate reference(s):"
+$vs.ssl_key_and_certificate_refs | ForEach-Object {
     Write-Host "  $_"
 }
 
-# ------------------------------------------------------------
-# Build NEW certificate reference
-# Preserve the same URL/ref style used by existing configuration
-# ------------------------------------------------------------
+Write-Host "New certificate reference:"
+Write-Host "  $newCertRef"
 
-$oldRef = $currentRefs |
-    Where-Object { $_ -match [regex]::Escape($oldUuid) } |
-    Select-Object -First 1
-
-if (-not $oldRef) {
-    Fail-Build "Old certificate UUID was not found in the full Virtual Service configuration."
-}
-
-$newRef = $oldRef -replace [regex]::Escape($oldUuid), $newUuid
-
-$newRefs = @()
-
-foreach ($ref in $currentRefs) {
-
-    if ($ref -eq $oldRef) {
-        $newRefs += $newRef
-    }
-    else {
-        $newRefs += $ref
-    }
-}
-
-Write-Host "`n------------------------------------------------------"
-Write-Host "CERTIFICATE DEPLOYMENT PLAN"
-Write-Host "------------------------------------------------------"
-Write-Host "Common Name      : $commonName"
-Write-Host "Virtual Service  : $($targetVS.name)"
-Write-Host "Old Certificate  : $oldCertName"
-Write-Host "New Certificate  : $newCertName"
-Write-Host ""
-Write-Host "OLD REF:"
-Write-Host "  $oldRef"
-Write-Host ""
-Write-Host "NEW REF:"
-Write-Host "  $newRef"
-Write-Host "------------------------------------------------------"
-
-# Export information for Step 7 / rollback
-Write-Host "##teamcity[setParameter name='env.TargetVSName' value='$($targetVS.name)']"
-Write-Host "##teamcity[setParameter name='env.TargetVSUUID' value='$($targetVS.uuid)']"
-Write-Host "##teamcity[setParameter name='env.OldCertificateUUID' value='$oldUuid']"
-Write-Host "##teamcity[setParameter name='env.NewCertificateUUID' value='$newUuid']"
-
-# ------------------------------------------------------------
-# 6. DRY RUN STOP
-# ------------------------------------------------------------
-
-if ($dryRun -match "^(true|1|yes)$") {
-
-    Write-Host ""
-    Write-Host "======================================================"
-    Write-Host " DRY RUN SUCCESSFUL"
-    Write-Host " No NSX-ALB configuration was modified."
-    Write-Host "======================================================"
-
+if ($dryRun) {
+    Write-Host "=========================================="
+    Write-Host "DRY RUN - REPLACE VS CERTIFICATE"
+    Write-Host "Would update: $virtualService"
+    Write-Host "Would remove current RSA certificate."
+    Write-Host "Would attach certificate UUID: $certUuid"
+    Write-Host "No NSX-ALB changes were made."
+    Write-Host "=========================================="
     exit 0
 }
 
-# ------------------------------------------------------------
-# 7. Apply certificate replacement
-# ------------------------------------------------------------
+# Replace old certificate with new certificate
+$vs.ssl_key_and_certificate_refs = @($newCertRef)
 
-Write-Host "`n[6/7] Updating Virtual Service..."
+$body = $vs | ConvertTo-Json -Depth 20
 
-$vsConfig.ssl_key_and_certificate_refs = $newRefs
-
-# Remove read-only/runtime properties commonly returned by Avi API
-$propertiesToRemove = @(
-    "_last_modified",
-    "url",
-    "uuid"
-)
-
-foreach ($property in $propertiesToRemove) {
-    if ($vsConfig.PSObject.Properties.Name -contains $property) {
-        $vsConfig.PSObject.Properties.Remove($property)
-    }
-}
-
-$body = $vsConfig | ConvertTo-Json -Depth 100
-
-try {
-    Invoke-RestMethod `
-        -Uri "$nsxHost/api/virtualservice/$($targetVS.uuid)" `
-        -Method Put `
-        -Headers $headers `
-        -ContentType "application/json" `
-        -Body $body `
-        -WebSession $session | Out-Null
-
-    Write-Host "Virtual Service update accepted by NSX-ALB."
-}
-catch {
-    Fail-Build "NSX-ALB rejected Virtual Service update: $($_.Exception.Message)"
-}
-
-# ------------------------------------------------------------
-# Confirm configuration
-# ------------------------------------------------------------
-
-Write-Host "`n[7/7] Confirming certificate reference..."
-
-$verifyVS = Invoke-RestMethod `
-    -Uri "$nsxHost/api/virtualservice/$($targetVS.uuid)" `
-    -Method Get `
+Invoke-RestMethod `
+    "$($vs.url)" `
+    -WebSession $session `
+    -Method PUT `
     -Headers $headers `
-    -WebSession $session
+    -Body $body
 
-$verifiedRefs = @($verifyVS.ssl_key_and_certificate_refs)
-
-$newAttached = $false
-$oldAttached = $false
-
-foreach ($ref in $verifiedRefs) {
-
-    if ($ref -match [regex]::Escape($newUuid)) {
-        $newAttached = $true
-    }
-
-    if ($ref -match [regex]::Escape($oldUuid)) {
-        $oldAttached = $true
-    }
-}
-
-if (-not $newAttached) {
-    Fail-Build "New certificate is NOT attached to the Virtual Service after update."
-}
-
-if ($oldAttached) {
-    Fail-Build "Old certificate is still attached to the Virtual Service after update."
-}
-
-Write-Host ""
-Write-Host "======================================================"
-Write-Host " STEP 6 SUCCESS"
-Write-Host " Virtual Service : $($targetVS.name)"
-Write-Host " New Certificate : $newCertName"
-Write-Host " Old certificate reference removed."
-Write-Host "======================================================"
+Write-Host "Certificate successfully replaced on $virtualService"
