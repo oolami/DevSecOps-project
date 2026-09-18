@@ -253,3 +253,15 @@ Write-Host "Virtual Service : $virtualService"
 Write-Host "Certificate UUID: $certUuid"
 Write-Host "The renewed certificate is assigned to the Virtual Service."
 Write-Host "========================================"
+
+
+
+
+
+$signinResponse = Invoke-WebRequest `
+    "%NSX-ALB-Host%/login" `
+    -SessionVariable session `
+    -Method POST `
+    -Headers $headers `
+    -Body $signinBody `
+    -UseBasicParsing
