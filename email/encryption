@@ -109,3 +109,23 @@ $signinResponse = Invoke-WebRequest `
     -Headers $headers `
     -Body $signInBody `
     -UseBasicParsing
+
+
+
+
+
+
+
+
+
+
+$nsxAlbUri = [System.Uri]"%NSX-ALB-Host%"
+
+$csrfCookie = $session.Cookies.GetCookies($nsxAlbUri)['csrftoken']
+
+if (-not $csrfCookie) {
+    throw "NSX-ALB login succeeded, but csrftoken cookie was not found."
+}
+
+$Headers['X-CSRFToken'] = $csrfCookie.Value
+$Headers['Referer'] = "%NSX-ALB-Host%/"
