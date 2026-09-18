@@ -129,3 +129,36 @@ if (-not $csrfCookie) {
 
 $Headers['X-CSRFToken'] = $csrfCookie.Value
 $Headers['Referer'] = "%NSX-ALB-Host%/"
+
+
+
+
+
+
+Write-Host "Current certificate reference(s):"
+$vs.ssl_key_and_certificate_refs | ForEach-Object {
+    Write-Host "  $_"
+}
+
+if ($dryRun) {
+    Write-Host "========================================"
+    Write-Host "DRY RUN - REPLACE VS CERTIFICATE"
+    Write-Host "========================================"
+    Write-Host "Virtual Service : $virtualService"
+    Write-Host "Action          : Replace current RSA certificate"
+    Write-Host "New certificate : Would use certificate uploaded by Step 5"
+    Write-Host "No NSX-ALB changes were made."
+    Write-Host "========================================"
+    exit 0
+}
+
+# Real run only - Step 5 will have created this response
+$certUuid = Get-Content "%teamcity.build.id%.json" | jq -r '.uuid'
+
+if (-not $certUuid) {
+    throw "Unable to determine uploaded certificate UUID."
+}
+
+$newCertRef = "%NSX-ALB-Host%/api/sslkeyandcertificate/$certUuid"
+
+Write-Host "New certificate UUID: $certUuid"
