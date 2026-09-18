@@ -97,3 +97,15 @@ Write-Host "Certificate successfully replaced on $virtualService"
 
 $certResult = Get-Content "%teamcity.build.id%.json" -Raw | ConvertFrom-Json
 $certUuid = $certResult.uuid
+
+
+
+
+
+$signinResponse = Invoke-WebRequest `
+    "%NSX-ALB-Host%/login" `
+    -SessionVariable session `
+    -Method POST `
+    -Headers $headers `
+    -Body $signInBody `
+    -UseBasicParsing
