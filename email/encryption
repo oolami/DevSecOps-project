@@ -1,4 +1,4 @@
-if ($CertificateType -eq "Internal") {
+no if ($CertificateType -eq "Internal") {
     Write-Host "Workflow          : Internal certificate - NSX-ALB deployment"
 }
 elseif ($CertificateType -eq "External") {
@@ -55,3 +55,59 @@ if ($CertificateType -eq "External") {
 }
 
 throw "Unsupported CertificateType: $CertificateType"
+
+
+
+
+
+
+
+
+
+
+$ErrorActionPreference = "Stop"
+
+$CertificateType          = "%CertificateType%"
+$CommonName               = "%CommonName%"
+$DryRun                   = "%DryRun%"
+$FastlyDeploymentRequired = "%FastlyDeploymentRequired%"
+
+Write-Host "========================================="
+Write-Host "Deploy Certificate to Fastly"
+Write-Host "========================================="
+Write-Host "Certificate Type          : $CertificateType"
+Write-Host "Common Name               : $CommonName"
+Write-Host "Fastly Deployment Required: $FastlyDeploymentRequired"
+Write-Host "Dry Run                   : $DryRun"
+Write-Host "-----------------------------------------"
+
+# Fastly is not part of this certificate path.
+if ($FastlyDeploymentRequired -ne "true") {
+    Write-Host "Fastly deployment is not required."
+    Write-Host "Skipping Fastly certificate deployment."
+    exit 0
+}
+
+# Safety guard: dry run must never modify Fastly.
+if ($DryRun -eq "true") {
+
+    Write-Host ""
+    Write-Host "DRY RUN - FASTLY CERTIFICATE DEPLOYMENT"
+    Write-Host "Target domain: $CommonName"
+    Write-Host ""
+    Write-Host "Would perform the following actions:"
+    Write-Host "  1. Locate the existing Fastly certificate for $CommonName"
+    Write-Host "  2. Identify the certificate and associated TLS domains"
+    Write-Host "  3. Load the renewed certificate and private key"
+    Write-Host "  4. Replace the existing Fastly certificate"
+    Write-Host "  5. Preserve the associated TLS domains"
+    Write-Host ""
+    Write-Host "No Fastly API write operations were performed."
+    Write-Host "DRY RUN completed successfully."
+
+    exit 0
+}
+
+# Real deployment intentionally blocked until Fastly API
+# authentication and replacement logic are configured.
+throw "Live Fastly deployment is not configured yet. Run with DryRun=true."
