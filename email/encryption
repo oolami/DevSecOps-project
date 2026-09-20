@@ -4,3 +4,54 @@ if ($CertificateType -eq "Internal") {
 elseif ($CertificateType -eq "External") {
     Write-Host "Workflow          : External certificate - NSX-ALB + conditional Fastly deployment"
 }
+
+
+
+
+
+
+
+$ErrorActionPreference = "Stop"
+
+$CertificateType = "%CertificateType%"
+$CommonName      = "%CommonName%"
+$DryRun          = "%DryRun%"
+
+Write-Host "========================================="
+Write-Host "Determine Fastly Deployment"
+Write-Host "========================================="
+Write-Host "Certificate Type : $CertificateType"
+Write-Host "Common Name      : $CommonName"
+Write-Host "Dry Run          : $DryRun"
+Write-Host "-----------------------------------------"
+
+# Internal certificates terminate on NSX-ALB only.
+if ($CertificateType -eq "Internal") {
+    Write-Host "Internal certificate detected."
+    Write-Host "Fastly Deployment : NOT REQUIRED"
+    Write-Host "No Fastly actions will be performed."
+
+    Write-Host "##teamcity[setParameter name='FastlyDeploymentRequired' value='false']"
+    exit 0
+}
+
+# External certificates may require deployment to Fastly.
+if ($CertificateType -eq "External") {
+    Write-Host "External certificate detected."
+    Write-Host "Fastly Deployment : REQUIRED"
+    Write-Host "Target domain      : $CommonName"
+
+    Write-Host "##teamcity[setParameter name='FastlyDeploymentRequired' value='true']"
+
+    if ($DryRun -eq "true") {
+        Write-Host ""
+        Write-Host "DRY RUN - FASTLY DEPLOYMENT"
+        Write-Host "Would locate the existing Fastly certificate for $CommonName."
+        Write-Host "Would replace the certificate after DigiCert issuance."
+        Write-Host "No Fastly changes were made."
+    }
+
+    exit 0
+}
+
+throw "Unsupported CertificateType: $CertificateType"
