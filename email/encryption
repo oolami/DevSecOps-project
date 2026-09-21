@@ -1,1 +1,21 @@
-End-to-end workflow and branching: complete and validated. Internal NSX-ALB path: implemented. External Fastly path: dry-run validated; live Fastly API deployment remains the implementation step.
+End-to-end workflow and branching: complete and 
+validated. Internal NSX-ALB path: implemented. External Fastly path: dry-run validated; live Fastly API deployment remains the implementation step.
+
+
+
+
+sudo dnf install -y dotnet-sdk-9.0
+
+dotnet --version
+dotnet --list-sdks
+which dotnet
+
+
+
+
+which dotnet
+dotnet --version
+dotnet --list-sdks
+
+
+rpm -qa | grep -i dotnet
