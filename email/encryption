@@ -19,3 +19,8 @@ dotnet --list-sdks
 
 
 rpm -qa | grep -i dotnet
+
+
+ps -ef | grep -i teamcity
+
+systemctl list-units --type=service | grep -i teamcity
