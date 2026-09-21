@@ -24,3 +24,15 @@ rpm -qa | grep -i dotnet
 ps -ef | grep -i teamcity
 
 systemctl list-units --type=service | grep -i teamcity
+
+
+
+sudo -u 'teamcity@silacins.com' /usr/bin/dotnet --version
+
+sudo -u 'teamcity@silacins.com' /usr/bin/dotnet --list-sdks
+
+sudo -u 'teamcity@silacins.com' sh -c 'echo $PATH; command -v dotnet; dotnet --version'
+
+sudo systemctl restart teamcity-agent.service
+
+systemctl status teamcity-agent.service
