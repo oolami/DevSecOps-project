@@ -1,38 +1,5 @@
-End-to-end workflow and branching: complete and 
-validated. Internal NSX-ALB path: implemented. External Fastly path: dry-run validated; live Fastly API deployment remains the implementation step.
+Confirmed the ARC Hub Playwright E2E step runs directly on the TeamCity agent and requires .NET 9 SDK to start ArcHub.Api.
 
+Installed .NET 9 SDK (9.0.121) on tca02-corp-xmi and verified it is available to the TeamCity build-agent account. The TeamCity agent was restarted successfully and is connected/enabled. ARC Hub-Business is already restricted to tca02-corp-xmi.
 
-
-
-sudo dnf install -y dotnet-sdk-9.0
-
-dotnet --version
-dotnet --list-sdks
-which dotnet
-
-
-
-
-which dotnet
-dotnet --version
-dotnet --list-sdks
-
-
-rpm -qa | grep -i dotnet
-
-
-ps -ef | grep -i teamcity
-
-systemctl list-units --type=service | grep -i teamcity
-
-
-
-sudo -u 'teamcity@silacins.com' /usr/bin/dotnet --version
-
-sudo -u 'teamcity@silacins.com' /usr/bin/dotnet --list-sdks
-
-sudo -u 'teamcity@silacins.com' sh -c 'echo $PATH; command -v dotnet; dotnet --version'
-
-sudo systemctl restart teamcity-agent.service
-
-systemctl status teamcity-agent.service
+Raul has been notified that the agent is ready for continued Playwright E2E testing. Pending validation of the Playwright build.
