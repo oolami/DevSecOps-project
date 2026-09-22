@@ -14,3 +14,13 @@ I reviewed and updated the DRS onboarding documentation for Platform Gainwell. I
 The updated document also includes the checklist and requirements needed for DRS onboarding, which we can use when working with the PG team.
 
 I’ve attached the updated document for your review. Please let me know if you’d like me to make any additional changes.
+
+
+
+git fetch origin
+
+git diff --name-status origin/pre-prod/deploy...origin/dev/WHC-3493-nasdaq-secret
+
+git log --oneline origin/pre-prod/deploy..origin/dev/WHC-3493-nasdaq-secret
+
+git diff origin/pre-prod/deploy...origin/dev/WHC-3493-nasdaq-secret
