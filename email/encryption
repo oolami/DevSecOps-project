@@ -3,3 +3,14 @@ Confirmed the ARC Hub Playwright E2E step runs directly on the TeamCity agent an
 Installed .NET 9 SDK (9.0.121) on tca02-corp-xmi and verified it is available to the TeamCity build-agent account. The TeamCity agent was restarted successfully and is connected/enabled. ARC Hub-Business is already restricted to tca02-corp-xmi.
 
 Raul has been notified that the agent is ready for continued Playwright E2E testing. Pending validation of the Playwright build.
+
+
+
+
+Hi Jim,
+
+I reviewed and updated the DRS onboarding documentation for Platform Gainwell. I removed the legacy AMS/RFC-specific steps and updated the CloudEndure references to reflect the current DRS process while keeping the existing Gainwell onboarding structure.
+
+The updated document also includes the checklist and requirements needed for DRS onboarding, which we can use when working with the PG team.
+
+I’ve attached the updated document for your review. Please let me know if you’d like me to make any additional changes.
