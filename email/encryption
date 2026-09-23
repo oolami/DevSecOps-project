@@ -15,3 +15,31 @@ Can you confirm how that process is expected to work, specifically:
 * Whether the payment method/account required for the API workflow has already been established.
 
 Once we confirm this piece, we can incorporate the DigiCert order submission into the existing automation and complete the external renewal flow through Fastly.
+
+
+
+
+
+
+Hi Tyler,
+
+The TeamCity certificate renewal automation has been built and we’ve validated the workflow for both internal and external certificate paths. We’re preparing to use teamcity.silacins.com, which expires on 10/01, for the external renewal workflow.
+
+The remaining dependency is the DigiCert ordering/payment configuration. Since the plan is to remove the current manual approval dependency by using the approved credit-card payment process, can SysAdmin configure the appropriate payment method/payment profile in DigiCert for the API-based renewal workflow?
+
+Ideally, we’d like to reference the configured DigiCert payment profile from TeamCity rather than storing credit-card details directly in the automation. Please let me know what is needed from our side to complete that setup.
+
+
+
+
+
+
+
+
+Hi Tyler,
+
+The TeamCity certificate renewal automation has been built, and we’ve validated the workflow for both internal and external certificate paths. We’re preparing to use teamcity.silacins.com, which expires on 10/01, for the external renewal workflow.
+
+The remaining dependency is the DigiCert ordering/payment configuration. Since the plan is to use the credit-card payment process and remove the current manual approval dependency, we need to get the appropriate payment method configured for the automated DigiCert renewal process.
+
+Do you have some time for a quick call today or tomorrow to go through this piece and confirm what we need from SysAdmin to complete the setup?
