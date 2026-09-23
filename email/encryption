@@ -1,26 +1,17 @@
-Confirmed the ARC Hub Playwright E2E step runs directly on the TeamCity agent and requires .NET 9 SDK to start ArcHub.Api.
+Hi SysAdmin team,
 
-Installed .NET 9 SDK (9.0.121) on tca02-corp-xmi and verified it is available to the TeamCity build-agent account. The TeamCity agent was restarted successfully and is connected/enabled. ARC Hub-Business is already restricted to tca02-corp-xmi.
+We’ve built the certificate renewal automation in TeamCity and are preparing to use teamcity.silacins.com as the first external certificate renewal. The certificate is currently due to expire on 10/01.
 
-Raul has been notified that the agent is ready for continued Playwright E2E testing. Pending validation of the Playwright build.
-
-
-
-
-Hi Jim,
-
-I reviewed and updated the DRS onboarding documentation for Platform Gainwell. I removed the legacy AMS/RFC-specific steps and updated the CloudEndure references to reflect the current DRS process while keeping the existing Gainwell onboarding structure.
-
-The updated document also includes the checklist and requirements needed for DRS onboarding, which we can use when working with the PG team.
-
-I’ve attached the updated document for your review. Please let me know if you’d like me to make any additional changes.
+Before completing the DigiCert portion of the workflow, I wanted to confirm the ordering process. My understanding is that the current manual DigiCert renewal process requires approval, but there has been discussion about using a credit card/payment method that would allow the renewal order to proceed without the existing manual approval flow.
 
 
 
-git fetch origin
 
-git diff --name-status origin/pre-prod/deploy...origin/dev/WHC-3493-nasdaq-secret
+Can you confirm how that process is expected to work, specifically:
 
-git log --oneline origin/pre-prod/deploy..origin/dev/WHC-3493-nasdaq-secret
+* Whether the credit-card payment method will allow the DigiCert renewal order to be submitted/processed without the current manual approval.
+* Whether DevOps/TeamCity will be permitted to submit the renewal order directly through the DigiCert API using that process.
+* Whether there will still be any SysAdmin action required for domain validation or certificate approval after the order is submitted.
+* Whether the payment method/account required for the API workflow has already been established.
 
-git diff origin/pre-prod/deploy...origin/dev/WHC-3493-nasdaq-secret
+Once we confirm this piece, we can incorporate the DigiCert order submission into the existing automation and complete the external renewal flow through Fastly.
