@@ -43,3 +43,16 @@ The TeamCity certificate renewal automation has been built, and we’ve validate
 The remaining dependency is the DigiCert ordering/payment configuration. Since the plan is to use the credit-card payment process and remove the current manual approval dependency, we need to get the appropriate payment method configured for the automated DigiCert renewal process.
 
 Do you have some time for a quick call today or tomorrow to go through this piece and confirm what we need from SysAdmin to complete the setup?
+
+
+
+
+
+
+
+
+Thanks Tyler, that makes sense. It sounds like there are really two remaining pieces for us to solve for full automation: the payment method for submitting the DigiCert order and automating the domain validation that is currently being handled as part of the manual approval process.
+
+For the domain validation piece, do we currently use DNS validation, or another validation method for these certificates? I’d like to understand the current process so I can determine how we can incorporate that into the TeamCity workflow.
+
+Also, do you have some time for a quick call to walk through the current DigiCert ordering and domain validation process? I think that would help me map the remaining pieces into the automation.
