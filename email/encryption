@@ -35,3 +35,19 @@ Hey Dennis, the new TeamCity certificate has been imported and validated success
 
 
 Hey Dennis, the new TeamCity certificate has been imported and validated successfully in NSX-ALB. I’m at the point of applying it to the TeamCity virtual service. No downtime is expected, but just wanted to confirm you’re okay with me proceeding with the certificate swap.
+
+
+
+
+
+
+
+
+
+& "C:\Program Files\Git\usr\bin\openssl.exe" s_client -showcerts -connect teamcity.silacins.com:443 -servername teamcity.silacins.com
+
+
+
+& "C:\Program Files\Git\usr\bin\openssl.exe" s_client -showcerts -connect teamcity.silacins.com:443
+
+
