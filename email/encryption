@@ -5,6 +5,14 @@ Hey Dennis, I ran into a SAN mismatch while updating the renewed TeamCity certif
 
 
 
+Completed the renewal of the teamcity.silacins.com TLS certificate. The renewed DigiCert certificate and private key were successfully deployed to NSX-ALB and the existing self-managed certificate was replaced in Fastly.
+
+Validated the updated certificate in Fastly — certificate is Active/In use, teamcity.silacins.com is Valid, and the new expiration date is April 10, 2027.
+
+
+Apologies, I realized I was uploading the DigiCert CA certificate instead of the newly issued TeamCity certificate in Fastly. I’ve corrected it, and the certificate renewal has now been completed successfully.
+
+
 
 
 
