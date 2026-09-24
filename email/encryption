@@ -1,1 +1,6 @@
-I tried accessing DigiCert CertCentral with my SILAC email and also tried the password reset, but I’m not receiving a reset email. It looks like I may not currently have a CertCentral account. Who is the right contact in EAG to reach out to for an account to be created for me?
+* DCV: They use DNS validation.
+* Payment: This is the primary blocker to true end-to-end automation.
+* Invoicing: They attempted to move the DigiCert account to invoicing, but DigiCert sales did not engage.
+* Credit card/pre-funded account: Tyler believes either approach would still introduce a manual action.
+* Manual approval: Can be removed.
+* Current process: Can be changed; Tyler is open to redesigning it rather than preserving the existing process.
