@@ -54,3 +54,13 @@ Hey Dennis, the new TeamCity certificate has been imported and validated success
 
 
 & "C:\Program Files\Git\usr\bin\openssl.exe" x509 -in "PATH\TO\DigiCertCA.crt" -noout -subject -issuer -dates -ext subjectAltName
+
+
+
+
+
+
+Get-ChildItem -Filter "*.crt"
+
+
+& "C:\Program Files\Git\usr\bin\openssl.exe" x509 -in ".\DigiCertCA.crt" -noout -subject -issuer -dates -ext subjectAltName
