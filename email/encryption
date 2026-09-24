@@ -1,1 +1,1 @@
-Got it, thanks Jim. Can you send me the VPC ID and CIDR for each of the three VPCs — MO Provider+ Tenant, Provider+ Current (N), and Provider+ N-1? I’ll include them in the DRS subnet request so the PG team has the specific VPC details.
+Hi Holly, I’m working on the MO Provider+ DRS subnet request. Jim clarified that the request needs to cover three VPCs: the MO Provider+ Tenant VPC, Provider+ Current (N) VPC, and Provider+ N-1 VPC. Do you know where I can get the VPC IDs and CIDRs for these three, or who on the PG team I should work with to confirm them?
