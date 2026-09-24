@@ -4,3 +4,10 @@
 * Credit card/pre-funded account: Tyler believes either approach would still introduce a manual action.
 * Manual approval: Can be removed.
 * Current process: Can be changed; Tyler is open to redesigning it rather than preserving the existing process.
+
+
+
+
+I need access to support TLS/SSL certificate renewal and management activities as part of the DevOps certificate renewal process.
+
+I attempted to access CertCentral and use the password reset option, but no reset email was received, indicating that an account may not currently exist for me. Please have EAG create/provision the appropriate DigiCert CertCentral account and access.
