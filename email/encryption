@@ -1,16 +1,1 @@
-Get-ChildItem "$HOME\Documents" -Recurse -Filter "DigiCertCA.crt" -ErrorAction SilentlyContinue
-
-
-
-
-
-
-
-& "C:\Program Files\Git\usr\bin\openssl.exe" x509 -in "PASTE-THE-COPIED-PATH-HERE" -noout -subject -issuer -dates -ext subjectAltName
-
-
-
-
-
-
-Get-ChildItem "$HOME" -Recurse -Filter "DigiCertCA.crt" -ErrorAction SilentlyContinue
+Hi, I’m currently renewing the teamcity.silacins.com certificate. I’ve completed the replacement in NSX-ALB, but I’m unable to complete the update in Fastly because I’m getting a message that I don’t have permission to manage TLS on the account. Could someone please check my Fastly permission set and grant me the required access to complete the certificate replacement? Thanks!
