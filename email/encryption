@@ -1,16 +1,1 @@
-* DCV: They use DNS validation.
-* Payment: This is the primary blocker to true end-to-end automation.
-* Invoicing: They attempted to move the DigiCert account to invoicing, but DigiCert sales did not engage.
-* Credit card/pre-funded account: Tyler believes either approach would still introduce a manual action.
-* Manual approval: Can be removed.
-* Current process: Can be changed; Tyler is open to redesigning it rather than preserving the existing process.
-
-
-
-
-I need access to support TLS/SSL certificate renewal and management activities as part of the DevOps certificate renewal process.
-
-I attempted to access CertCentral and use the password reset option, but no reset email was received, indicating that an account may not currently exist for me. Please have EAG create/provision the appropriate DigiCert CertCentral account and access.
-
-
-For the MO Provider+ request, when you say “request the secondary for tenant VPC as well as N & N-1 VPCs,” are you referring to the secondary CIDR blocks for each of those VPCs? I want to make sure I include the correct CIDRs and VPCs in the DRS subnet request.
+Got it, thanks Jim. Can you send me the VPC ID and CIDR for each of the three VPCs — MO Provider+ Tenant, Provider+ Current (N), and Provider+ N-1? I’ll include them in the DRS subnet request so the PG team has the specific VPC details.
