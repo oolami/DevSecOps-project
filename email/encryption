@@ -1,1 +1,11 @@
+
+
+
+Hey Dennis, I ran into a SAN mismatch while updating the renewed TeamCity certificate in Fastly. The existing certificate covers both teamcity.silacins.com and www.teamcity.silacins.com, while the renewed certificate only includes teamcity.silacins.com. I confirmed with Marco that we should retain both SANs. Do you know if we can have the DigiCert renewal reissued to include www.teamcity.silacins.com, or would we need to submit a new order?
+
+
+
+
+
+
 Marco, I’m getting a SAN mismatch when replacing the TeamCity certificate. The existing Fastly certificate includes both teamcity.silacins.com and www.teamcity.silacins.com, but Fastly shows www.teamcity.silacins.com as Not activated. The renewed certificate only contains teamcity.silacins.com. Do we need to remove the inactive www domain from the existing certificate association, or should the renewed certificate include that SAN as well?
