@@ -23,3 +23,9 @@ Please complete the following:
 
 
 Create AWS DRS replication subnet and VPC connectivity for MO Provider+
+
+
+
+
+
+Hey Dennis, the new TeamCity certificate has been imported and validated successfully in NSX-ALB. I’m at the step to apply it to the TeamCity virtual service. No downtime is expected, but just wanted to confirm you’re okay with me proceeding with the certificate swap.
