@@ -11,3 +11,7 @@ Hey Tyler, I’m starting the manual renewal for teamcity.silacins.com and I’m
 
 
 A couple of quick questions: Do we use the company SSO to access DigiCert CertCentral? Also, do I need to create a CAB/change ticket for the certificate renewal?
+
+
+
+Thanks Dennis. I don’t believe I’ve logged into the DigiCert management console before. Do you know if the account is set up using our SILAC email, or should I reach out to SysAdmin to get/reset my access?
