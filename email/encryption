@@ -51,3 +51,6 @@ Hey Dennis, the new TeamCity certificate has been imported and validated success
 & "C:\Program Files\Git\usr\bin\openssl.exe" s_client -showcerts -connect teamcity.silacins.com:443
 
 
+
+
+& "C:\Program Files\Git\usr\bin\openssl.exe" x509 -in "PATH\TO\DigiCertCA.crt" -noout -subject -issuer -dates -ext subjectAltName
