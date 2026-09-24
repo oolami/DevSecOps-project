@@ -2,4 +2,15 @@ Get-ChildItem "$HOME\Documents" -Recurse -Filter "DigiCertCA.crt" -ErrorAction S
 
 
 
+
+
+
+
+& "C:\Program Files\Git\usr\bin\openssl.exe" x509 -in "PASTE-THE-COPIED-PATH-HERE" -noout -subject -issuer -dates -ext subjectAltName
+
+
+
+
+
+
 Get-ChildItem "$HOME" -Recurse -Filter "DigiCertCA.crt" -ErrorAction SilentlyContinue
