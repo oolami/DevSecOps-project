@@ -3,3 +3,7 @@ Hi team, I received the DigiCert renewal notification for teamcity.silacins.com,
 Based on my discussion with Tyler, payment is still a blocker for making the DigiCert portion fully automated, so for this renewal we’re planning to keep the DigiCert ordering and DNS domain validation manual and use the automation for the remaining process through the Fastly deployment.
 
 I haven’t gone through the DigiCert ordering/renewal process before. Can someone confirm the current process for renewing the certificate? Do I need to create a CAB/change ticket before renewing the DigiCert order, or is there another ticket/request process I should follow?
+
+
+
+Hey Tyler, I’m starting the manual renewal for teamcity.silacins.com and I’m at the DigiCert CertCentral login. Do we use the company’s SSO for CertCentral? If so, do you know the IdP name I should use, or do I need to be provisioned for access?
