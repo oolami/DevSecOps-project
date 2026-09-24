@@ -7,3 +7,7 @@ I haven’t gone through the DigiCert ordering/renewal process before. Can someo
 
 
 Hey Tyler, I’m starting the manual renewal for teamcity.silacins.com and I’m at the DigiCert CertCentral login. Do we use the company’s SSO for CertCentral? If so, do you know the IdP name I should use, or do I need to be provisioned for access?
+
+
+
+A couple of quick questions: Do we use the company SSO to access DigiCert CertCentral? Also, do I need to create a CAB/change ticket for the certificate renewal?
