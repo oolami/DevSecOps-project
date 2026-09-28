@@ -11,3 +11,12 @@ if ([string]::IsNullOrWhiteSpace($csr)) {
 $csr | Out-File -Path "%teamcity.build.id%.csr" -Encoding ascii
 
 Write-Host "CSR created and saved into %teamcity.build.id%.csr file"
+
+
+
+
+
+
+if ($csrResponse.StatusCode -ne 201) {
+    throw "Create CSR failed. NSX-ALB returned HTTP $($csrResponse.StatusCode)."
+}
