@@ -19,3 +19,11 @@ if ($DryRun) {
 
 
 Hey Tyler, I’m currently testing the new end-to-end certificate renewal automation for teamcity-artifacts.silacins.com. The automation successfully created the CSR and has been sitting at the certificate issuance step for about 14 minutes. I’m wondering if there’s a pending certificate request/approval on the SysAdmin side that needs to be approved before the workflow can continue. Are you able to check?
+
+
+
+
+
+
+
+Hi team, I’m currently testing the new end-to-end certificate renewal automation for teamcity-artifacts.silacins.com, building on the existing certificate renewal workflow. The automation successfully created the CSR and is currently waiting at the certificate issuance step. Could someone check if there’s a pending certificate request/approval on the SysAdmin side that needs to be approved before the workflow can continue?
