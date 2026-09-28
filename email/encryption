@@ -5,3 +5,15 @@ if (-not (Test-Path $certFile)) {
 }
 
 Write-Host "Certificate issued and saved into $certFile"
+
+
+
+
+
+
+
+        subject_alt_names = @(
+            $SAN -split ';' |
+            ForEach-Object { $_.Trim() } |
+            Where-Object { $_ }
+        )
