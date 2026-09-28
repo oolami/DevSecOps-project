@@ -20,3 +20,12 @@ Write-Host "CSR created and saved into %teamcity.build.id%.csr file"
 if ($csrResponse.StatusCode -ne 201) {
     throw "Create CSR failed. NSX-ALB returned HTTP $($csrResponse.StatusCode)."
 }
+
+
+
+
+
+
+
+Write-Host "DryRun raw value: [$DryRunRaw]"
+Write-Host "DryRun parsed boolean: [$DryRun]"
