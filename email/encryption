@@ -1,1 +1,7 @@
-Oh wow, I actually had something similar happen over the weekend. I was having chest cramps and ended up going to urgent care. Thankfully, they ruled out anything heart-related and said it was muscle spasms. Glad his turned out to be muscular too and nothing more serious.
+$certFile = "%teamcity.build.id%.crt"
+
+if (-not (Test-Path $certFile)) {
+    throw "Certificate issuance did not produce the expected certificate file: $certFile"
+}
+
+Write-Host "Certificate issued and saved into $certFile"
