@@ -1,16 +1,6 @@
 $DryRunRaw = "%DryRun%"
 $DryRun = $DryRunRaw.Trim().ToLower() -eq "true"
 
-Write-Host "DryRun raw value: [$DryRunRaw]"
-Write-Host "DryRun parsed boolean: [$DryRun]"
-
-$ErrorActionPreference = "Stop"
-
-
-
-
-$csrResponse = Invoke-WebRequest "%NSX-ALB-Host%/api/sslkeyandcertificate" ...
-
 
 
 if ($DryRun) {
@@ -19,41 +9,7 @@ if ($DryRun) {
     Write-Host "========================================"
     Write-Host "Common Name : %CommonName%"
     Write-Host "Target      : NSX-ALB"
-    Write-Host "Key owner   : NSX-ALB"
-    Write-Host ""
-    Write-Host "CSR request validated."
     Write-Host "No CSR or private key will be created."
-    Write-Host "No NSX-ALB changes were made."
+    Write-Host "No NSX-ALB changes will be made."
     exit 0
 }
-
-
-
-
-
-
-$csrResponse = Invoke-WebRequest "%NSX-ALB-Host%/api/sslkeyandcertificate" `
-    -WebSession $session `
-    -Method "POST" `
-    -Headers $headers `
-    -Body $csrBody
-
-
-
-
-if ($csrResponse.StatusCode -ne 201) {
-    Write-Error "Create CSR failed"
-}
-
-$csrResponse.Content | Out-File -Path "%teamcity.build.id%.json"
-
-$csrResponse.Content |
-    jq -r '.certificate.certificate_signing_request' |
-    Out-File -Path "%teamcity.build.id%.csr"
-
-Write-Host "CSR created and saved into %teamcity.build.id%.csr file"
-
-
-
-
-
