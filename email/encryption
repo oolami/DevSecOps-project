@@ -1,21 +1,13 @@
-$DryRunRaw = "%DryRun%"
-$DryRun = $DryRunRaw.Trim().ToLower() -eq "true"
+$csrResponse.Content | Out-File -Path "%teamcity.build.id%.json"
 
-$ErrorActionPreference = 'Stop'
+$responseJson = $csrResponse.Content | ConvertFrom-Json
 
-if ($DryRun) {
-    Write-Host "======================================"
-    Write-Host "DRY RUN - ISSUE CERTIFICATE"
-    Write-Host "======================================"
-    Write-Host "Certificate issuance would be performed."
-    Write-Host "No certificate request will be submitted."
-    exit 0
+$csr = $responseJson.certificate.certificate_signing_request
+
+if ([string]::IsNullOrWhiteSpace($csr)) {
+    throw "CSR was not returned by NSX-ALB."
 }
 
-certreq -Submit `
-    -config "SILAC-SubCA.silacins.com\SILAC-SubCA" `
-    -attrib "CertificateTemplate:CertificateTemplateName" `
-    "%teamcity.build.id%.csr" `
-    "%teamcity.build.id%.crt"
+$csr | Out-File -Path "%teamcity.build.id%.csr" -Encoding ascii
 
-Write-Host "Certificate Issued and saved into %teamcity.build.id%.crt file"
+Write-Host "CSR created and saved into %teamcity.build.id%.csr file"
