@@ -42,6 +42,9 @@ Closing as completed.
 
 
 
+For the external certificate workflow, all other renewal and deployment actions are automated. Payment and domain validation are the remaining blockers. I’ll continue working with Tyler to get these resolved and complete the external certificate workflow.
+
+
 
 For the external certificate workflow, all other renewal and deployment actions are automated. Certificate validation and endpoint validation remain manual validation steps.
 
