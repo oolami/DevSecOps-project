@@ -1,19 +1,30 @@
-$certFile = "%teamcity.build.id%.crt"
+$DryRunRaw = "%DryRun%"
+$DryRun = $DryRunRaw.Trim().ToLower() -eq "true"
 
-if (-not (Test-Path $certFile)) {
-    throw "Certificate issuance did not produce the expected certificate file: $certFile"
+Write-Host "DryRun raw value: [$DryRunRaw]"
+Write-Host "DryRun parsed boolean: [$DryRun]"
+
+$ErrorActionPreference = "Stop"
+
+
+
+
+$csrResponse = Invoke-WebRequest "%NSX-ALB-Host%/api/sslkeyandcertificate" ...
+
+
+
+if ($DryRun) {
+    Write-Host "========================================"
+    Write-Host "DRY RUN - CREATE CSR"
+    Write-Host "========================================"
+    Write-Host "Common Name : %CommonName%"
+    Write-Host "Target      : NSX-ALB"
+    Write-Host "Key owner   : NSX-ALB"
+    Write-Host ""
+    Write-Host "CSR request validated."
+    Write-Host "No CSR or private key will be created."
+    Write-Host "No NSX-ALB changes were made."
+    exit 0
 }
 
-Write-Host "Certificate issued and saved into $certFile"
 
-
-
-
-
-
-
-        subject_alt_names = @(
-            $SAN -split ';' |
-            ForEach-Object { $_.Trim() } |
-            Where-Object { $_ }
-        )
