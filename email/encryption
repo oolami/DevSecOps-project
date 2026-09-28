@@ -43,5 +43,9 @@ Closing as completed.
 
 
 
+For the external certificate workflow, all other renewal and deployment actions are automated. Certificate validation and endpoint validation remain manual validation steps.
+
+
+
 
 Quick update — the teamcity-artifacts.silacins.com internal certificate has been successfully renewed using the new TeamCity certificate renewal automation. The workflow completed end to end, including certificate issuance, NSX-ALB upload, Virtual Service replacement, and verification. I also validated the endpoint and confirmed it is presenting the new certificate, valid through 09/27/2028. 🎉
