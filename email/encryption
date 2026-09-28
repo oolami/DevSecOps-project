@@ -39,3 +39,9 @@ TeamCity-Artifacts certificate renewal completed successfully using the certific
 The new certificate was issued and uploaded to NSX-ALB, the Virtual Service was updated, and certificate assignment was successfully verified. The endpoint was also validated and is presenting the renewed certificate, valid through 09/27/2028.
 
 Closing as completed.
+
+
+
+
+
+Quick update — the teamcity-artifacts.silacins.com internal certificate has been successfully renewed using the new TeamCity certificate renewal automation. The workflow completed end to end, including certificate issuance, NSX-ALB upload, Virtual Service replacement, and verification. I also validated the endpoint and confirmed it is presenting the new certificate, valid through 09/27/2028. 🎉
