@@ -29,3 +29,13 @@ if ($csrResponse.StatusCode -ne 201) {
 
 Write-Host "DryRun raw value: [$DryRunRaw]"
 Write-Host "DryRun parsed boolean: [$DryRun]"
+
+
+
+
+
+TeamCity-Artifacts certificate renewal completed successfully using the certificate renewal automation.
+
+The new certificate was issued and uploaded to NSX-ALB, the Virtual Service was updated, and certificate assignment was successfully verified. The endpoint was also validated and is presenting the renewed certificate, valid through 09/27/2028.
+
+Closing as completed.
