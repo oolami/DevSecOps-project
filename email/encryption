@@ -1,1 +1,1 @@
-Also, there are currently 8 source servers showing Healthy DRS replication into the Ohio DR account, which matches the 8 servers required for DRS.
+I checked OH-PRD-W-EPA-001 and I’m not seeing it listed as a DRS source server. I also checked the Ohio DR account and there is currently no running EC2 instance with that name. So based on the current DRS configuration, this does not appear to be one of the 8 servers currently replicating to DR.
