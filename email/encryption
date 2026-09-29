@@ -1,1 +1,1 @@
-Configured the Playwright HTML Report tab in TeamCity and validated successfully with Raul. The report is displaying as expected. Closing the ticket.
+Also, there are currently 8 source servers showing Healthy DRS replication into the Ohio DR account, which matches the 8 servers required for DRS.
