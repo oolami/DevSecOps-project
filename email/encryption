@@ -1,1 +1,8 @@
-I checked OH-PRD-W-EPA-001 and I’m not seeing it listed as a DRS source server. I also checked the Ohio DR account and there is currently no running EC2 instance with that name. So based on the current DRS configuration, this does not appear to be one of the 8 servers currently replicating to DR.
+I checked OH-PRD-W-EPA-001 and I’m not seeing
+it listed as a DRS source server. I also checked the Ohio DR account and there is currently no running EC2 instance with that name. So based on the current DRS configuration, this does not appear to be one of the 8 servers currently replicating to DR.
+
+
+
+
+
+I found OH-PRD-W-EPA-001 in the Prod account, but it is currently stopped. I also found OH-PRD-W-EPA-001-R31 running in Prod. Do we know who built the -R31 server, and was it intended to be protected by DRS/replicated to the Ohio DR account? I’m not currently seeing either hostname listed among the DRS source servers replicating to DR.
