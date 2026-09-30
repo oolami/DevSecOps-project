@@ -36,3 +36,12 @@ has to be applied again after platform-apply, and exactly which permission chang
 
 
 After all of the one-time bootstrap steps are complete, which of these resources and permissions are permanent, and which ones should we consider bootstrap-only?
+You especially want a clear answer for:
+
+* the runner VM
+* runner Key Vault
+* Atlassian API token usage
+* pipeline managed identity
+* Contributor on the subscription
+* any management-group/root-level role
+* workstation access used during bootstra
