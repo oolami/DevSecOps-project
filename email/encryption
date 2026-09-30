@@ -27,4 +27,12 @@ how the Terraform is structured, how state is handled, how subscriptions/provide
 
 
 
-“Can you walk me through why pipeline-foundation has to be applied again after platform-apply, and exactly which permission changes on that second apply?
+“Can you walk me through why pipeline-foundation 
+has to be applied again after platform-apply, and exactly which permission changes on that second apply?
+
+
+
+
+
+
+After all of the one-time bootstrap steps are complete, which of these resources and permissions are permanent, and which ones should we consider bootstrap-only?
