@@ -6,3 +6,20 @@ The open DevOps items I’d keep on the board are: the final subscription breakd
 how the Terraform is structured, how state is handled, how subscriptions/providers are targeted, what identity the pipeline runs as, how RBAC is scoped, how the Bitbucket runner works, what triggers plan/apply, what approvals are enforced, how failures are recovered, how networking is validated, how secrets are handled, and what changes are safe for DevOps to make later without breaking the landing zone.
 
 
+
+
+
+1. What branch/PR triggered the deployment?
+2. Which Bitbucket pipeline step starts first?
+3. Where does Terraform initialize?
+4. Which backend/state does it use?
+5. How does the runner authenticate to Azure?
+6. Which Azure identity is actually executing Terraform?
+7. Which subscription does it initially target?
+8. When does the smoke test run?
+9. When does the platform root run?
+10. When is temporary elevated RBAC granted and removed?
+11. Where does plan stop for human approval?
+12. What actually triggers apply?
+13. What artifacts/logs are available when something fails?
+14. How do they prove connectivity after infrastructure deployment?
