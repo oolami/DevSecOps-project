@@ -23,3 +23,8 @@ how the Terraform is structured, how state is handled, how subscriptions/provide
 12. What actually triggers apply?
 13. What artifacts/logs are available when something fails?
 14. How do they prove connectivity after infrastructure deployment?
+
+
+
+
+“Can you walk me through why pipeline-foundation has to be applied again after platform-apply, and exactly which permission changes on that second apply?
