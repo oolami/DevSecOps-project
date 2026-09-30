@@ -6,3 +6,7 @@ it listed as a DRS source server. I also checked the Ohio DR account and there i
 
 
 I found OH-PRD-W-EPA-001 in the Prod account, but it is currently stopped. I also found OH-PRD-W-EPA-001-R31 running in Prod. Do we know who built the -R31 server, and was it intended to be protected by DRS/replicated to the Ohio DR account? I’m not currently seeing either hostname listed among the DRS source servers replicating to DR.
+
+
+
+Thanks Kishore. Just to confirm, was the Route53 alias handling issue what was preventing the Ohio inventory report from completing? 
