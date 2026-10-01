@@ -168,3 +168,25 @@ This ties directly to the operating rule from Session 1.
     Toward the end of the session, ask:
 
 “After today, what are the normal DevOps tasks you expect us to perform ourselves, and which actions would still require JourneyTeam or another Azure admin?”
+
+
+
+
+
+Hi Konny, when you have a chance, could you please validate WHC-3508? I believe I fixed the pipeline issue, but I realized I never followed up with you after making the change. Could you confirm whether everything is working as expected now and if we’re good to close the ticket? Thanks!
+
+
+Hi Justin, I’m working on a request to add an AgentRewards DB restore option to our TeamCity pipeline, similar to the existing AnnuityUvIntake/IntakeApi restore process.
+
+Ryan mentioned that AgentRewards needs to go through the obfuscation process first before DevOps can set up the database restore workflow, and that you’ve been working on the obfuscation process for some of the other databases.
+
+Would you be able to help with setting up the obfuscation for AgentRewards, or let me know what would be needed to get that in place? Once that’s available, I can proceed with the TeamCity restore configuration.
+
+
+
+
+Hi David, quick question around database obfuscation. DevOps has been getting requests to add database restore capabilities into our TeamCity pipelines, but the databases need to go through the obfuscation process before we can set up the restore workflow.
+
+Justin has been helping with the obfuscation work, but it seems like he has quite a bit on his plate currently. Is database obfuscation something your team would be willing to own/support going forward? I’m trying to understand where that responsibility should sit so DevOps knows who to coordinate with when we receive new DB restore requests.
+
+The current request is for the AgentRewards database, if that helps with context.
