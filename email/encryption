@@ -173,40 +173,11 @@ This ties directly to the operating rule from Session 1.
 
 
 
-Hi Konny, when you have a chance, could you please validate WHC-3508? I believe I fixed the pipeline issue, but I realized I never followed up with you after making the change. Could you confirm whether everything is working as expected now and if we’re good to close the ticket? Thanks!
+
+Create an obfuscation script for the AgentRewards database, following the existing AnnuityUwIntake/IntakeApi process, to support the TeamCity database restore workflow.
+
+Related DevOps ticket: WHC-3411
+Justin Stonecipher is aware of the request.
 
 
-Hi Justin, I’m working on a request to add an AgentRewards DB restore option to our TeamCity pipeline, similar to the existing AnnuityUvIntake/IntakeApi restore process.
-
-Ryan mentioned that AgentRewards needs to go through the obfuscation process first before DevOps can set up the database restore workflow, and that you’ve been working on the obfuscation process for some of the other databases.
-
-Would you be able to help with setting up the obfuscation for AgentRewards, or let me know what would be needed to get that in place? Once that’s available, I can proceed with the TeamCity restore configuration.
-
-
-
-
-
-
-
-Thanks, that makes sense. I’ll create a ticket for the AgentRewards obfuscation script and route it to your board. For the backup going to the same location as AnnuityUvIntake/IntakeApi, should I submit a separate DBA request for that as well?
-
-
-
-
-
-
-Hi David, quick question around database obfuscation. DevOps has been getting requests to add database restore capabilities into our TeamCity pipelines, but the databases need to go through the obfuscation process before we can set up the restore workflow.
-
-Justin has been helping with the obfuscation work, but it seems like he has quite a bit on his plate currently. Is database obfuscation something your team would be willing to own/support going forward? I’m trying to understand where that responsibility should sit so DevOps knows who to coordinate with when we receive new DB restore requests.
-
-The current request is for the AgentRewards database, if that helps with context.
-
-
-! Now you’ve got me curious 😂 Looking forward to getting access and seeing what we can do with it.
-
-
-I’ve heard good things about it. Looking forward to getting access and trying it out.
-
-
-
-Update: Confirmed the prerequisites for the AgentRewards restore workflow. Justin added AgentRewards to the existing DBA request (DM-187) to have the database backup copied to the location used by the existing restore process. A separate request will be created for the AgentRewards obfuscation script. Once the backup and obfuscation pieces are in place, DevOps can proceed with the TeamCity restore configuration.
+Create AgentRewards database obfuscation script
