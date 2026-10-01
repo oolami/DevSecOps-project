@@ -45,3 +45,126 @@ You especially want a clear answer for:
 * Contributor on the subscription
 * any management-group/root-level role
 * workstation access used during bootstra
+
+
+
+
+
+
+
+
+
+
+
+1. Deployment sequence
+
+“Can you walk me through the exact order of the Terraform roots we’re deploying today, and which ones are one-time bootstrap versus normal ongoing deployments?”
+
+You want them to explicitly map pipeline-foundation, bitbucket, smoketest, management, pipeline, and subscriptions.
+
+2. Terraform state
+
+“Does each Terraform root have its own state, where is each state stored, and how do the roots share outputs or dependencies?”
+
+This is critical for recovery and troubleshooting.
+
+3. Runner and authentication
+
+“Which identity is the Bitbucket runner actually using when Terraform runs, and how is that identity authenticated to Azure?”
+
+Then follow with:
+
+“If the runner VM is rebuilt or goes offline, what is the recovery process?”
+
+4. Permanent vs bootstrap permissions
+
+“Which permissions we’re granting today are bootstrap-only, and which ones are expected to remain permanently?”
+
+Especially ask about:
+
+* Contributor at subscription scope
+* Key Vault access
+* management-group permissions
+* Tenant Root Group Owner or equivalent elevated access
+
+5. Temporary elevated access
+
+“At what exact step is elevated access at the Tenant Root Group required, and when/how do we remove it after the platform is created?”
+
+This is one of the most important security questions.
+
+6. Plan vs apply control
+
+“What is the exact control between platform-plan and platform-apply? Does PR approval authorize the code only, or is there also a separate manual approval before infrastructure is changed?”
+
+You need to know whether merge-to-main automatically deploys or not.
+
+7. Failure behavior
+
+“If terraform apply fails halfway through, what is the expected recovery process? Do we rerun the same pipeline, run a fresh plan, or perform any manual remediation first?”
+
+This is the kind of knowledge DevOps will need later.
+
+8. Smoke-test purpose
+
+“What exactly does the smoke test prove, and what does it not prove?”
+
+Right now it appears to prove:
+
+* runner works
+* Azure auth works
+* Terraform can create a resource
+
+But it does not necessarily prove:
+
+* management-group creation
+* policy deployment
+* multi-subscription access
+* network connectivity
+
+9. Targeted applies
+
+“I see targeted Terraform applies are used during bootstrap. Are those strictly for initial setup/recovery, and should normal operations always use a full plan/apply?”
+
+This confirms the intended operational standard.
+
+10. Subscription changes
+
+“Since the subscription model is being reconsidered, what parts of today’s Terraform assume the current subscription structure, and what will need to change if we move to multiple subscriptions?”
+
+This is especially important because today’s deployment may still reflect the older single-subscription model.
+
+11. Provider and subscription targeting
+
+“How does Terraform decide which subscription each root deploys into — provider aliases, variables, environment variables, or pipeline settings?”
+
+You should be able to trace exactly where the subscription ID comes from.
+
+12. Secrets and tokens
+
+“What secrets or tokens are required for this pipeline, where are they stored, and which ones require rotation?”
+
+Specifically ask about the Atlassian API token and the Bitbucket runner registration command.
+
+13. State protection
+
+“What protection do we have on the Terraform state storage — RBAC, locking, versioning, soft delete, network restrictions — and who should have access to it?”
+
+State is one of the most sensitive parts of the platform.
+
+14. Connectivity validation
+
+“After the deployment completes, what exact connectivity paths are we validating today, and what would constitute a successful test?”
+
+Since the network team will be involved, you want clear source/destination expectations rather than just “ping works.”
+
+15. Source of truth / portal changes
+
+“If someone makes a change directly in the Azure portal, do we expect Terraform to overwrite it on the next apply, and how do we detect or manage that drift?”
+
+This ties directly to the operating rule from Session 1.
+
+16. Operational handoff
+    Toward the end of the session, ask:
+
+“After today, what are the normal DevOps tasks you expect us to perform ourselves, and which actions would still require JourneyTeam or another Azure admin?”
