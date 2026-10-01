@@ -185,6 +185,16 @@ Would you be able to help with setting up the obfuscation for AgentRewards, or l
 
 
 
+
+
+
+Thanks, that makes sense. I’ll create a ticket for the AgentRewards obfuscation script and route it to your board. For the backup going to the same location as AnnuityUvIntake/IntakeApi, should I submit a separate DBA request for that as well?
+
+
+
+
+
+
 Hi David, quick question around database obfuscation. DevOps has been getting requests to add database restore capabilities into our TeamCity pipelines, but the databases need to go through the obfuscation process before we can set up the restore workflow.
 
 Justin has been helping with the obfuscation work, but it seems like he has quite a bit on his plate currently. Is database obfuscation something your team would be willing to own/support going forward? I’m trying to understand where that responsibility should sit so DevOps knows who to coordinate with when we receive new DB restore requests.
