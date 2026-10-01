@@ -206,3 +206,7 @@ The current request is for the AgentRewards database, if that helps with context
 
 
 I’ve heard good things about it. Looking forward to getting access and trying it out.
+
+
+
+Update: Confirmed the prerequisites for the AgentRewards restore workflow. Justin added AgentRewards to the existing DBA request (DM-187) to have the database backup copied to the location used by the existing restore process. A separate request will be created for the AgentRewards obfuscation script. Once the backup and obfuscation pieces are in place, DevOps can proceed with the TeamCity restore configuration.
