@@ -181,3 +181,7 @@ Justin Stonecipher is aware of the request.
 
 
 Create AgentRewards database obfuscation script
+
+
+
+I’ll look into using the Entra user ID to send the reservation reminder directly to the person who reserved the environment.
