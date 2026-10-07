@@ -1,1 +1,9 @@
-Added November to the shared TeamCity environment parameter list and verified it is now available in the Testing/Admin custom build dropdown.
+Route reservation notifications to Collab channels based on requester group
+
+For the description, I’d use something like:
+
+Update the reservation notification workflow so notifications can be routed to the appropriate Collab channel based on the requester’s group/team membership (SEE, STE, or ARC).
+
+The current workflow uses a single configured Teams/Collab webhook destination. Investigate using the requester information already available from Entra ID to determine group membership and dynamically select the appropriate destination.
+
+Scope includes reviewing the existing notification code/configuration, determining whether the current config can support multiple destination/webhook values or whether an additional routing config is needed, and identifying any dependency on SysAdm/EAG for Entra group membership or group mapping.
