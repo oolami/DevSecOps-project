@@ -1,10 +1,21 @@
+Initial code review completed.
 
-Erik reached out with concerns about the 10.134.128.0/23 CIDR I included in the DRS replication subnet ticket. He mentioned that the CIDR appears to be associated with GMS rather than Platform Gainwell. I let him know that I used it based on the existing DRS setup runbook and our previous discussion that the same CIDR is used for DRS across accounts.
+Findings:
 
-He suggested a quick call with the team to clarify the PG networking requirements before proceeding. I’ll set that up so we can confirm the correct CIDR and DR account/VPC configuration.
+* Reservation notifications currently use a single configured msTeamsWebhookUrl.
+* The reservation request already passes an Entra idToken.
+* service.ts decodes the token and stores the user’s Entra oid as userId and name as userName with the reservation.
+* Group/team membership is not currently stored with the reservation or used by the notification workflow.
+* Existing config can likely be extended to support separate SEE/STE/ARC Collab webhook destinations rather than creating separate notification workflows.
 
+Next step is to confirm with SysAdm/EAG how SEE/STE/ARC membership can be determined from Entra — specifically whether the existing ID token can include the required group claims/group IDs, or whether an additional Entra/Graph lookup and permissions would be required.
 
+That is detailed enough without turning the Jira comment into implementation design.
 
+For stand-up tomorrow, I would keep the dependency discussion very concise:
 
+“I reviewed the reservation notification flow. We already receive the user’s Entra ID token and extract their object ID and name, so the application identity piece is already there. The remaining dependency is determining SEE/STE/ARC membership. I need to confirm with SysAdm whether those groups can be provided in the existing token and get the relevant group IDs, or whether we’d need Graph permissions for a membership lookup.”
 
-We’re onboarding DRS for Platform Gainwell. I was following the existing DR account setup runbook, which specifies creating the DRS replication subnet using 10.134.128.0/23 and establishing VPC peering between Production and DR. Kishore and Jim had confirmed that this CIDR is used for DRS across the accounts, but I want to make sure we’re using the correct Platform Gainwell DR account/VPC and not a GMS DR account. Can we confirm the correct DR account, VPC and CIDR that should be used for PG?
+And if SysAdm is present, the most important question is:
+
+“Are SEE, STE and ARC represented as Entra groups, and can their group IDs/membership be exposed in the ID token used by the CICD dashboard?”
