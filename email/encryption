@@ -1,8 +1,3 @@
+Implementation completed and validated as part of the certificate renewal automation. The existing NSX-ALB certificate is discovered and its metadata/Virtual Service binding captured. The CSR is generated using the existing private key, with CN/SAN validation, while the private key remains protected in NSX-ALB.
 
-
-
-
-I’ll research that. The current webhook workflow is configured for a single destination, so I’ll look into whether we can use the Entra ID/user information we already capture to determine the appropriate group and route the notification to the corresponding Collab channel.
-
-
-Yeah, that could work. We could keep the destination/webhook values in config and use the reserver’s Entra ID to determine which destination to use. I’ll look into how we can reliably determine the SE/STE/ARC group membership.
+Successfully validated through the TeamCity workflow. Closing as completed.
