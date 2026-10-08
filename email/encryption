@@ -1,5 +1,5 @@
-While reviewing Secrets Manager for Idaho DR parity, I identified two secrets that were automatically created by AWS DataSync for FSx storage locations.
+I’m working on routing CICD environment reservation expiration alerts to the appropriate Collab channels instead of sending all alerts to the Software Engineering chat.
 
-Since these are DataSync-managed secrets, manually recreating them in DR would not automatically associate them with the corresponding DataSync locations. If the locations are recreated using DataSync-managed credentials, DataSync can generate new secrets during configuration.
+I confirmed the reservation flow already receives the user’s Entra ID token and currently extracts the user’s oid and name.
 
-Can we confirm whether DataSync is included in the Idaho DR scope and, if so, whether the Application Team will handle the DataSync configuration and associated secrets during the exercise, or whether this is expected to be part of the DR team’s infrastructure restoration responsibilities?
+Can you confirm the naming convention for the Entra groups we should use to identify the different teams, and whether group membership can be included in the user’s Entra ID token so we can use it for routing?
