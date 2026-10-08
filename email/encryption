@@ -13,3 +13,10 @@ I’m working on routing CICD environment reservation expiration alerts to the a
 I confirmed the reservation flow already receives the user’s Entra ID token and currently extracts the user’s oid and name.
 
 Can you confirm the Entra group naming convention we should use to identify the different teams, and whether group membership can be included in the user’s ID token for routing? If not, what would be the recommended approach from the Entra side?
+
+
+
+If they are based only on job title, someone with the same title in two different teams could land in the same role group, which would not be enough for routing.
+
+
+Thanks, that helps. Do the dynamic role groups distinguish the different engineering teams, or are they only based on job title?
