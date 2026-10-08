@@ -1,9 +1,5 @@
-Route reservation notifications to Collab channels based on requester group
+While reviewing Secrets Manager for Idaho DR parity, I identified two secrets that were automatically created by AWS DataSync for FSx storage locations.
 
-For the description, I’d use something like:
+Since these are DataSync-managed secrets, manually recreating them in DR would not automatically associate them with the corresponding DataSync locations. If the locations are recreated using DataSync-managed credentials, DataSync can generate new secrets during configuration.
 
-Update the reservation notification workflow so notifications can be routed to the appropriate Collab channel based on the requester’s group/team membership (SEE, STE, or ARC).
-
-The current workflow uses a single configured Teams/Collab webhook destination. Investigate using the requester information already available from Entra ID to determine group membership and dynamically select the appropriate destination.
-
-Scope includes reviewing the existing notification code/configuration, determining whether the current config can support multiple destination/webhook values or whether an additional routing config is needed, and identifying any dependency on SysAdm/EAG for Entra group membership or group mapping.
+Can we confirm whether DataSync is included in the Idaho DR scope and, if so, whether the Application Team will handle the DataSync configuration and associated secrets during the exercise, or whether this is expected to be part of the DR team’s infrastructure restoration responsibilities?
