@@ -1,22 +1,3 @@
-I’m working on routing CICD environment reservation expiration alerts to the appropriate Collab channels instead of sending all alerts to the Software Engineering chat.
+I took a look at the build logs, and it looks like the failure is due to pandoc not being installed on the TeamCity agent. I also checked the build configuration and noticed there’s no VCS trigger configured, which explains why the changes aren’t automatically triggering a build.
 
-I confirmed the reservation flow already receives the user’s Entra ID token and currently extracts the user’s oid and name.
-
-Can you confirm the naming convention for the Entra groups we should use to identify the different teams, and whether group membership can be included in the user’s Entra ID token so we can use it for routing?
-
-
-
-
-
-I’m working on routing CICD environment reservation expiration alerts to the appropriate Collab channels instead of sending all alerts to the Software Engineering chat.
-
-I confirmed the reservation flow already receives the user’s Entra ID token and currently extracts the user’s oid and name.
-
-Can you confirm the Entra group naming convention we should use to identify the different teams, and whether group membership can be included in the user’s ID token for routing? If not, what would be the recommended approach from the Entra side?
-
-
-
-If they are based only on job title, someone with the same title in two different teams could land in the same role group, which would not be enough for routing.
-
-
-Thanks, that helps. Do the dynamic role groups distinguish the different engineering teams, or are they only based on job title?
+Looks like we need to get pandoc installed and configure the VCS trigger.
