@@ -1,10 +1,49 @@
-I took a look at the build logs, and it looks like the failure is due to pandoc not being installed on the TeamCity agent. I also checked the build configuration and noticed there’s no VCS trigger configured, which explains why the changes aren’t automatically triggering a build.
+I have made consistent progress toward our disaster recovery objectives by supporting DR readiness, infrastructure restoration, automation, and validation activities across multiple environments.
 
-Looks like we need to get pandoc installed and 
-configure the VCS trigger.
+Key contributions include:
+
+* DR Readiness and Execution: Supported disaster recovery exercises by preparing infrastructure, restoring EC2 instances, and validating server accessibility and operational readiness. Identified and troubleshot issues involving networking, security groups, IAM permissions, domain connectivity, and replication.
+* Infrastructure Automation: Worked on improving and validating AWS restoration scripts to recreate EC2 instances and supporting resources, including security groups, load balancers, and target groups, helping reduce manual intervention during recovery activities.
+* S3 Cross-Region Replication: Successfully configured and validated S3 replication between production and DR accounts, including IAM roles, bucket policies, and permissions to support data availability and recovery preparedness.
+* DR Infrastructure Parity: Reviewed production infrastructure configurations and identified gaps and dependencies that could affect successful restoration during DR exercises.
+* Troubleshooting and Collaboration: Investigated replication failures, restoration errors, connectivity issues, and access-related challenges while coordinating with other teams to identify and resolve blockers.
+
+Overall, I have contributed to improving DR preparedness, identifying potential recovery risks, and strengthening the reliability and repeatability of our disaster recovery processes.
 
 
 
 
 
-Interesting. Since TeamCity is detecting the changes under Pending Changes, I’d check the VCS trigger’s branch filters and trigger rules to make sure the changes aren’t being excluded. We could also check the build configuration’s trigger history to see whether TeamCity attempted to queue a build.
+Some of the challenges I have encountered involve dependencies on other teams, infrastructure configuration differences between production and DR environments, and occasional access or permission limitations that can delay troubleshooting and validation.
+
+DR readiness activities often require coordination with infrastructure, networking, system administration, and application teams to resolve issues involving domain connectivity, replication, permissions, and application-specific dependencies.
+
+I have been proactive in identifying these issues, investigating possible causes, documenting findings, and engaging the appropriate teams to help move work forward.
+
+Continued collaboration across teams, timely resolution of access-related blockers, and clearer documentation of infrastructure dependencies and ownership would help improve efficiency and reduce delays during DR preparation and execution.
+
+
+
+
+
+I have demonstrated Gainwell’s values through accountability, collaboration, continuous improvement, and a commitment to delivering reliable results.
+
+I take ownership of assigned responsibilities and work proactively to identify and resolve issues that could impact disaster recovery readiness. I communicate findings, provide progress updates, and collaborate with team members and other technical teams to address challenges effectively.
+
+I also demonstrate a continuous learning mindset by strengthening my knowledge of AWS infrastructure, disaster recovery processes, and automation tools, while applying that knowledge to improve troubleshooting and operational efficiency.
+
+I approach my work with professionalism, attention to detail, and a focus on supporting the team’s objectives. I recognize the importance of reliable disaster recovery capabilities in maintaining business continuity and supporting the customers and services that depend on our systems.
+
+
+
+
+
+My priorities for the next 90 days are:
+
+1. Strengthen Disaster Recovery Readiness and Infrastructure Parity
+
+Continue improving DR preparedness by identifying and addressing infrastructure gaps, validating production-to-DR configuration requirements, and supporting successful infrastructure restoration during upcoming DR exercises. Focus on identifying potential blockers early, improving documentation, and working with the appropriate teams to resolve dependencies before recovery activities.
+
+2. Improve DR Automation and Recovery Efficiency
+
+Continue enhancing and validating AWS infrastructure restoration automation to improve consistency, reduce manual effort, and minimize errors during recovery operations. Focus on refining existing scripts, strengthening troubleshooting and validation procedures, and identifying opportunities to streamline repetitive DR tasks.
