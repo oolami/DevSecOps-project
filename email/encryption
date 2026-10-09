@@ -1,3 +1,10 @@
 I took a look at the build logs, and it looks like the failure is due to pandoc not being installed on the TeamCity agent. I also checked the build configuration and noticed there’s no VCS trigger configured, which explains why the changes aren’t automatically triggering a build.
 
-Looks like we need to get pandoc installed and configure the VCS trigger.
+Looks like we need to get pandoc installed and 
+configure the VCS trigger.
+
+
+
+
+
+Interesting. Since TeamCity is detecting the changes under Pending Changes, I’d check the VCS trigger’s branch filters and trigger rules to make sure the changes aren’t being excluded. We could also check the build configuration’s trigger history to see whether TeamCity attempted to queue a build.
