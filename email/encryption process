@@ -90,3 +90,15 @@ Thanks for clarifying, Alex. I see that SD-69068 is a separate request to suppor
 For WHC-3616, would you prefer that we restore the five existing Cypress variables alongside Sergey’s new parameters, or are those going to be handled through the configuration changes you’re planning?
 
 As for SD-69068, we’ll pick that up once it goes through the DevOps intake process.
+
+
+
+
+
+
+
+There’s already an existing Environment parameter in TeamCity configured as a dropdown with all the available test environments, including Pre Prod.
+
+The environmentName parameter is separate and was added with the value ste based on Sergey’s requested configuration.
+
+Should environmentName reference the existing Environment dropdown instead of having a fixed value?
