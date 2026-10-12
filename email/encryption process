@@ -86,3 +86,15 @@ Hi Alex, I updated the Prepare configuration build step to generate cypress.env.
 I noticed the previous configuration included loggedInName, which wasn’t part of the new parameter list, so that may explain the error you’re seeing.
 
 I’ll review the configuration and make sure the required existing Cypress variables are preserved alongside the new parameters. I’ll let you know once it’s updated for another test.
+
+
+
+
+
+Hi Alex and Sergey, I reviewed the failed build and confirmed that the Prepare configuration step completed successfully, but Cypress failed because loggedInName is missing from the generated cypress.env.json.
+
+I updated the build step to use the new parameters Sergey requested, which removed some of the previously configured Cypress variables.
+
+Would you prefer that I retain the existing Cypress variables alongside the new parameters for backward compatibility, or should the Cypress configuration be updated to consume only the new parameters?
+
+I’m good with either approach and can make the necessary TeamCity changes once we agree on the expected configuration.
