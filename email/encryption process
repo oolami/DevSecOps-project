@@ -68,33 +68,8 @@ jq -n '{
 
 
 
+Thanks for clarifying, Alex. I see that SD-69068 is a separate request to support automation of the Cypress build parameter configurations across the three projects.
 
-Hi Sergey, I’ve completed the TeamCity Admin build configuration updates for WHC-3616, including all the requested parameters and updating the Prepare configuration build step to generate the new configuration.
+For WHC-3616, would you prefer that we restore the five existing Cypress variables alongside Sergey’s new parameters, or are those going to be handled through the configuration changes you’re planning?
 
-Could you please run a test and confirm everything works as expected? Let me know if any further adjustments are needed.
-
-
-
-
-
-
-
-
-
-Hi Alex, I updated the Prepare configuration build step to generate cypress.env.json using the new parameters requested for WHC-3616, including the separate Dev and PreProd SQL Server names.
-
-I noticed the previous configuration included loggedInName, which wasn’t part of the new parameter list, so that may explain the error you’re seeing.
-
-I’ll review the configuration and make sure the required existing Cypress variables are preserved alongside the new parameters. I’ll let you know once it’s updated for another test.
-
-
-
-
-
-Hi Alex and Sergey, I reviewed the failed build and confirmed that the Prepare configuration step completed successfully, but Cypress failed because loggedInName is missing from the generated cypress.env.json.
-
-I updated the build step to use the new parameters Sergey requested, which removed some of the previously configured Cypress variables.
-
-Would you prefer that I retain the existing Cypress variables alongside the new parameters for backward compatibility, or should the Cypress configuration be updated to consume only the new parameters?
-
-I’m good with either approach and can make the necessary TeamCity changes once we agree on the expected configuration.
+As for SD-69068, we’ll pick that up once it goes through the DevOps intake process.
