@@ -68,6 +68,19 @@ jq -n '{
 
 
 
+
+
+Hi Alex, I’ve attached the Kotlin DSL parameter definitions for the Admin TeamCity configuration. I’ve redacted any plaintext credentials while preserving the parameter names and configuration structure for your review.
+
+
+
+
+
+
+
+
+
+
 Hi Alex, here’s the current Build Step 4 (Prepare configuration) script from the Admin TeamCity build. It includes the new parameters requested by Sergey. Please review and share your corrected version so I can update the configuration.
 
 
