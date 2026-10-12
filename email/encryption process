@@ -62,3 +62,13 @@ jq -n '{
   testCenterUsername: "%testCenterUsername%",
   testCenterPassword: "%testCenterPassword%"
 }' > cypress.env.json
+
+
+
+
+
+
+
+Hi Sergey, I’ve completed the TeamCity Admin build configuration updates for WHC-3616, including all the requested parameters and updating the Prepare configuration build step to generate the new configuration.
+
+Could you please run a test and confirm everything works as expected? Let me know if any further adjustments are needed.
