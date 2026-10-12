@@ -72,3 +72,17 @@ jq -n '{
 Hi Sergey, I’ve completed the TeamCity Admin build configuration updates for WHC-3616, including all the requested parameters and updating the Prepare configuration build step to generate the new configuration.
 
 Could you please run a test and confirm everything works as expected? Let me know if any further adjustments are needed.
+
+
+
+
+
+
+
+
+
+Hi Alex, I updated the Prepare configuration build step to generate cypress.env.json using the new parameters requested for WHC-3616, including the separate Dev and PreProd SQL Server names.
+
+I noticed the previous configuration included loggedInName, which wasn’t part of the new parameter list, so that may explain the error you’re seeing.
+
+I’ll review the configuration and make sure the required existing Cypress variables are preserved alongside the new parameters. I’ll let you know once it’s updated for another test.
