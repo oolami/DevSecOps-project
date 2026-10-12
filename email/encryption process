@@ -19,3 +19,8 @@ For stand-up tomorrow, I would keep the dependency discussion very concise:
 And if SysAdm is present, the most important question is:
 
 “Are SEE, STE and ARC represented as Entra groups, and can their group IDs/membership be exposed in the ID token used by the CICD dashboard?”
+
+
+
+
+I’m curious, what are you hosting or running that requires so much storage? 😂
