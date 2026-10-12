@@ -32,6 +32,12 @@ jq -n --arg sqlServerName "$SQL_SERVER_NAME" '{
 
 
 
+Thanks, Alex. That makes sense. Since the Admin build inherits steps that still reference %Environment%, I’ll keep it mapped internally to %environmentName% and hide it from the Run Custom Build dialog so we only have one environment selection.
+
+I’ll also check whether the legacy SqlServerName parameter is still referenced before hiding it locally. That should preserve compatibility without changing the shared template.
+
+
+
 
 
 
