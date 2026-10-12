@@ -26,3 +26,39 @@ jq -n --arg sqlServerName "$SQL_SERVER_NAME" '{
 
 
 }' > cypress.env.json
+
+
+
+
+
+
+
+
+
+
+
+set -eu
+set -o pipefail
+
+jq -n '{
+  environmentName: "%environmentName%",
+  sqlServerNameDev: "%sqlServerNameDev%",
+  sqlServerNamePreProd: "%sqlServerNamePreProd%",
+  usernameManager: "%usernameManager%",
+  passwordManager: "%passwordManager%",
+  preProdManager: "%preProdManager%",
+  passwordPreProdManager: "%passwordPreProdManager%",
+  usernameViewer: "%usernameViewer%",
+  passwordViewer: "%passwordViewer%",
+  intakeApiUsername: "%intakeApiUsername%",
+  intakeApiPassword: "%intakeApiPassword%",
+  flowerUsername: "%flowerUsername%",
+  flowerPassword: "%flowerPassword%",
+  sqlServerUsername: "%SqlServerUsername%",
+  sqlServerPassword: "%SqlServerPassword%",
+  windapiUsername: "%windapiUsername%",
+  windapiPassword: "%windapiPassword%",
+  currentPaymentPeriod: "%currentPaymentPeriod%",
+  testCenterUsername: "%testCenterUsername%",
+  testCenterPassword: "%testCenterPassword%"
+}' > cypress.env.json
