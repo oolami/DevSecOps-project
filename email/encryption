@@ -118,3 +118,44 @@ export const Reservations = ({
     </Container>
   )
 }
+
+
+
+
+
+
+
+
+import { Reservations } from "./Reservations"
+
+
+
+<BrowserRouter>
+  <Switch>
+    <Route exact path="/reservations">
+      <Reservations
+        stacks={stacks}
+        reservations={reservations.reservations}
+      />
+    </Route>
+
+    <Redirect exact from="/" to={`/${redirectToStack}`} />
+
+    <Route
+      path="/:id"
+      render={routeProps => (
+        <Dashboard
+          init={init}
+          dashboard={dashboard}
+          reservations={reservations.reservations}
+          {...routeProps}
+        />
+      )}
+    />
+  </Switch>
+</BrowserRouter>
+
+
+
+
+
