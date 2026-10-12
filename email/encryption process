@@ -1,19 +1,28 @@
-Wow, this is really helpful! Thanks for sharing the detailed steps. I’m definitely saving this for when I get my home lab back up and running. 😄
+set -eu
+set -o pipefail
+
+case "%Environment%" in
+  dev)
+    SQL_SERVER_NAME="%sqlServerNameDev%"
+    ;;
+  pre-prod)
+    SQL_SERVER_NAME="%sqlServerNamePreProd%"
+    ;;
+  *)
+    echo "ERROR: Unsupported environment" >&2
+    exit 1
+    ;;
+esac
 
 
 
 
-That’s quite a recovery process! 😄 Hopefully the cloning goes smoothly and you don’t run into any corrupted files.
+
+jq -n --arg sqlServerName "$SQL_SERVER_NAME" '{
+  environmentName: "%Environment%",
+  sqlServerName: $sqlServerName,
 
 
 
-Hi Josalyn,
 
-Thank you for the reminder. I reviewed the attached training instructions, but I couldn’t locate the link to the LIMRA website.
-
-Could you please share the direct link so I can access and complete the AML training?
-
-Thank you!
-
-Best regards,
-Grace
+}' > cypress.env.json
