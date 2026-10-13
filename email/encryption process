@@ -77,10 +77,4 @@ jq -n '{
 
 
 
-Hi team, quick question regarding TeamCity build parameters.
-
-I’m working on updating the Admin Cypress build configuration to use a new set of parameters. The build currently inherits some legacy parameters from the shared CypressTests-AAG template, and we’d like to remove the old ones from the Run/Custom Build dialogs without affecting other configurations.
-
-I tried overriding and hiding the inherited parameters, but they still appear in the build dialogs. I also created a test copy of the Admin configuration and detached it from the template, but TeamCity still wouldn’t allow me to delete the legacy Environment parameter.
-
-Has anyone encountered this before or know a way to remove these inherited parameters from a specific build configuration without modifying the shared template?
+Hi Alex, I’ve exported the current Kotlin parameter configurations for the three Cypress builds and attached them to WHC-3620 for your review.
