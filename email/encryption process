@@ -127,3 +127,13 @@ Once confirmed, I’ll finalize the configuration and validate the builds.
 Got it, thanks for confirming, Alex. So the correct version is being picked up, but another validation is failing before the environment configuration gets printed.
 
 Are you already looking into that validation issue, or is there anything else needed from the DevOps side?
+
+
+
+
+Today’s Updates:
+
+* WHC-3614 – SSL Certificate Renewal: Working on recycling the existing DigiCert certificate for portal.silacins.com before its November 7 expiration. No new purchase is required.
+* WHC-3616 – TeamCity Build Configuration: Working on separating the SQL Server parameters into Dev and PreProd fields to simplify configuration and reduce manual errors.
+* WHC-3620 – Cypress Build Parameters: Working on exporting the current TeamCity Kotlin parameter configurations for the three Cypress test projects so Alex can update the automation scripts and keep the configurations synchronized.
+
