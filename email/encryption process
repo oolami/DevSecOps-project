@@ -76,64 +76,9 @@ jq -n '{
 
 
 
-Hi Alex, I’ve attached the Kotlin DSL parameter definitions for the Admin TeamCity configuration. I’ve redacted any plaintext credentials while preserving the parameter names and configuration structure for your review.
 
+Updates:
 
-
-
-
-
-
-
-
-
-Hi Alex, here’s the current Build Step 4 (Prepare configuration) script from the Admin TeamCity build. It includes the new parameters requested by Sergey. Please review and share your corrected version so I can update the configuration.
-
-
-
-Thanks for clarifying, Alex. I see that SD-69068 is a separate request to support automation of the Cypress build parameter configurations across the three projects.
-
-For WHC-3616, would you prefer that we restore the five existing Cypress variables alongside Sergey’s new parameters, or are those going to be handled through the configuration changes you’re planning?
-
-As for SD-69068, we’ll pick that up once it goes through the DevOps intake process.
-
-
-
-
-
-
-
-There’s already an existing Environment parameter in TeamCity configured as a dropdown with all the available test environments, including Pre Prod.
-
-The environmentName parameter is separate and was added with the value ste based on Sergey’s requested configuration.
-
-Should environmentName reference the existing Environment dropdown instead of having a fixed value?
-
-
-
-Hi Alex, I just got to my computer and noticed the nightly Admin builds failed. I reviewed the logs and identified that the new environmentName parameter wasn’t being populated because the nightly triggers were still passing only the old Environment parameter.
-
-I’ve updated all four triggers (STE, Integration, PreProd, and Finish Build) to include environmentName with the corresponding values, while keeping the existing Environment parameter for backward compatibility.
-
-The updates are saved and should address the missing environment variable issue, pending validation.
-
-Would you prefer that I keep the old Environment parameter in the triggers for backward compatibility, or remove it and have the builds use only environmentName going forward?
-
-Once confirmed, I’ll finalize the configuration and validate the builds.
-
-
-
-
-Got it, thanks for confirming, Alex. So the correct version is being picked up, but another validation is failing before the environment configuration gets printed.
-
-Are you already looking into that validation issue, or is there anything else needed from the DevOps side?
-
-
-
-
-Today’s Updates:
-
-* WHC-3614 – SSL Certificate Renewal: Working on recycling the existing DigiCert certificate for portal.silacins.com before its November 7 expiration. No new purchase is required.
-* WHC-3616 – TeamCity Build Configuration: Working on separating the SQL Server parameters into Dev and PreProd fields to simplify configuration and reduce manual errors.
-* WHC-3620 – Cypress Build Parameters: Working on exporting the current TeamCity Kotlin parameter configurations for the three Cypress test projects so Alex can update the automation scripts and keep the configurations synchronized.
-
+* SQL Server Build Configuration: Working with Alex on updating the TeamCity build configuration to support separate SQL Server parameters for Dev and PreProd.
+* Cypress Build Parameters: Working on exporting the current TeamCity Kotlin parameter configurations for the three Cypress test projects so Alex can update the automation scripts and keep the configurations synchronized.
+* SSL Certificate Renewal: Working on recycling the existing DigiCert certificate for portal.silacins.com before its November 7 expiration.
