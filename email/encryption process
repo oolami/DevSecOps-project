@@ -120,3 +120,10 @@ The updates are saved and should address the missing environment variable issue,
 Would you prefer that I keep the old Environment parameter in the triggers for backward compatibility, or remove it and have the builds use only environmentName going forward?
 
 Once confirmed, I’ll finalize the configuration and validate the builds.
+
+
+
+
+Got it, thanks for confirming, Alex. So the correct version is being picked up, but another validation is failing before the environment configuration gets printed.
+
+Are you already looking into that validation issue, or is there anything else needed from the DevOps side?
