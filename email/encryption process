@@ -108,3 +108,15 @@ There’s already an existing Environment parameter in TeamCity configured as a 
 The environmentName parameter is separate and was added with the value ste based on Sergey’s requested configuration.
 
 Should environmentName reference the existing Environment dropdown instead of having a fixed value?
+
+
+
+Hi Alex, I just got to my computer and noticed the nightly Admin builds failed. I reviewed the logs and identified that the new environmentName parameter wasn’t being populated because the nightly triggers were still passing only the old Environment parameter.
+
+I’ve updated all four triggers (STE, Integration, PreProd, and Finish Build) to include environmentName with the corresponding values, while keeping the existing Environment parameter for backward compatibility.
+
+The updates are saved and should address the missing environment variable issue, pending validation.
+
+Would you prefer that I keep the old Environment parameter in the triggers for backward compatibility, or remove it and have the builds use only environmentName going forward?
+
+Once confirmed, I’ll finalize the configuration and validate the builds.
