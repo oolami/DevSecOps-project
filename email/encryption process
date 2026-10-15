@@ -1,10 +1,7 @@
-Updated the Admin Cypress TeamCity build configuration to support separate sqlServerNameDev and sqlServerNamePreProd parameters, replacing the previous single SQL Server selection.
+Hi Sergey, I’m working on updating the Agent Rewards TeamCity configuration, similar to what we implemented for Admin.
 
-* Updated the configuration generation script to reference the new parameters.
-* Updated the build steps and nightly triggers to use environmentName.
-* Removed the legacy environment and SQL Server parameters from the build configuration.
-* Validated the nightly runs across STE, Integration, and PreProd.
+I noticed that Agent Rewards has some differences in its existing parameters, including several required parameters that currently have no values.
 
-Integration completed successfully. STE and PreProd executed the Cypress tests but reported individual test failures unrelated to the parameter configuration changes.
+Can you confirm whether Agent Rewards is expected to use the same parameter structure as Admin, or if there are application-specific parameters we need to preserve?
 
-The requested configuration updates are complete and validated. Closing this ticket.
+I want to make sure we retain the necessary configurations while replacing the old environment and SQL Server parameters.
