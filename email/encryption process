@@ -1,19 +1,10 @@
-Thanks, Ryan! I actually tested that approach by creating a copy of the Admin build configuration and detaching it from the template.
+Updated the Admin Cypress TeamCity build configuration to support separate sqlServerNameDev and sqlServerNamePreProd parameters, replacing the previous single SQL Server selection.
 
-The inherited parameters became locally defined, but when I attempted to delete the legacy Environment parameter, TeamCity marked it as undeletable. I also tried overriding it and setting its display to Hidden, but it still appeared in the build dialogs.
+* Updated the configuration generation script to reference the new parameters.
+* Updated the build steps and nightly triggers to use environmentName.
+* Removed the legacy environment and SQL Server parameters from the build configuration.
+* Validated the nightly runs across STE, Integration, and PreProd.
 
-Do you know if there’s another way to remove it, or could there be another configuration dependency preventing the deletion?
+Integration completed successfully. STE and PreProd executed the Cypress tests but reported individual test failures unrelated to the parameter configuration changes.
 
-
-
-
-
-Quick update on the TeamCity inherited parameter issue.
-
-I was able to identify the root cause. The build number format was still referencing the legacy %Environment% parameter, which prevented TeamCity from deleting it.
-
-After updating the build number format to reference %environmentName%, I was able to successfully remove the old parameter from the detached AdminCopy configuration.
-
-I’ve also verified that the old Environment dropdown is no longer appearing in the custom build parameters. I’ll apply the same changes to the original Admin configuration and validate the Run/Customize dialogs and nightly triggers.
-
-Thanks, Ryan, for the suggestion to test with a detached configuration!
+The requested configuration updates are complete and validated. Closing this ticket.
