@@ -1,5 +1,5 @@
-Thanks, Alex. For Agent Rewards, I’ll follow the same approach we used for Admin, retaining its application-specific environment variables.
+Hi Alex, just a heads-up: I detached the Agent Rewards build configuration from the shared CypressTests-AAG template while working on the parameter updates.
 
-Please send over the updated configuration script when it’s ready.
+I initially followed the same approach we used for Admin, so you may notice some differences in the existing parameters and environment variables, especially since Agent Rewards has its own application-specific configuration.
 
-For Admin TimeMachine, I’ll compare its current configuration with Admin and sync the applicable changes, keeping the existing Grep by tags setting as requested.
+I’ll send over the current Kotlin parameters for your review so we can align everything before making further changes.
