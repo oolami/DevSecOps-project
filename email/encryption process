@@ -1,7 +1,5 @@
-Hi Sergey, I’m working on updating the Agent Rewards TeamCity configuration, similar to what we implemented for Admin.
+Thanks, Alex. For Agent Rewards, I’ll follow the same approach we used for Admin, retaining its application-specific environment variables.
 
-I noticed that Agent Rewards has some differences in its existing parameters, including several required parameters that currently have no values.
+Please send over the updated configuration script when it’s ready.
 
-Can you confirm whether Agent Rewards is expected to use the same parameter structure as Admin, or if there are application-specific parameters we need to preserve?
-
-I want to make sure we retain the necessary configurations while replacing the old environment and SQL Server parameters.
+For Admin TimeMachine, I’ll compare its current configuration with Admin and sync the applicable changes, keeping the existing Grep by tags setting as requested.
