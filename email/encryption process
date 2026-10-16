@@ -1,6 +1,3 @@
-Hi Jose, I noticed the Dev PR is 4 commits behind dev/deploy, and the Pre-Prod PR is also behind its target branch. Could you please sync both branches so I can complete the review and approval? Thanks!
+Hi Alex, I carried over those parameters from the existing TeamCity build configurations to preserve the current setup. I haven’t independently verified whether they’re still required by the Admin Cypress tests.
 
-
-
-
-Hi Jose, I reviewed the three SCH-2183 PRs. The WindAPI configuration changes look consistent across the environments, and the builds are passing. However, I noticed the Dev and Pre-Prod PRs are behind their destination branches. Could you sync those branches so I can complete the approvals? I’ll hold off on Prod until Pre-Prod testing is completed and validated.
+Do you know if those variables are still being used in the test code? If they’re no longer needed, we can clean them up.
