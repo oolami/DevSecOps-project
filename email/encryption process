@@ -1,5 +1,1 @@
-Hi Alex, just a heads-up: I detached the Agent Rewards build configuration from the shared CypressTests-AAG template while working on the parameter updates.
-
-I initially followed the same approach we used for Admin, so you may notice some differences in the existing parameters and environment variables, especially since Agent Rewards has its own application-specific configuration.
-
-I’ll send over the current Kotlin parameters for your review so we can align everything before making further changes.
+Hi Jose, I reviewed the three SCH-2183 PRs. The WindAPI configuration changes look consistent across the environments, and the builds are passing. However, I noticed the Dev and Pre-Prod PRs are behind their destination branches. Could you sync those branches so I can complete the approvals? I’ll hold off on Prod until Pre-Prod testing is completed and validated.
