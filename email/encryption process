@@ -1,1 +1,15 @@
+Hey everyone, I reviewed the Windapiauth NuGet pipeline in TeamCity and confirmed that build #64 successfully published version 3.0.1-rc from Konny’s bugfix/SCH-5323 branch.
+
+I also found that the current build script automatically appends the -rc suffix to packages built from any branch other than master. Stable versions are generated from master.
+
+Konny’s PR #33 is currently open against develop, so we’ll need to confirm the release approach before generating the non-RC version. The existing pipeline appears to be working as configured, so no permanent pipeline changes seem necessary.
+
+Konny, let me know how you’d like to proceed with getting the changes into a stable release.
+
+
+
+
+
+
+
 Hi team, I’ve submitted the DigiCert certificate renewal request for sentry.silacins.com, and it’s currently showing as “Needs Approval.” Could someone from SysAdmin please review and approve the request when you get a chance? Thanks!
