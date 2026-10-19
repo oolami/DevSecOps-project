@@ -41,3 +41,23 @@ catch {
     throw
 }
 
+
+
+
+
+
+
+catch {
+    Write-Host "DigiCert API request failed."
+
+    $statusCode = $_.Exception.Response.StatusCode
+
+    if ($null -ne $statusCode) {
+        Write-Host "HTTP Status Code: $([int]$statusCode)"
+    }
+
+    Write-Host "Error Type: $($_.Exception.GetType().FullName)"
+    Write-Host "Error Message: $($_.Exception.Message)"
+
+    throw "DigiCert API request failed. Review HTTP status and error details above."
+}
