@@ -1,7 +1,1 @@
-Hey Konny, I checked the Windapiauth TeamCity pipeline and confirmed that build #64 successfully published NuGet version 3.0.1-rc from your SCH-5323 branch. The pipeline only generates non-RC versions from master, and I noticed your PR is still open against develop. Are your changes ready to be merged and promoted to master for the stable 3.0.1 release, or is there another approach you’d prefer?
-
-
-
-
-
-Hey Jeff, I’ll take a look at the NuGet package version and the related PRs. I’ll work on getting the non-RC version available and update the PRs accordingly. I’ll keep you posted.
+Hi team, I’ve submitted the DigiCert certificate renewal request for sentry.silacins.com, and it’s currently showing as “Needs Approval.” Could someone from SysAdmin please review and approve the request when you get a chance? Thanks!
