@@ -209,3 +209,29 @@ if ($dryRun) {
 }
 
 Write-Host "Step 5 completed successfully."
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Write-Host "Downloaded certificate count: $($blocks.Count)"
+Write-Host "Certificate subject: $($leaf.Subject)"
+Write-Host "Certificate issuer: $($leaf.Issuer)"
+Write-Host "Certificate thumbprint: $($leaf.Thumbprint)"
+
+Write-Host "DNS names detected:"
+foreach ($dns in $leaf.DnsNameList) {
+    Write-Host " - $($dns.Unicode)"
+}
+
+Write-Host "Expected common name: $commonName"
+
