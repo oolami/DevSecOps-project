@@ -1,13 +1,1 @@
-$CertificateType = "%CertificateType%".Trim()
-
-if ($CertificateType -eq "External") {
-    Write-Host "External certificate workflow detected."
-    Write-Host "NSX-ALB CSR generation is not applicable."
-    Write-Host "External CSR and private key handling must be configured before proceeding."
-    throw "External CSR generation is not configured."
-}
-
-if ($CertificateType -ne "Internal") {
-    throw "Unsupported CertificateType: $CertificateType"
-}
-
+Hey Jeff, I’ll take a look at the NuGet package version and the related PRs. I’ll work on getting the non-RC version available and update the PRs accordingly. I’ll keep you posted.
