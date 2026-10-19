@@ -1,3 +1,13 @@
-Hi Alex, I carried over those parameters from the existing TeamCity build configurations to preserve the current setup. I haven’t independently verified whether they’re still required by the Admin Cypress tests.
+$CertificateType = "%CertificateType%".Trim()
 
-Do you know if those variables are still being used in the test code? If they’re no longer needed, we can clean them up.
+if ($CertificateType -eq "External") {
+    Write-Host "External certificate workflow detected."
+    Write-Host "NSX-ALB CSR generation is not applicable."
+    Write-Host "External CSR and private key handling must be configured before proceeding."
+    throw "External CSR generation is not configured."
+}
+
+if ($CertificateType -ne "Internal") {
+    throw "Unsupported CertificateType: $CertificateType"
+}
+
