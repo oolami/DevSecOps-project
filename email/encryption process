@@ -3,4 +3,41 @@ https://www.digicert.com/services/v2
 
 
 
-Ah, interesting. Thanks for checking, Tyler! Looks like Administrator access may be needed with our current account setup. Would it be possible to assign that role to a dedicated automation account and enable the option to skip approvals? We’d need to review the security implications, but it would be great if we could eliminate that manual step entirely.
+$ErrorActionPreference = 'Stop'
+
+$baseUrl = "%DigiCertBaseUrl%".TrimEnd('/')
+$orderId = "%DigiCertOrderId%"
+$apiKey = $env:DIGICERT_API_KEY
+
+if ([string]::IsNullOrWhiteSpace($apiKey)) {
+    throw "DigiCert API key is not available."
+}
+
+if ($orderId -notmatch '^\d+$') {
+    throw "DigiCertOrderId must be numeric."
+}
+
+$headers = @{
+    "X-DC-DEVKEY" = $apiKey
+    "Accept" = "application/json"
+}
+
+$url = "$baseUrl/order/certificate/$orderId"
+
+Write-Host "Checking DigiCert order $orderId..."
+
+try {
+    $response = Invoke-RestMethod `
+        -Uri $url `
+        -Method Get `
+        -Headers $headers
+
+    Write-Host "DigiCert API authentication succeeded."
+    Write-Host "Order ID: $orderId"
+    Write-Host "Order status: $($response.status)"
+}
+catch {
+    Write-Error "Unable to retrieve DigiCert order. Check API permissions, order ID, and API endpoint."
+    throw
+}
+
