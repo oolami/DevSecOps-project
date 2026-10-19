@@ -13,3 +13,7 @@ Konny, could you confirm how you’d like us to proceed?
 
 
 Hi team, I’ve submitted the DigiCert certificate renewal request for sentry.silacins.com, and it’s currently showing as “Needs Approval.” Could someone from SysAdmin please review and approve the request when you get a chance? Thanks!
+
+
+
+Just to clarify, are we looking to generate a non-RC NuGet package directly from Konny’s bugfix branch without merging into master? If that’s the goal, I can look into a controlled override for the version suffix in TeamCity.
