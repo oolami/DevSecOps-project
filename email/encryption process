@@ -1,1 +1,6 @@
+https://www.digicert.com/services/v2
+
+
+
+
 Ah, interesting. Thanks for checking, Tyler! Looks like Administrator access may be needed with our current account setup. Would it be possible to assign that role to a dedicated automation account and enable the option to skip approvals? We’d need to review the security implications, but it would be great if we could eliminate that manual step entirely.
