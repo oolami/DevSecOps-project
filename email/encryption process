@@ -1,10 +1,10 @@
-Hey everyone, I reviewed the Windapiauth NuGet pipeline in TeamCity and confirmed that build #64 successfully published version 3.0.1-rc from Konny’s bugfix/SCH-5323 branch.
+Hi everyone, I reviewed the Windapiauth NuGet pipeline in TeamCity and confirmed that build #64 successfully published version 3.0.1-rc from Konny’s bugfix/SCH-5323 branch.
 
-I also found that the current build script automatically appends the -rc suffix to packages built from any branch other than master. Stable versions are generated from master.
+The Build step currently adds the -rc suffix for any branch other than master, which explains why the package was published as a release candidate.
 
-Konny’s PR #33 is currently open against develop, so we’ll need to confirm the release approach before generating the non-RC version. The existing pipeline appears to be working as configured, so no permanent pipeline changes seem necessary.
+I also confirmed that PR #33 is still open against develop. Before proceeding with the non-RC version, I’d like to confirm the intended release approach so we can ensure the stable package includes Konny’s changes without modifying the existing shared pipeline unnecessarily.
 
-Konny, let me know how you’d like to proceed with getting the changes into a stable release.
+Konny, could you confirm how you’d like us to proceed?
 
 
 
