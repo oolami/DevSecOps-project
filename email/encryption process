@@ -1,4 +1,4 @@
-Hey Konny, I reviewed the Windapiauth NuGet configuration in TeamCity and confirmed that the pipeline generates non-RC packages from master. I also noticed your SCH-5323 PR is still open against develop. Are you planning to merge those changes into develop and promote them to master for the stable 3.0.1 release? Just wanted to confirm the release approach before proceeding.
+Hey Konny, I checked the Windapiauth TeamCity pipeline and confirmed that build #64 successfully published NuGet version 3.0.1-rc from your SCH-5323 branch. The pipeline only generates non-RC versions from master, and I noticed your PR is still open against develop. Are your changes ready to be merged and promoted to master for the stable 3.0.1 release, or is there another approach you’d prefer?
 
 
 
