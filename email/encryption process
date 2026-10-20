@@ -23,3 +23,23 @@ $dnsNames = @(
 )
 
 Write-Host "Validated SAN names: $($dnsNames -join ', ')"
+
+
+
+
+
+
+
+
+$expectedNames = @(
+    $commonName,
+    "www.$commonName"
+)
+
+foreach ($name in $expectedNames) {
+    if ($name -notin $dnsNames) {
+        throw "Certificate SAN does not include $name"
+    }
+}
+
+Write-Host "Certificate SAN validation passed: $($dnsNames -join ', ')"
