@@ -1,336 +1,225 @@
-foreach ($cert in $matchingCertificates) {
-    Write-Host "========================================"
-    Write-Host "MATCHED FASTLY CERTIFICATE DETAILS"
-    Write-Host "========================================"
-
-    Write-Host "Certificate ID: $($cert.id)"
-    Write-Host "Issued To: $($cert.attributes.issued_to)"
-    Write-Host "Expires: $($cert.attributes.not_after)"
-
-    $associatedDomains = @(
-        Get-RelationshipIds $cert "tls_domains"
-    )
-
-    Write-Host "Associated TLS domain count: $($associatedDomains.Count)"
-
-    foreach ($associatedDomain in $associatedDomains) {
-        Write-Host "Associated domain: $associatedDomain"
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 $ErrorActionPreference = "Stop"
 
-# STEP 11: FASTLY TLS DISCOVERY
-# Read-only: GET requests only.
-# No certificates, keys, subscriptions, or services are modified.
-
+$commonName = "%CommonName%"
+$dryRun = "%DryRun%"
+$required = "%FastlyDeploymentRequired%"
 $token = $env:FASTLY_API_TOKEN
 
-if ([string]::IsNullOrWhiteSpace($token)) {
-    throw "FASTLY_API_TOKEN environment variable is missing."
+if ($required -ne "true") {
+    Write-Host "Fastly deployment not required."
+    exit 0
 }
 
-$domain = "sentry.silacins.com"
-$targetDomains = @(
-    $domain
-    "www.$domain"
-)
-
-$baseUrl = "https://api.fastly.com"
+if ([string]::IsNullOrWhiteSpace($token)) {
+    throw "FASTLY_API_TOKEN is missing."
+}
 
 $headers = @{
     "Fastly-Key" = $token
-    "Accept"     = "application/vnd.api+json"
+    "Accept" = "application/vnd.api+json"
+    "Content-Type" = "application/vnd.api+json"
 }
 
-Write-Host "========================================"
-Write-Host "FASTLY TLS DISCOVERY - READ ONLY"
-Write-Host "========================================"
-Write-Host "Primary domain: $domain"
-Write-Host "Target domains: $($targetDomains -join ', ')"
-Write-Host ""
+# Locate the exact required DigiCert artifact.
+$files = @(
+    Get-ChildItem -Path $env:TEAMCITY_BUILD_CHECKOUTDIR `
+        -Filter "DigiCertCA.crt" -Recurse -File `
+        -ErrorAction SilentlyContinue
+)
 
-# Helper: GET only, including pagination.
-function Get-FastlyCollection {
-    param(
-        [Parameter(Mandatory)]
-        [string]$Path
-    )
-
-    $items = @()
-    $page = 1
-    $perPage = 100
-
-    do {
-        if ($page -gt 100) {
-            throw "Pagination safety limit reached for $Path"
-        }
-
-        $separator = if ($Path.Contains("?")) { "&" } else { "?" }
-        $uri = "$baseUrl$Path${separator}page[number]=$page&page[size]=$perPage"
-
-        $response = Invoke-RestMethod `
-            -Uri $uri `
-            -Method GET `
-            -Headers $headers
-
-        $batch = @($response.data | Where-Object { $null -ne $_ })
-        $items += $batch
-
-        $hasNext = $false
-
-        if ($response.links -and $response.links.next) {
-            $hasNext = $true
-        }
-        elseif ($batch.Count -eq $perPage) {
-            $hasNext = $true
-        }
-
-        $page++
-    } while ($hasNext)
-
-    return ,$items
+if ($files.Count -ne 1) {
+    throw "Expected exactly one DigiCertCA.crt in checkout; found $($files.Count)."
 }
 
-# Helper: extract relationship IDs.
-function Get-RelationshipIds {
-    param(
-        $Resource,
-        [string]$RelationshipName
-    )
+$certPath = $files[0].FullName
+$certPem = [System.IO.File]::ReadAllText($certPath)
 
-    if (-not $Resource.relationships) {
-        return @()
-    }
-
-    $relationship = $Resource.relationships.$RelationshipName
-
-    if (-not $relationship) {
-        return @()
-    }
-
-    return @(
-        $relationship.data |
-        Where-Object { $null -ne $_ } |
-        ForEach-Object { $_.id }
-    )
+if ($certPem -notmatch "-----BEGIN CERTIFICATE-----") {
+    throw "DigiCertCA.crt is not PEM-formatted."
 }
 
-# Helper: exact or applicable wildcard match.
-function Test-DomainMatch {
-    param(
-        [string]$Candidate,
-        [string]$Target
-    )
+# Read the first certificate in the PEM file.
+$match = [regex]::Match(
+    $certPem,
+    "(?s)-----BEGIN CERTIFICATE-----\s*(.*?)\s*-----END CERTIFICATE-----"
+)
 
-    if ([string]::IsNullOrWhiteSpace($Candidate)) {
-        return $false
-    }
+if (-not $match.Success) {
+    throw "No certificate block found."
+}
 
-    $candidateName = $Candidate.Trim().TrimEnd(".").ToLowerInvariant()
-    $targetName = $Target.Trim().TrimEnd(".").ToLowerInvariant()
+$certBytes = [Convert]::FromBase64String(
+    ($match.Groups[1].Value -replace "\s", "")
+)
 
-    if ($candidateName -eq $targetName) {
-        return $true
-    }
+$newCert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList @(,$certBytes)
 
-    if ($candidateName.StartsWith("*.")) {
-        $suffix = $candidateName.Substring(2)
+if ($newCert.NotAfter -le (Get-Date)) {
+    throw "Replacement certificate is expired."
+}
 
-        # A wildcard covers one subdomain label only.
-        if ($targetName.EndsWith(".$suffix")) {
-            $prefix = $targetName.Substring(
-                0,
-                $targetName.Length - $suffix.Length - 1
+# Read replacement certificate DNS names.
+function Get-CertNames($cert) {
+    $names = @()
+
+    foreach ($extension in $cert.Extensions) {
+        if ($extension.Oid.Value -eq "2.5.29.17") {
+            $formatted = $extension.Format($false)
+            $names += @(
+                [regex]::Matches(
+                    $formatted,
+                    "DNS Name\s*=\s*([^,\r\n]+)"
+                ) | ForEach-Object {
+                    $_.Groups[1].Value.Trim().ToLowerInvariant()
+                }
             )
-
-            return ($prefix.Length -gt 0 -and -not $prefix.Contains("."))
         }
     }
 
-    return $false
+    if ($names.Count -eq 0) {
+        $names += $cert.GetNameInfo(
+            [System.Security.Cryptography.X509Certificates.X509NameType]::DnsName,
+            $false
+        ).ToLowerInvariant()
+    }
+
+    return @($names | Sort-Object -Unique)
 }
 
-function Test-AnyTargetMatch {
-    param([string[]]$Candidates)
+$newNames = @(Get-CertNames $newCert)
 
-    foreach ($candidate in $Candidates) {
-        foreach ($target in $targetDomains) {
-            if (Test-DomainMatch -Candidate $candidate -Target $target) {
-                return $true
+if ($newNames -notcontains $commonName.ToLowerInvariant()) {
+    throw "DigiCertCA.crt does not explicitly contain $commonName."
+}
+
+Write-Host "Replacement certificate: $certPath"
+Write-Host "Replacement expires: $($newCert.NotAfter)"
+Write-Host "Replacement DNS names: $($newNames -join ', ')"
+
+# Discover the existing Fastly certificate.
+$uri = "https://api.fastly.com/tls/certificates"
+$allCerts = @()
+
+do {
+    $response = Invoke-RestMethod -Uri $uri `
+        -Headers $headers -Method GET
+
+    $allCerts += @($response.data | Where-Object { $_ })
+
+    $next = $response.links.next
+    if ($next -and $next -notmatch "^https?://") {
+        $next = [Uri]::new(
+            [Uri]$uri, [string]$next
+        ).AbsoluteUri
+    }
+
+    $uri = $next
+} while ($uri)
+
+$matches = @(
+    $allCerts | Where-Object {
+        $domains = @(
+            $_.relationships.tls_domains.data |
+            ForEach-Object { $_.id }
+        )
+
+        $domains -contains $commonName
+    }
+)
+
+if ($matches.Count -ne 1) {
+    throw "Expected one Fastly certificate for $commonName; found $($matches.Count)."
+}
+
+$existing = $matches[0]
+$certificateId = $existing.id
+
+$existingDomains = @(
+    $existing.relationships.tls_domains.data |
+    ForEach-Object { $_.id.ToLowerInvariant() } |
+    Sort-Object -Unique
+)
+
+# Fail closed if replacement does not cover existing domains.
+function Test-Coverage($hostname, $names) {
+    foreach ($name in $names) {
+        if ($hostname -eq $name) { return $true }
+
+        if ($name.StartsWith("*.")) {
+            $suffix = $name.Substring(2)
+            if ($hostname.EndsWith(".$suffix")) {
+                $prefix = $hostname.Substring(
+                    0,
+                    $hostname.Length - $suffix.Length - 1
+                )
+                if ($prefix -and -not $prefix.Contains(".")) {
+                    return $true
+                }
             }
         }
     }
-
     return $false
 }
 
-try {
-    # 1. Verify Fastly authentication.
-    Write-Host "Checking Fastly API authentication..."
-
-    $user = Invoke-RestMethod `
-        -Uri "$baseUrl/current_user" `
-        -Method GET `
-        -Headers $headers
-
-    Write-Host "FASTLY AUTHENTICATION SUCCESSFUL"
-    Write-Host "User ID: $($user.id)"
-    Write-Host ""
-
-    # 2. Discover TLS domains.
-    Write-Host "Checking Fastly TLS domains..."
-
-    $tlsDomains = @(
-        Get-FastlyCollection -Path "/tls/domains"
-    )
-
-    Write-Host "TLS domains returned: $($tlsDomains.Count)"
-
-    $matchingDomains = @(
-        $tlsDomains | Where-Object {
-            Test-AnyTargetMatch -Candidates @($_.id)
-        }
-    )
-
-    Write-Host "Matching TLS domains: $($matchingDomains.Count)"
-
-    foreach ($item in $matchingDomains) {
-        Write-Host "----------------------------------------"
-        Write-Host "TLS Domain: $($item.id)"
-
-        $certIds = @(
-            Get-RelationshipIds $item "tls_certificates"
-        )
-        $activationIds = @(
-            Get-RelationshipIds $item "tls_activations"
-        )
-        $subscriptionIds = @(
-            Get-RelationshipIds $item "tls_subscriptions"
-        )
-
-        Write-Host "Certificate IDs: $($certIds -join ', ')"
-        Write-Host "Activation IDs: $($activationIds -join ', ')"
-        Write-Host "Subscription IDs: $($subscriptionIds -join ', ')"
+$missing = @(
+    $existingDomains | Where-Object {
+        -not (Test-Coverage $_ $newNames)
     }
+)
 
-    Write-Host ""
+Write-Host "Existing Fastly certificate ID: $certificateId"
+Write-Host "Existing TLS domains: $($existingDomains -join ', ')"
 
-    # 3. Discover Fastly-managed TLS subscriptions.
-    Write-Host "Checking Fastly TLS subscriptions..."
-
-    $subscriptions = @(
-        Get-FastlyCollection -Path "/tls/subscriptions"
-    )
-
-    Write-Host "TLS subscriptions returned: $($subscriptions.Count)"
-
-    $matchingSubscriptions = @(
-        $subscriptions | Where-Object {
-            $subscriptionDomains = @(
-                Get-RelationshipIds $_ "tls_domains"
-            )
-
-            $commonNames = @(
-                Get-RelationshipIds $_ "common_name"
-            )
-
-            Test-AnyTargetMatch -Candidates @(
-                $subscriptionDomains + $commonNames
-            )
-        }
-    )
-
-    Write-Host "Matching subscriptions: $($matchingSubscriptions.Count)"
-
-    foreach ($item in $matchingSubscriptions) {
-        Write-Host "----------------------------------------"
-        Write-Host "Subscription ID: $($item.id)"
-        Write-Host "State: $($item.attributes.state)"
-        Write-Host "Certificate Authority: $($item.attributes.certificate_authority)"
-        Write-Host "Domains: $((Get-RelationshipIds $item 'tls_domains') -join ', ')"
-        Write-Host "Certificate IDs: $((Get-RelationshipIds $item 'tls_certificates') -join ', ')"
-    }
-
-    Write-Host ""
-
-    # 4. Discover uploaded / customer-managed certificates.
-    Write-Host "Checking Fastly TLS certificates..."
-
-    $certificates = @(
-        Get-FastlyCollection -Path "/tls/certificates"
-    )
-
-    Write-Host "TLS certificates returned: $($certificates.Count)"
-
-    $matchingCertificates = @(
-        $certificates | Where-Object {
-            $certificateDomains = @(
-                Get-RelationshipIds $_ "tls_domains"
-            )
-
-            $issuedTo = @($_.attributes.issued_to)
-
-            Test-AnyTargetMatch -Candidates @(
-                $certificateDomains + $issuedTo
-            )
-        }
-    )
-
-    Write-Host "Matching certificates: $($matchingCertificates.Count)"
-
-    foreach ($item in $matchingCertificates) {
-        Write-Host "----------------------------------------"
-        Write-Host "Certificate ID: $($item.id)"
-        Write-Host "Name: $($item.attributes.name)"
-        Write-Host "Issued To: $($item.attributes.issued_to)"
-        Write-Host "Issuer: $($item.attributes.issuer)"
-        Write-Host "Expires: $($item.attributes.not_after)"
-        Write-Host "TLS Domains: $((Get-RelationshipIds $item 'tls_domains') -join ', ')"
-    }
-
-    # 5. Summary.
-    Write-Host ""
-    Write-Host "========================================"
-    Write-Host "FASTLY DISCOVERY SUMMARY"
-    Write-Host "========================================"
-    Write-Host "TLS domains inspected: $($tlsDomains.Count)"
-    Write-Host "Matching TLS domains: $($matchingDomains.Count)"
-    Write-Host "Subscriptions inspected: $($subscriptions.Count)"
-    Write-Host "Matching subscriptions: $($matchingSubscriptions.Count)"
-    Write-Host "Certificates inspected: $($certificates.Count)"
-    Write-Host "Matching certificates: $($matchingCertificates.Count)"
-
-    if (
-        $matchingDomains.Count -eq 0 -and
-        $matchingSubscriptions.Count -eq 0 -and
-        $matchingCertificates.Count -eq 0
-    ) {
-        Write-Host ""
-        Write-Warning "No matching Fastly TLS resources were found."
-        Write-Host "Check token account permissions and whether the hostname uses another TLS configuration."
-    }
-
-    Write-Host ""
-    Write-Host "READ-ONLY DISCOVERY COMPLETED"
-    Write-Host "No Fastly resources were modified."
+if ($missing.Count -gt 0) {
+    throw "UPDATE BLOCKED: DigiCertCA.crt does not cover existing Fastly domains: $($missing -join ', ')"
 }
-catch {
-    throw "Fastly TLS discovery failed: $($_.Exception.Message)"
+
+# Update existing certificate; never create a new one.
+$updateUri = "https://api.fastly.com/tls/certificates/$certificateId"
+
+$payload = @{
+    data = @{
+        type = "tls_certificate"
+        attributes = @{
+            cert_blob = $certPem
+        }
+    }
+} | ConvertTo-Json -Depth 10
+
+if ($dryRun -eq "true") {
+    Write-Host "DRY RUN: Existing certificate validated."
+    Write-Host "Would PATCH existing Fastly certificate: $certificateId"
+    Write-Host "No Fastly changes made."
+    exit 0
 }
+
+if ($dryRun -ne "false") {
+    throw "Invalid DryRun value: $dryRun"
+}
+
+Write-Host "Updating existing Fastly certificate..."
+
+$result = Invoke-RestMethod `
+    -Uri $updateUri `
+    -Method PATCH `
+    -Headers $headers `
+    -Body $payload
+
+if ($result.data.id -ne $certificateId) {
+    throw "Unexpected certificate ID in Fastly response."
+}
+
+# Verify the update by reading the certificate resource.
+$verified = Invoke-RestMethod `
+    -Uri $updateUri `
+    -Method GET `
+    -Headers $headers
+
+if ($verified.data.id -ne $certificateId) {
+    throw "Post-deployment verification failed."
+}
+
+Write-Host "FASTLY CERTIFICATE UPDATE SUCCESSFUL"
+Write-Host "Certificate ID: $certificateId"
+Write-Host "Expires: $($verified.data.attributes.not_after)"
