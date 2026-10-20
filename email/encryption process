@@ -1,48 +1,25 @@
-$certificateType = "%CertificateType%".Trim()
+$ErrorActionPreference = "Stop"
 
-if ($certificateType -eq "External") {
+$token = $env:FASTLY_API_TOKEN
 
-    $targetCertName = "%NSXCertificateObjectName%".Trim()
+if ([string]::IsNullOrWhiteSpace($token)) {
+    throw "Fastly API token is missing."
+}
 
-    if ([string]::IsNullOrWhiteSpace($targetCertName)) {
-        throw "NSXCertificateObjectName is required for external certificates."
-    }
+$headers = @{
+    "Fastly-Key" = $token
+    "Accept" = "application/json"
+}
 
-    $encodedName = [System.Uri]::EscapeDataString($targetCertName)
+try {
+    $response = Invoke-RestMethod `
+        -Uri "https://api.fastly.com/current_user" `
+        -Method GET `
+        -Headers $headers
 
-    $certResponse = Invoke-RestMethod `
-        -Uri "%NSX-ALB-Host%/api/sslkeyandcertificate?name=$encodedName" `
-        -WebSession $session `
-        -Headers $headers `
-        -Method GET
-
-    $matches = @($certResponse.results | Where-Object {
-        $_.name -eq $targetCertName
-    })
-
-    if ($matches.Count -ne 1) {
-        throw "Expected exactly one NSX-ALB certificate named '$targetCertName'; found $($matches.Count)."
-    }
-
-    $targetCert = $matches[0]
-    $expectedCertRef = $targetCert.url
-
-    if ($dryRun) {
-        Write-Host "DRY RUN - VERIFY EXTERNAL VS CERTIFICATE"
-        Write-Host "Virtual Service: $virtualService"
-        Write-Host "Expected certificate: $targetCertName"
-        Write-Host "Expected certificate UUID: $($targetCert.uuid)"
-        Write-Host "No certificate assignment was changed."
-        exit 0
-    }
-
-    if ($currentRefs -notcontains $expectedCertRef) {
-        throw "External certificate verification failed. '$targetCertName' is not assigned to '$virtualService'."
-    }
-
-    Write-Host "EXTERNAL CERTIFICATE VERIFICATION SUCCESSFUL"
-    Write-Host "Virtual Service: $virtualService"
-    Write-Host "Certificate: $targetCertName"
-    Write-Host "Certificate UUID: $($targetCert.uuid)"
-    exit 0
+    Write-Host "FASTLY AUTHENTICATION SUCCESSFUL"
+    Write-Host "User ID: $($response.id)"
+}
+catch {
+    throw "Fastly authentication failed: $($_.Exception.Message)"
 }
