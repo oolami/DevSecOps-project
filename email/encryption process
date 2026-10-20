@@ -1,1 +1,104 @@
-$outputDir = Join-Path -Path $env:TEMP -ChildPath "digicert-output"
+
+$ErrorActionPreference = "Stop"
+
+$dryRun = "%DryRun%".Trim().ToLower() -eq "true"
+$commonName = "%CommonName%".Trim()
+$nsxHost = "%NSX-ALB-Host%".TrimEnd("/")
+
+if ([string]::IsNullOrWhiteSpace($commonName)) {
+    throw "CommonName is required."
+}
+
+if (-not $dryRun) {
+    throw "Step 6 is currently validation-only. Set DryRun=true."
+}
+
+$outputDir = Join-Path $env:TEMP "digicert-output"
+$leafPath = Join-Path $outputDir "$commonName.crt"
+$bundlePath = Join-Path $outputDir "$commonName-fullchain.pem"
+
+foreach ($path in @($leafPath, $bundlePath)) {
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+        throw "Required DigiCert certificate file not found: $path"
+    }
+}
+
+$leaf = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+    $leafPath
+)
+
+if ($leaf.NotBefore.ToUniversalTime() -gt [datetime]::UtcNow -or
+    $leaf.NotAfter.ToUniversalTime() -le [datetime]::UtcNow) {
+    throw "Downloaded certificate is outside its validity period."
+}
+
+$dnsNames = $leaf.Extensions |
+    Where-Object { $_.Oid.Value -eq "2.5.29.17" } |
+    ForEach-Object { $_.Format($true) }
+
+Write-Host "DigiCert certificate file validation passed."
+Write-Host "Subject: $($leaf.Subject)"
+Write-Host "Issuer: $($leaf.Issuer)"
+Write-Host "Expires: $($leaf.NotAfter.ToUniversalTime())"
+Write-Host "SAN extension: $dnsNames"
+
+# Authenticate to NSX-ALB using the existing session pattern.
+$headers = @{
+    "Content-Type" = "application/json"
+    "x-avi-version" = "%NSX-ALB-Version%"
+}
+
+$signinBody = @{
+    username = "%NSX-ALB-Username%"
+    password = "%NSX-ALB-Password%"
+} | ConvertTo-Json
+
+$session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+
+$null = Invoke-WebRequest `
+    -Uri "$nsxHost/login" `
+    -Method POST `
+    -Headers $headers `
+    -Body $signinBody `
+    -WebSession $session
+
+$headers["X-CSRFToken"] = $session.Cookies.GetCookies($nsxHost)["csrftoken"].Value
+$headers["Referer"] = "$nsxHost/"
+
+# Discover existing certificate objects.
+$uri = "$nsxHost/api/sslkeyandcertificate?page_size=200"
+$matches = @()
+
+do {
+    $response = Invoke-RestMethod `
+        -Uri $uri `
+        -Method GET `
+        -Headers $headers `
+        -WebSession $session
+
+    $matches += @($response.results) |
+        Where-Object {
+            $_.name -eq $commonName
+        }
+
+    $uri = $response.next
+    if ($uri -and $uri.StartsWith("/")) {
+        $uri = "$nsxHost$uri"
+    }
+} while ($uri)
+
+Write-Host "Matching NSX-ALB certificate objects: $($matches.Count)"
+
+foreach ($cert in $matches) {
+    Write-Host "Name: $($cert.name)"
+    Write-Host "UUID: $($cert.uuid)"
+    Write-Host "Type: $($cert.type)"
+    Write-Host "Certificate present: $(-not [string]::IsNullOrWhiteSpace($cert.certificate.certificate))"
+}
+
+if ($matches.Count -ne 1) {
+    throw "Expected exactly one matching NSX-ALB certificate object. Found $($matches.Count)."
+}
+
+Write-Host "DRY RUN: NSX-ALB certificate discovery succeeded."
+Write-Host "No certificate was uploaded or modified."
