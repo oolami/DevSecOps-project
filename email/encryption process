@@ -1,3 +1,38 @@
+foreach ($cert in $matchingCertificates) {
+    Write-Host "========================================"
+    Write-Host "MATCHED FASTLY CERTIFICATE DETAILS"
+    Write-Host "========================================"
+
+    Write-Host "Certificate ID: $($cert.id)"
+    Write-Host "Issued To: $($cert.attributes.issued_to)"
+    Write-Host "Expires: $($cert.attributes.not_after)"
+
+    $associatedDomains = @(
+        Get-RelationshipIds $cert "tls_domains"
+    )
+
+    Write-Host "Associated TLS domain count: $($associatedDomains.Count)"
+
+    foreach ($associatedDomain in $associatedDomains) {
+        Write-Host "Associated domain: $associatedDomain"
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 $ErrorActionPreference = "Stop"
 
