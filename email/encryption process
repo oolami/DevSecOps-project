@@ -23,3 +23,45 @@ try {
 catch {
     throw "Fastly authentication failed: $($_.Exception.Message)"
 }
+
+
+
+
+
+
+
+Write-Host "Checking Fastly TLS configuration..."
+
+$domain = "sentry.silacins.com"
+
+$tlsResponse = Invoke-RestMethod `
+    -Uri "https://api.fastly.com/tls/subscriptions?include=tls_domains" `
+    -Method GET `
+    -Headers $headers
+
+$subscriptions = @($tlsResponse.data)
+
+Write-Host "Fastly TLS subscriptions returned: $($subscriptions.Count)"
+
+$matches = @(
+    $subscriptions | Where-Object {
+        $subscription = $_
+        @($subscription.relationships.tls_domains.data | Where-Object {
+            $_.id -eq $domain
+        }).Count -gt 0
+    }
+)
+
+Write-Host "Matching subscriptions found: $($matches.Count)"
+
+if ($matches.Count -gt 0) {
+    Write-Host "Fastly TLS subscription references found for $domain"
+    foreach ($match in $matches) {
+        Write-Host "Subscription ID: $($match.id)"
+        Write-Host "Certificate authority: $($match.attributes.certificate_authority)"
+    }
+}
+else {
+    Write-Host "No matching TLS subscription found in this response."
+    Write-Host "Additional TLS domain and certificate discovery is required."
+}
