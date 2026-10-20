@@ -311,3 +311,36 @@ foreach ($dns in $cert.DnsNameList) {
     Write-Host " - $($dns.Unicode)"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$sanExtension = $cert.Extensions |
+    Where-Object { $_.Oid.Value -eq "2.5.29.17" }
+
+$sanNames = @()
+
+if ($sanExtension) {
+    $sanText = $sanExtension.Format($false)
+
+    $sanNames = @(
+        [regex]::Matches(
+            $sanText,
+            '(?i)DNS(?: Name)?\s*=\s*([^,\r\n]+)'
+        ) | ForEach-Object {
+            $_.Groups[1].Value.Trim()
+        }
+    )
+}
+
+Write-Host "Parsed SAN names: $($sanNames -join ', ')"
