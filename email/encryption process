@@ -1,8 +1,3 @@
-No, I don’t have tickets for those two yet, Tyler. Please go ahead and create them so we can get ahead of the renewals. Thanks for catching these early!
-
-
-
-# External certificate replacement validation
 $certificateType = "%CertificateType%".Trim()
 
 if ($certificateType -eq "External") {
@@ -13,10 +8,6 @@ if ($certificateType -eq "External") {
         throw "NSXCertificateObjectName is required for external certificates."
     }
 
-    Write-Host "Certificate Type: External"
-    Write-Host "Target certificate object: $targetCertName"
-
-    # Find the certificate object in NSX-ALB
     $encodedName = [System.Uri]::EscapeDataString($targetCertName)
 
     $certResponse = Invoke-RestMethod `
@@ -30,29 +21,28 @@ if ($certificateType -eq "External") {
     })
 
     if ($matches.Count -ne 1) {
-        throw "Expected exactly one NSX-ALB certificate object named '$targetCertName'; found $($matches.Count)."
+        throw "Expected exactly one NSX-ALB certificate named '$targetCertName'; found $($matches.Count)."
     }
 
     $targetCert = $matches[0]
-
-    Write-Host "Target certificate UUID: $($targetCert.uuid)"
-    Write-Host "Target certificate reference: $($targetCert.url)"
+    $expectedCertRef = $targetCert.url
 
     if ($dryRun) {
-        Write-Host "========================================"
-        Write-Host "DRY RUN - EXTERNAL CERTIFICATE"
+        Write-Host "DRY RUN - VERIFY EXTERNAL VS CERTIFICATE"
         Write-Host "Virtual Service: $virtualService"
-        Write-Host "Would attach certificate: $targetCertName"
-        Write-Host "Would use UUID: $($targetCert.uuid)"
-        Write-Host "No NSX-ALB changes were made."
-        Write-Host "========================================"
+        Write-Host "Expected certificate: $targetCertName"
+        Write-Host "Expected certificate UUID: $($targetCert.uuid)"
+        Write-Host "No certificate assignment was changed."
         exit 0
     }
 
-    # External live replacement is intentionally blocked
-    # until its deployment path is separately validated.
-    throw "External live VS replacement is not yet enabled."
+    if ($currentRefs -notcontains $expectedCertRef) {
+        throw "External certificate verification failed. '$targetCertName' is not assigned to '$virtualService'."
+    }
+
+    Write-Host "EXTERNAL CERTIFICATE VERIFICATION SUCCESSFUL"
+    Write-Host "Virtual Service: $virtualService"
+    Write-Host "Certificate: $targetCertName"
+    Write-Host "Certificate UUID: $($targetCert.uuid)"
+    exit 0
 }
-
-
-
