@@ -1,32 +1,28 @@
-Write-Host "Certificate objects returned by API: $(@($response.results).Count)"
-Write-Host "Requested CommonName: $commonName"
 
-foreach ($cert in @($response.results)) {
-    Write-Host "NSX certificate object: $($cert.name)"
-}
+# Discover the specified NSX-ALB certificate object
+$uri = "$nsxHost/api/sslkeyandcertificate?page_size=200"
+$matches = @()
 
+do {
+    $response = Invoke-RestMethod `
+        -Uri $uri `
+        -Method GET `
+        -Headers $headers `
+        -WebSession $session
 
+    $matches += @(
+        $response.results | Where-Object {
+            $_.name -eq $certObjectName
+        }
+    )
 
+    $uri = $response.next
 
+    if ($uri -and $uri.StartsWith("/")) {
+        $uri = "$nsxHost$uri"
+    }
 
-
-
-
-
-
-$certObjectName = "%NSXCertificateObjectName%".Trim()
-
-if ([string]::IsNullOrWhiteSpace($certObjectName)) {
-    throw "NSXCertificateObjectName is required."
-}
-
-
-
-
-
-
-
-
+} while ($uri)
 
 Write-Host "Requested NSX certificate object: $certObjectName"
 Write-Host "Matching NSX-ALB certificate objects: $($matches.Count)"
@@ -41,3 +37,6 @@ foreach ($cert in $matches) {
 if ($matches.Count -ne 1) {
     throw "Expected exactly one matching NSX-ALB certificate object. Found $($matches.Count)."
 }
+
+Write-Host "DRY RUN: NSX-ALB certificate discovery succeeded."
+Write-Host "No certificate was uploaded or modified."
