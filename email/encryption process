@@ -1,3 +1,54 @@
-Thanks for the heads-up, Tyler! I don’t believe I have admin access in Cypress Cloud. Ryan would probably be able to confirm, but he’s currently out of office.
+# External certificate replacement validation
+$certificateType = "%CertificateType%".Trim()
 
-Also, just to clarify, are the Job Dashboard, admin-api, and Cypress Cloud tickets all related to secret updates or rotations?
+if ($certificateType -eq "External") {
+
+    $targetCertName = "%NSXCertificateObjectName%".Trim()
+
+    if ([string]::IsNullOrWhiteSpace($targetCertName)) {
+        throw "NSXCertificateObjectName is required for external certificates."
+    }
+
+    Write-Host "Certificate Type: External"
+    Write-Host "Target certificate object: $targetCertName"
+
+    # Find the certificate object in NSX-ALB
+    $encodedName = [System.Uri]::EscapeDataString($targetCertName)
+
+    $certResponse = Invoke-RestMethod `
+        -Uri "%NSX-ALB-Host%/api/sslkeyandcertificate?name=$encodedName" `
+        -WebSession $session `
+        -Headers $headers `
+        -Method GET
+
+    $matches = @($certResponse.results | Where-Object {
+        $_.name -eq $targetCertName
+    })
+
+    if ($matches.Count -ne 1) {
+        throw "Expected exactly one NSX-ALB certificate object named '$targetCertName'; found $($matches.Count)."
+    }
+
+    $targetCert = $matches[0]
+
+    Write-Host "Target certificate UUID: $($targetCert.uuid)"
+    Write-Host "Target certificate reference: $($targetCert.url)"
+
+    if ($dryRun) {
+        Write-Host "========================================"
+        Write-Host "DRY RUN - EXTERNAL CERTIFICATE"
+        Write-Host "Virtual Service: $virtualService"
+        Write-Host "Would attach certificate: $targetCertName"
+        Write-Host "Would use UUID: $($targetCert.uuid)"
+        Write-Host "No NSX-ALB changes were made."
+        Write-Host "========================================"
+        exit 0
+    }
+
+    # External live replacement is intentionally blocked
+    # until its deployment path is separately validated.
+    throw "External live VS replacement is not yet enabled."
+}
+
+
+
