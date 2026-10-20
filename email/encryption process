@@ -1,42 +1,65 @@
 
-# Discover the specified NSX-ALB certificate object
-$uri = "$nsxHost/api/sslkeyandcertificate?page_size=200"
-$matches = @()
+# Confirm exactly one intended target was discovered.
+if (@($matches).Count -ne 1) {
+    throw "Expected exactly one matching NSX-ALB certificate object."
+}
 
-do {
-    $response = Invoke-RestMethod `
-        -Uri $uri `
-        -Method GET `
-        -Headers $headers `
-        -WebSession $session
+$targetCert = @($matches)[0]
 
-    $matches += @(
-        $response.results | Where-Object {
-            $_.name -eq $certObjectName
-        }
-    )
+if ($targetCert.name -ne $certObjectName) {
+    throw "NSX-ALB target name mismatch."
+}
 
-    $uri = $response.next
+if ([string]::IsNullOrWhiteSpace($targetCert.uuid)) {
+    throw "Target certificate UUID is missing."
+}
 
-    if ($uri -and $uri.StartsWith("/")) {
-        $uri = "$nsxHost$uri"
+# Load the issued certificate.
+$issuedCert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+    $leafPath
+)
+
+# Validate that the downloaded certificate has the expected DNS identity.
+$dnsNames = @(
+    $issuedCert.Extensions |
+    Where-Object { $_.Oid.Value -eq "2.5.29.17" } |
+    ForEach-Object { $_.Format($true) }
+)
+
+if (-not ($dnsNames -match "sentry\.silacins\.com")) {
+    throw "Issued certificate does not appear to contain the expected DNS identity."
+}
+
+# Prepare the NSX-ALB certificate payload.
+$certificatePem = Get-Content -LiteralPath $leafPath -Raw
+
+if ($certificatePem -notmatch "-----BEGIN CERTIFICATE-----") {
+    throw "Downloaded certificate is not PEM formatted."
+}
+
+$payload = @{
+    certificate = @{
+        certificate = $certificatePem
     }
-
-} while ($uri)
-
-Write-Host "Requested NSX certificate object: $certObjectName"
-Write-Host "Matching NSX-ALB certificate objects: $($matches.Count)"
-
-foreach ($cert in $matches) {
-    Write-Host "Name: $($cert.name)"
-    Write-Host "UUID: $($cert.uuid)"
-    Write-Host "Type: $($cert.type)"
-    Write-Host "Certificate present: $(-not [string]::IsNullOrWhiteSpace($cert.certificate.certificate))"
 }
 
-if ($matches.Count -ne 1) {
-    throw "Expected exactly one matching NSX-ALB certificate object. Found $($matches.Count)."
+$payloadJson = $payload | ConvertTo-Json -Depth 10
+
+$uploadUri = "$nsxHost/api/sslkeyandcertificate/$($targetCert.uuid)"
+
+Write-Host "NSX-ALB upload preparation:"
+Write-Host "Target object: $($targetCert.name)"
+Write-Host "Target UUID: $($targetCert.uuid)"
+Write-Host "Certificate subject: $($issuedCert.Subject)"
+Write-Host "Certificate expiration: $($issuedCert.NotAfter)"
+Write-Host "Upload method: PATCH"
+Write-Host "Upload endpoint: /api/sslkeyandcertificate/<target-uuid>"
+
+if ($dryRun) {
+    Write-Host "DRY RUN: Upload request prepared."
+    Write-Host "DRY RUN: No NSX-ALB modification performed."
+    Write-Host "DRY RUN: Certificate/private-key match must be verified before live upload."
+    return
 }
 
-Write-Host "DRY RUN: NSX-ALB certificate discovery succeeded."
-Write-Host "No certificate was uploaded or modified."
+throw "Live upload is intentionally disabled pending verification of the target object's private key and the NSX-ALB update API contract."
