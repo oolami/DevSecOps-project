@@ -1,23 +1,301 @@
-Write-Host "Checking Fastly TLS domains..."
 
-$domainsResponse = Invoke-RestMethod `
-    -Uri "https://api.fastly.com/tls/domains" `
-    -Method GET `
-    -Headers $headers
+$ErrorActionPreference = "Stop"
 
-$domains = @($domainsResponse.data)
+# STEP 11: FASTLY TLS DISCOVERY
+# Read-only: GET requests only.
+# No certificates, keys, subscriptions, or services are modified.
 
-Write-Host "TLS domains returned: $($domains.Count)"
+$token = $env:FASTLY_API_TOKEN
 
-$matches = @(
-    $domains | Where-Object {
-        $_.attributes.name -eq "sentry.silacins.com"
-    }
+if ([string]::IsNullOrWhiteSpace($token)) {
+    throw "FASTLY_API_TOKEN environment variable is missing."
+}
+
+$domain = "sentry.silacins.com"
+$targetDomains = @(
+    $domain
+    "www.$domain"
 )
 
-Write-Host "Matching TLS domains: $($matches.Count)"
+$baseUrl = "https://api.fastly.com"
 
-foreach ($match in $matches) {
-    Write-Host "TLS Domain ID: $($match.id)"
-    Write-Host "Domain: $($match.attributes.name)"
+$headers = @{
+    "Fastly-Key" = $token
+    "Accept"     = "application/vnd.api+json"
+}
+
+Write-Host "========================================"
+Write-Host "FASTLY TLS DISCOVERY - READ ONLY"
+Write-Host "========================================"
+Write-Host "Primary domain: $domain"
+Write-Host "Target domains: $($targetDomains -join ', ')"
+Write-Host ""
+
+# Helper: GET only, including pagination.
+function Get-FastlyCollection {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    $items = @()
+    $page = 1
+    $perPage = 100
+
+    do {
+        if ($page -gt 100) {
+            throw "Pagination safety limit reached for $Path"
+        }
+
+        $separator = if ($Path.Contains("?")) { "&" } else { "?" }
+        $uri = "$baseUrl$Path${separator}page[number]=$page&page[size]=$perPage"
+
+        $response = Invoke-RestMethod `
+            -Uri $uri `
+            -Method GET `
+            -Headers $headers
+
+        $batch = @($response.data | Where-Object { $null -ne $_ })
+        $items += $batch
+
+        $hasNext = $false
+
+        if ($response.links -and $response.links.next) {
+            $hasNext = $true
+        }
+        elseif ($batch.Count -eq $perPage) {
+            $hasNext = $true
+        }
+
+        $page++
+    } while ($hasNext)
+
+    return ,$items
+}
+
+# Helper: extract relationship IDs.
+function Get-RelationshipIds {
+    param(
+        $Resource,
+        [string]$RelationshipName
+    )
+
+    if (-not $Resource.relationships) {
+        return @()
+    }
+
+    $relationship = $Resource.relationships.$RelationshipName
+
+    if (-not $relationship) {
+        return @()
+    }
+
+    return @(
+        $relationship.data |
+        Where-Object { $null -ne $_ } |
+        ForEach-Object { $_.id }
+    )
+}
+
+# Helper: exact or applicable wildcard match.
+function Test-DomainMatch {
+    param(
+        [string]$Candidate,
+        [string]$Target
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Candidate)) {
+        return $false
+    }
+
+    $candidateName = $Candidate.Trim().TrimEnd(".").ToLowerInvariant()
+    $targetName = $Target.Trim().TrimEnd(".").ToLowerInvariant()
+
+    if ($candidateName -eq $targetName) {
+        return $true
+    }
+
+    if ($candidateName.StartsWith("*.")) {
+        $suffix = $candidateName.Substring(2)
+
+        # A wildcard covers one subdomain label only.
+        if ($targetName.EndsWith(".$suffix")) {
+            $prefix = $targetName.Substring(
+                0,
+                $targetName.Length - $suffix.Length - 1
+            )
+
+            return ($prefix.Length -gt 0 -and -not $prefix.Contains("."))
+        }
+    }
+
+    return $false
+}
+
+function Test-AnyTargetMatch {
+    param([string[]]$Candidates)
+
+    foreach ($candidate in $Candidates) {
+        foreach ($target in $targetDomains) {
+            if (Test-DomainMatch -Candidate $candidate -Target $target) {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
+try {
+    # 1. Verify Fastly authentication.
+    Write-Host "Checking Fastly API authentication..."
+
+    $user = Invoke-RestMethod `
+        -Uri "$baseUrl/current_user" `
+        -Method GET `
+        -Headers $headers
+
+    Write-Host "FASTLY AUTHENTICATION SUCCESSFUL"
+    Write-Host "User ID: $($user.id)"
+    Write-Host ""
+
+    # 2. Discover TLS domains.
+    Write-Host "Checking Fastly TLS domains..."
+
+    $tlsDomains = @(
+        Get-FastlyCollection -Path "/tls/domains"
+    )
+
+    Write-Host "TLS domains returned: $($tlsDomains.Count)"
+
+    $matchingDomains = @(
+        $tlsDomains | Where-Object {
+            Test-AnyTargetMatch -Candidates @($_.id)
+        }
+    )
+
+    Write-Host "Matching TLS domains: $($matchingDomains.Count)"
+
+    foreach ($item in $matchingDomains) {
+        Write-Host "----------------------------------------"
+        Write-Host "TLS Domain: $($item.id)"
+
+        $certIds = @(
+            Get-RelationshipIds $item "tls_certificates"
+        )
+        $activationIds = @(
+            Get-RelationshipIds $item "tls_activations"
+        )
+        $subscriptionIds = @(
+            Get-RelationshipIds $item "tls_subscriptions"
+        )
+
+        Write-Host "Certificate IDs: $($certIds -join ', ')"
+        Write-Host "Activation IDs: $($activationIds -join ', ')"
+        Write-Host "Subscription IDs: $($subscriptionIds -join ', ')"
+    }
+
+    Write-Host ""
+
+    # 3. Discover Fastly-managed TLS subscriptions.
+    Write-Host "Checking Fastly TLS subscriptions..."
+
+    $subscriptions = @(
+        Get-FastlyCollection -Path "/tls/subscriptions"
+    )
+
+    Write-Host "TLS subscriptions returned: $($subscriptions.Count)"
+
+    $matchingSubscriptions = @(
+        $subscriptions | Where-Object {
+            $subscriptionDomains = @(
+                Get-RelationshipIds $_ "tls_domains"
+            )
+
+            $commonNames = @(
+                Get-RelationshipIds $_ "common_name"
+            )
+
+            Test-AnyTargetMatch -Candidates @(
+                $subscriptionDomains + $commonNames
+            )
+        }
+    )
+
+    Write-Host "Matching subscriptions: $($matchingSubscriptions.Count)"
+
+    foreach ($item in $matchingSubscriptions) {
+        Write-Host "----------------------------------------"
+        Write-Host "Subscription ID: $($item.id)"
+        Write-Host "State: $($item.attributes.state)"
+        Write-Host "Certificate Authority: $($item.attributes.certificate_authority)"
+        Write-Host "Domains: $((Get-RelationshipIds $item 'tls_domains') -join ', ')"
+        Write-Host "Certificate IDs: $((Get-RelationshipIds $item 'tls_certificates') -join ', ')"
+    }
+
+    Write-Host ""
+
+    # 4. Discover uploaded / customer-managed certificates.
+    Write-Host "Checking Fastly TLS certificates..."
+
+    $certificates = @(
+        Get-FastlyCollection -Path "/tls/certificates"
+    )
+
+    Write-Host "TLS certificates returned: $($certificates.Count)"
+
+    $matchingCertificates = @(
+        $certificates | Where-Object {
+            $certificateDomains = @(
+                Get-RelationshipIds $_ "tls_domains"
+            )
+
+            $issuedTo = @($_.attributes.issued_to)
+
+            Test-AnyTargetMatch -Candidates @(
+                $certificateDomains + $issuedTo
+            )
+        }
+    )
+
+    Write-Host "Matching certificates: $($matchingCertificates.Count)"
+
+    foreach ($item in $matchingCertificates) {
+        Write-Host "----------------------------------------"
+        Write-Host "Certificate ID: $($item.id)"
+        Write-Host "Name: $($item.attributes.name)"
+        Write-Host "Issued To: $($item.attributes.issued_to)"
+        Write-Host "Issuer: $($item.attributes.issuer)"
+        Write-Host "Expires: $($item.attributes.not_after)"
+        Write-Host "TLS Domains: $((Get-RelationshipIds $item 'tls_domains') -join ', ')"
+    }
+
+    # 5. Summary.
+    Write-Host ""
+    Write-Host "========================================"
+    Write-Host "FASTLY DISCOVERY SUMMARY"
+    Write-Host "========================================"
+    Write-Host "TLS domains inspected: $($tlsDomains.Count)"
+    Write-Host "Matching TLS domains: $($matchingDomains.Count)"
+    Write-Host "Subscriptions inspected: $($subscriptions.Count)"
+    Write-Host "Matching subscriptions: $($matchingSubscriptions.Count)"
+    Write-Host "Certificates inspected: $($certificates.Count)"
+    Write-Host "Matching certificates: $($matchingCertificates.Count)"
+
+    if (
+        $matchingDomains.Count -eq 0 -and
+        $matchingSubscriptions.Count -eq 0 -and
+        $matchingCertificates.Count -eq 0
+    ) {
+        Write-Host ""
+        Write-Warning "No matching Fastly TLS resources were found."
+        Write-Host "Check token account permissions and whether the hostname uses another TLS configuration."
+    }
+
+    Write-Host ""
+    Write-Host "READ-ONLY DISCOVERY COMPLETED"
+    Write-Host "No Fastly resources were modified."
+}
+catch {
+    throw "Fastly TLS discovery failed: $($_.Exception.Message)"
 }
