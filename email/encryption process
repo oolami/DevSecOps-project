@@ -1,33 +1,109 @@
-if ($caPemBlocks.Count -gt 0) {
-    $intermediates = $caPemBlocks
 
+$ErrorActionPreference = 'Stop'
 
+# ==========================================
+# Step 5 - Retrieve DigiCert Certificate
+# ==========================================
 
+# TeamCity parameters
+$baseUrl = "%DigiCertBaseUrl%".TrimEnd('/')
+$orderId = "%DigiCertOrderId%"
+$apiKey = $env:DIGICERT_API_KEY
+$commonName = "%CommonName%"
+$dryRun = "%DryRun%" -eq "true"
 
+# Validate required parameters
+if ([string]::IsNullOrWhiteSpace($apiKey)) {
+    throw "DigiCert API key is not available."
+}
 
-$fullChainPem = (@($leafPem) + $caPemBlocks) -join "`n"
-Set-Content -Path $bundlePath -Value $fullChainPem -Encoding ascii
+if ($orderId -notmatch '^\d+$') {
+    throw "DigiCertOrderId must be numeric."
+}
 
+if ([string]::IsNullOrWhiteSpace($commonName) -or
+    $commonName -match '^%.*%$') {
+    throw "CommonName parameter is missing or unresolved."
+}
 
+$headers = @{
+    "X-DC-DEVKEY" = $apiKey
+    "Accept" = "application/json"
+}
 
+# ==========================================
+# 1. Verify DigiCert order
+# ==========================================
 
-# Identify the server certificate from the downloaded bundle.
-# Do not assume the first PEM block is the leaf certificate.
+$orderUrl = "$baseUrl/order/certificate/$orderId"
+
+Write-Host "Checking DigiCert order $orderId..."
+
+$order = Invoke-RestMethod `
+    -Uri $orderUrl `
+    -Method Get `
+    -Headers $headers
+
+Write-Host "DigiCert order status: $($order.status)"
+
+if ($order.status -ne "issued") {
+    throw "DigiCert certificate is not issued yet."
+}
+
+# ==========================================
+# 2. Download issued certificate bundle
+# ==========================================
+
+$downloadUrl = "$baseUrl/certificate/download/order/$orderId/format/pem_noroot"
+
+Write-Host "Downloading DigiCert certificate bundle..."
+
+$response = Invoke-WebRequest `
+    -Uri $downloadUrl `
+    -Method Get `
+    -Headers $headers
+
+$pem = $response.Content
+
+if ($pem -is [byte[]]) {
+    $pem = [System.Text.Encoding]::UTF8.GetString($pem)
+}
+
+# Extract PEM certificate blocks
+$blocks = [regex]::Matches(
+    $pem,
+    '-----BEGIN CERTIFICATE-----\s*[\s\S]*?-----END CERTIFICATE-----'
+)
+
+if ($blocks.Count -lt 2) {
+    throw "Expected a server certificate and at least one intermediate CA certificate."
+}
+
+Write-Host "Downloaded certificate count: $($blocks.Count)"
+
+# ==========================================
+# 3. Identify server certificate
+# ==========================================
 
 $leaf = $null
 $leafPem = $null
 $caPemBlocks = @()
+$caCertificates = @()
 
 foreach ($block in $blocks) {
+
     $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromPem(
         $block.Value
     )
 
     $sanNames = @(
-        $cert.DnsNameList | ForEach-Object { $_.Unicode }
+        $cert.DnsNameList | ForEach-Object {
+            $_.Unicode
+        }
     )
 
     if ($commonName -in $sanNames) {
+
         if ($null -ne $leaf) {
             throw "Multiple certificates match $commonName."
         }
@@ -37,6 +113,7 @@ foreach ($block in $blocks) {
     }
     else {
         $caPemBlocks += $block.Value
+        $caCertificates += $cert
     }
 }
 
@@ -48,8 +125,158 @@ Write-Host "Server certificate identified."
 Write-Host "Certificate subject: $($leaf.Subject)"
 Write-Host "Certificate issuer: $($leaf.Issuer)"
 Write-Host "Certificate thumbprint: $($leaf.Thumbprint)"
+Write-Host "Certificate expires: $($leaf.NotAfter)"
+
+# ==========================================
+# 4. Validate server certificate
+# ==========================================
+
+if ($leaf.NotBefore.ToUniversalTime() -gt [datetime]::UtcNow) {
+    throw "Downloaded certificate is not yet valid."
+}
+
+if ($leaf.NotAfter.ToUniversalTime() -le [datetime]::UtcNow) {
+    throw "Downloaded certificate has expired."
+}
+
+$dnsNames = @(
+    $leaf.DnsNameList | ForEach-Object {
+        $_.Unicode
+    }
+)
+
 Write-Host "DNS names detected:"
 
-foreach ($dns in $leaf.DnsNameList) {
-    Write-Host " - $($dns.Unicode)"
+foreach ($dns in $dnsNames) {
+    Write-Host " - $dns"
 }
+
+# Expected SANs for Sentry test
+$expectedNames = @(
+    $commonName,
+    "www.$commonName"
+)
+
+foreach ($name in $expectedNames) {
+    if ($name -notin $dnsNames) {
+        throw "Certificate SAN does not include $name"
+    }
+}
+
+Write-Host "Certificate SAN validation passed."
+
+# ==========================================
+# 5. Validate intermediate certificates
+# ==========================================
+
+if ($caPemBlocks.Count -eq 0) {
+    throw "No intermediate CA certificates found."
+}
+
+foreach ($caCert in $caCertificates) {
+
+    $basicConstraints = $caCert.Extensions |
+        Where-Object {
+            $_.Oid.Value -eq "2.5.29.19"
+        }
+
+    if ($null -eq $basicConstraints) {
+        throw "CA certificate is missing Basic Constraints."
+    }
+
+    $constraints = [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]$basicConstraints
+
+    if (-not $constraints.CertificateAuthority) {
+        throw "Downloaded bundle contains a non-CA certificate."
+    }
+
+    if ($caCert.NotBefore.ToUniversalTime() -gt [datetime]::UtcNow -or
+        $caCert.NotAfter.ToUniversalTime() -le [datetime]::UtcNow) {
+        throw "Downloaded intermediate CA certificate is outside its validity period."
+    }
+}
+
+Write-Host "Intermediate CA certificate validation passed."
+
+# ==========================================
+# 6. Prepare certificate output files
+# ==========================================
+
+$outputDir = Join-Path `
+    $env:TEAMCITY_BUILD_TEMP_DIR `
+    "digicert-output"
+
+New-Item `
+    -ItemType Directory `
+    -Path $outputDir `
+    -Force | Out-Null
+
+$leafPath = Join-Path $outputDir "$commonName.crt"
+
+$bundlePath = Join-Path `
+    $outputDir `
+    "$commonName-fullchain.pem"
+
+$caPath = Join-Path `
+    $outputDir `
+    "DigiCertCA.crt"
+
+# Server certificate only
+Set-Content `
+    -Path $leafPath `
+    -Value $leafPem `
+    -Encoding ascii
+
+# Intermediate CA certificate(s) only
+$caPem = $caPemBlocks -join "`n"
+
+Set-Content `
+    -Path $caPath `
+    -Value $caPem `
+    -Encoding ascii
+
+# Full chain: server certificate first,
+# followed by intermediate CA certificates
+$fullChainPem = (@($leafPem) + $caPemBlocks) -join "`n"
+
+Set-Content `
+    -Path $bundlePath `
+    -Value $fullChainPem `
+    -Encoding ascii
+
+# ==========================================
+# 7. Verify generated files
+# ==========================================
+
+$requiredFiles = @(
+    $leafPath,
+    $caPath,
+    $bundlePath
+)
+
+foreach ($file in $requiredFiles) {
+
+    if (-not (Test-Path -LiteralPath $file)) {
+        throw "Expected certificate file was not created: $file"
+    }
+
+    if ((Get-Item -LiteralPath $file).Length -eq 0) {
+        throw "Generated certificate file is empty: $file"
+    }
+}
+
+Write-Host "Certificate retrieved successfully."
+Write-Host "Certificate files generated:"
+Write-Host " - $leafPath"
+Write-Host " - $caPath"
+Write-Host " - $bundlePath"
+
+# ==========================================
+# 8. Dry-run confirmation
+# ==========================================
+
+if ($dryRun) {
+    Write-Host "DryRun enabled: No deployment performed."
+}
+
+Write-Host "Step 5 completed successfully."
