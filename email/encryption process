@@ -1,237 +1,43 @@
-https://www.digicert.com/services/v2
 
+# Identify the server certificate from the downloaded bundle.
+# Do not assume the first PEM block is the leaf certificate.
 
+$leaf = $null
+$leafPem = $null
+$caPemBlocks = @()
 
-
-$ErrorActionPreference = 'Stop'
-
-$baseUrl = "%DigiCertBaseUrl%".TrimEnd('/')
-$orderId = "%DigiCertOrderId%"
-$apiKey = $env:DIGICERT_API_KEY
-
-if ([string]::IsNullOrWhiteSpace($apiKey)) {
-    throw "DigiCert API key is not available."
-}
-
-if ($orderId -notmatch '^\d+$') {
-    throw "DigiCertOrderId must be numeric."
-}
-
-$headers = @{
-    "X-DC-DEVKEY" = $apiKey
-    "Accept" = "application/json"
-}
-
-$url = "$baseUrl/order/certificate/$orderId"
-
-Write-Host "Checking DigiCert order $orderId..."
-
-try {
-    $response = Invoke-RestMethod `
-        -Uri $url `
-        -Method Get `
-        -Headers $headers
-
-    Write-Host "DigiCert API authentication succeeded."
-    Write-Host "Order ID: $orderId"
-    Write-Host "Order status: $($response.status)"
-}
-catch {
-    Write-Error "Unable to retrieve DigiCert order. Check API permissions, order ID, and API endpoint."
-    throw
-}
-
-
-
-
-
-
-
-catch {
-    Write-Host "DigiCert API request failed."
-
-    $statusCode = $_.Exception.Response.StatusCode
-
-    if ($null -ne $statusCode) {
-        Write-Host "HTTP Status Code: $([int]$statusCode)"
-    }
-
-    Write-Host "Error Type: $($_.Exception.GetType().FullName)"
-    Write-Host "Error Message: $($_.Exception.Message)"
-
-    throw "DigiCert API request failed. Review HTTP status and error details above."
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$ErrorActionPreference = 'Stop'
-
-$baseUrl = "%DigiCertBaseUrl%".TrimEnd('/')
-$orderId = "%DigiCertOrderId%"
-$apiKey = $env:DIGICERT_API_KEY
-$commonName = "%CommonName%"
-$dryRun = "%DryRun%" -eq "true"
-
-if ([string]::IsNullOrWhiteSpace($apiKey)) {
-    throw "DigiCert API key is not available."
-}
-
-if ($orderId -notmatch '^\d+$') {
-    throw "DigiCertOrderId must be numeric."
-}
-
-$headers = @{
-    "X-DC-DEVKEY" = $apiKey
-    "Accept" = "application/json"
-}
-
-# 1. Check order status
-$orderUrl = "$baseUrl/order/certificate/$orderId"
-
-Write-Host "Checking DigiCert order $orderId..."
-
-$order = Invoke-RestMethod `
-    -Uri $orderUrl `
-    -Method Get `
-    -Headers $headers
-
-Write-Host "Order status: $($order.status)"
-
-if ($order.status -ne "issued") {
-    throw "Certificate is not issued yet."
-}
-
-# 2. Download certificate and intermediate chain
-$downloadUrl = "$baseUrl/certificate/download/order/$orderId/format/pem_noroot"
-
-Write-Host "Downloading issued certificate bundle..."
-
-$response = Invoke-WebRequest `
-    -Uri $downloadUrl `
-    -Method Get `
-    -Headers $headers
-
-$pem = $response.Content
-
-if ($pem -is [byte[]]) {
-    $pem = [System.Text.Encoding]::UTF8.GetString($pem)
-}
-
-# 3. Validate PEM blocks
-$blocks = [regex]::Matches(
-    $pem,
-    '-----BEGIN CERTIFICATE-----\s*[\s\S]*?-----END CERTIFICATE-----'
-)
-
-if ($blocks.Count -lt 1) {
-    throw "No PEM certificates found in DigiCert response."
-}
-
-# The first certificate must be the leaf/server certificate.
-$leafPem = $blocks[0].Value
-
-$leaf = [System.Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromPem($leafPem)
-
-if ($leaf.NotAfter -le [datetime]::UtcNow) {
-    throw "Downloaded certificate is expired."
-}
-
-# Validate requested hostnames against SANs.
-$expectedNames = @($commonName, "www.$commonName")
-$dnsNames = @(
-    $leaf.DnsNameList | ForEach-Object {
-        $_.Unicode
-    }
-)
-
-foreach ($name in $expectedNames) {
-    if ($name -notin $dnsNames) {
-        throw "Certificate SAN does not include $name"
-    }
-}
-
-# 4. Prepare output files
-$outputDir = Join-Path $env:TEAMCITY_BUILD_TEMP_DIR "digicert-output"
-New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
-
-$leafPath = Join-Path $outputDir "$commonName.crt"
-$bundlePath = Join-Path $outputDir "$commonName-fullchain.pem"
-$caPath = Join-Path $outputDir "DigiCertCA.crt"
-
-Set-Content -Path $leafPath -Value $leafPem -Encoding ascii
-Set-Content -Path $bundlePath -Value $pem -Encoding ascii
-
-if ($blocks.Count -gt 1) {
-    $intermediates = @(
-        for ($i = 1; $i -lt $blocks.Count; $i++) {
-            $blocks[$i].Value
-        }
+foreach ($block in $blocks) {
+    $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromPem(
+        $block.Value
     )
 
-    Set-Content `
-        -Path $caPath `
-        -Value ($intermediates -join "`n") `
-        -Encoding ascii
-}
-else {
-    throw "No intermediate CA certificate found in download."
-}
+    $sanNames = @(
+        $cert.DnsNameList | ForEach-Object { $_.Unicode }
+    )
 
-Write-Host "Certificate retrieved successfully."
-Write-Host "Subject: $($leaf.Subject)"
-Write-Host "Expires: $($leaf.NotAfter)"
-Write-Host "SAN validation passed."
-Write-Host "Certificate bundle prepared."
+    if ($commonName -in $sanNames) {
+        if ($null -ne $leaf) {
+            throw "Multiple certificates match $commonName."
+        }
 
-# 5. Deployment remains disabled during testing
-if ($dryRun) {
-    Write-Host "DryRun enabled: No deployment performed."
+        $leaf = $cert
+        $leafPem = $block.Value
+    }
+    else {
+        $caPemBlocks += $block.Value
+    }
 }
 
-Write-Host "Step 5 completed successfully."
+if ($null -eq $leaf) {
+    throw "No server certificate found for $commonName in DigiCert bundle."
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-Write-Host "Downloaded certificate count: $($blocks.Count)"
+Write-Host "Server certificate identified."
 Write-Host "Certificate subject: $($leaf.Subject)"
 Write-Host "Certificate issuer: $($leaf.Issuer)"
 Write-Host "Certificate thumbprint: $($leaf.Thumbprint)"
-
 Write-Host "DNS names detected:"
+
 foreach ($dns in $leaf.DnsNameList) {
     Write-Host " - $($dns.Unicode)"
 }
-
-Write-Host "Expected common name: $commonName"
-
