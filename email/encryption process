@@ -1,3 +1,28 @@
+$searchPaths = @(
+    $env:TEAMCITY_BUILD_CHECKOUTDIR,
+    $env:TEAMCITY_BUILD_TEMP_DIR,
+    $env:TEAMCITY_BUILD_WORKING_DIR
+) | Where-Object { $_ -and (Test-Path $_) } |
+    Select-Object -Unique
+
+$files = @(
+    foreach ($path in $searchPaths) {
+        Get-ChildItem -Path $path `
+            -Filter "DigiCertCA.crt" `
+            -Recurse -File `
+            -ErrorAction SilentlyContinue
+    }
+) | Sort-Object -Property FullName -Unique
+
+
+
+
+
+
+
+
+
+
 
 $ErrorActionPreference = "Stop"
 
