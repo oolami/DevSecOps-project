@@ -29,6 +29,15 @@ catch {
 
 
 
+-Uri "https://api.fastly.com/tls/subscriptions" `
+
+
+
+
+
+
+
+
 
 Write-Host "Checking Fastly TLS configuration..."
 
