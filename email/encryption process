@@ -1,3 +1,15 @@
+if ($caPemBlocks.Count -gt 0) {
+    $intermediates = $caPemBlocks
+
+
+
+
+
+$fullChainPem = (@($leafPem) + $caPemBlocks) -join "`n"
+Set-Content -Path $bundlePath -Value $fullChainPem -Encoding ascii
+
+
+
 
 # Identify the server certificate from the downloaded bundle.
 # Do not assume the first PEM block is the leaf certificate.
