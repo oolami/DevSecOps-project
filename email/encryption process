@@ -280,3 +280,34 @@ if ($dryRun) {
 }
 
 Write-Host "Step 5 completed successfully."
+
+
+
+
+
+
+
+
+
+
+
+Write-Host "----- Certificate details -----"
+Write-Host "Subject: $($cert.Subject)"
+Write-Host "Issuer: $($cert.Issuer)"
+Write-Host "Thumbprint: $($cert.Thumbprint)"
+
+$sanExtension = $cert.Extensions |
+    Where-Object { $_.Oid.Value -eq "2.5.29.17" }
+
+if ($sanExtension) {
+    Write-Host "SAN extension: $($sanExtension.Format($false))"
+}
+else {
+    Write-Host "No SAN extension found."
+}
+
+Write-Host "DNS names detected:"
+foreach ($dns in $cert.DnsNameList) {
+    Write-Host " - $($dns.Unicode)"
+}
+
