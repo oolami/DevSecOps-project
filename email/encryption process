@@ -1,3 +1,14 @@
+Write-Host "Certificate objects returned by API: $(@($response.results).Count)"
+Write-Host "Requested CommonName: $commonName"
+
+foreach ($cert in @($response.results)) {
+    Write-Host "NSX certificate object: $($cert.name)"
+}
+
+
+
+
+
 
 $ErrorActionPreference = "Stop"
 
