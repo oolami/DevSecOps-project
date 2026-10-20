@@ -43,3 +43,11 @@ foreach ($name in $expectedNames) {
 }
 
 Write-Host "Certificate SAN validation passed: $($dnsNames -join ', ')"
+
+
+
+
+
+
+$workingDir = Join-Path $env:TEMP "DigiCertCertificate"
+New-Item -ItemType Directory -Path $workingDir -Force | Out-Null
