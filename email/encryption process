@@ -15,4 +15,15 @@ I’ll monitor PreProd and confirm once validation is complete before we proceed
 
 
 
-Hi Tyler, I’m ready to proceed with the Job Dashboard PreProd client secret update. Please go ahead and send the new secret securely via Password Pusher, and I’ll coordinate the TeamCity update and deployment validation. Thanks!
+Hi Tyler, I’m ready to proceed with the Job Dashboard
+
+
+
+Thanks, Tyler! That could explain the lack of sign-in activity in PreProd.
+
+I’ve also reached out to the DevOps team to confirm how Job Dashboard picks up the updated secret, since we haven’t triggered a deployment.
+
+Let’s hold off on removing the old secret until we can confirm the new one is being used successfully. I’ll keep you posted.
+
+
+ PreProd client secret update. Please go ahead and send the new secret securely via Password Pusher, and I’ll coordinate the TeamCity update and deployment validation. Thanks!
