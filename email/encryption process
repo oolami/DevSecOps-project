@@ -12,3 +12,8 @@ sum by (instance, device) (
   * on(instance) group_left(node_name)
   node_meta{node_name="MkeDev08Xmi"}
 ) / 1024 / 1024
+
+
+
+
+docker node ps MkeDev08Xmi --filter "desired-state=running" --format "table {{.Name}}\t{{.CurrentState}}\t{{.Error}}"
