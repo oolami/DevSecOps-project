@@ -1,1 +1,18 @@
+Hi team, quick question. I’ve updated the Job Dashboard PreProd client secret in TeamCity, but noticed the deployment pipeline doesn’t run frequently.
+
+Since we’re not triggering a deployment as part of this update, can someone confirm how the application picks up the updated secret? Does it require a deployment or service restart, or is there another way to validate that the new secret is being used?
+
+
+
+
+
+Hi Tyler, I’ve updated the Job Dashboard client secret for PreProd in TeamCity.
+
+No deployment was triggered. I’m checking with the team on the best way to validate the updated secret, since the Job Dashboard deployment pipeline doesn’t appear to run frequently.
+
+I’ll monitor PreProd and confirm once validation is complete before we proceed with Production.
+
+
+
+
 Hi Tyler, I’m ready to proceed with the Job Dashboard PreProd client secret update. Please go ahead and send the new secret securely via Password Pusher, and I’ll coordinate the TeamCity update and deployment validation. Thanks!
