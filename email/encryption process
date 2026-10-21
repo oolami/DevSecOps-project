@@ -1,18 +1,5 @@
-$cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new((Join-Path (Get-Location).Path "sentry_silacins_com.crt"))
-$cert | Format-List Subject,Issuer,NotBefore,NotAfter,Thumbprint
-$cert.Extensions | Where-Object {$_.Oid.Value -eq "2.5.29.17"} | ForEach-Object {$_.Format($true)}
-
-
-
-
-
-& "C:\Program Files\Git\usr\bin\openssl.exe" x509 -in "\\primary\home\GAROLAWUN\profile\My Documents\sentry_silacins_com_1635549963\sentry_silacins_com_1635549963\sentry_silacins_com.crt" -noout -subject -issuer -dates -ext subjectAltName
-
-
-
-
-openssl.exe s_client -showcerts -connect sentry.silacins.com:443 -servername sentry.silacins.com
-
-
-
-& "C:\Program Files\Git\usr\bin\openssl.exe" s_client -showcerts -connect sentry.silacins.com:443
+sum by (node_name) (
+  irate(node_disk_read_bytes_total[5m])
+  * on(instance) group_left(node_name)
+  node_meta{node_name="MkeDev08Xmi"}
+) / 1024 / 1024
