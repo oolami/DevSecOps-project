@@ -22,3 +22,10 @@ docker node ps MkeDev08Xmi --filter "desired-state=running" --format "table {{.N
 
 
 docker node inspect MkeDev08Xmi --format '{{.Status.Addr}}'
+
+
+
+
+I’ve been investigating the critical high disk read alert on MkeDev08Xmi in the dev Swarm cluster. Prometheus confirmed disk read activity above the 250 MiB/s threshold, and Grafana showed sustained reads with intermittent spikes, along with elevated swap usage.
+
+I also reviewed the running Docker containers, but nothing immediately stood out as the root cause. I’ve identified the affected node and will continue with host-level diagnostics to determine which process or workload is driving the disk activity before taking any corrective action.
