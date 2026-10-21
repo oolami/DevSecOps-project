@@ -3,3 +3,12 @@ sum by (node_name) (
   * on(instance) group_left(node_name)
   node_meta{node_name="MkeDev08Xmi"}
 ) / 1024 / 1024
+
+
+
+
+sum by (instance, device) (
+  irate(node_disk_read_bytes_total[5m])
+  * on(instance) group_left(node_name)
+  node_meta{node_name="MkeDev08Xmi"}
+) / 1024 / 1024
