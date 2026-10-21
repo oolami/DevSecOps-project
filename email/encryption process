@@ -1,29 +1,5 @@
-Hi team, quick question. I’ve updated the Job Dashboard PreProd client secret in TeamCity, but noticed the deployment pipeline doesn’t run frequently.
+Hi Tyler, the Job Dashboard PreProd deployment completed successfully, and I’ve confirmed the application is accessible.
 
-Since we’re not triggering a deployment as part of this update, can someone confirm how the application picks up the updated secret? Does it require a deployment or service restart, or is there another way to validate that the new secret is being used?
+Could you check the Entra ID sign-in logs to see if the application is authenticating successfully with the new client secret?
 
-
-
-
-
-Hi Tyler, I’ve updated the Job Dashboard client secret for PreProd in TeamCity.
-
-No deployment was triggered. I’m checking with the team on the best way to validate the updated secret, since the Job Dashboard deployment pipeline doesn’t appear to run frequently.
-
-I’ll monitor PreProd and confirm once validation is complete before we proceed with Production.
-
-
-
-
-Hi Tyler, I’m ready to proceed with the Job Dashboard
-
-
-
-Thanks, Tyler! That could explain the lack of sign-in activity in PreProd.
-
-I’ve also reached out to the DevOps team to confirm how Job Dashboard picks up the updated secret, since we haven’t triggered a deployment.
-
-Let’s hold off on removing the old secret until we can confirm the new one is being used successfully. I’ll keep you posted.
-
-
- PreProd client secret update. Please go ahead and send the new secret securely via Password Pusher, and I’ll coordinate the TeamCity update and deployment validation. Thanks!
+Once we’ve confirmed that, we can proceed with the Production rotation.
