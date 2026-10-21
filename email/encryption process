@@ -29,3 +29,7 @@ docker node inspect MkeDev08Xmi --format '{{.Status.Addr}}'
 I’ve been investigating the critical high disk read alert on MkeDev08Xmi in the dev Swarm cluster. Prometheus confirmed disk read activity above the 250 MiB/s threshold, and Grafana showed sustained reads with intermittent spikes, along with elevated swap usage.
 
 I also reviewed the running Docker containers, but nothing immediately stood out as the root cause. I’ve identified the affected node and will continue with host-level diagnostics to determine which process or workload is driving the disk activity before taking any corrective action.
+
+
+
+That’s a good point. I noticed quite a few containers running on MkeDev08Xmi while reviewing the Swarm tasks, so it’s possible the workload distribution is contributing to the high disk activity. I haven’t compared the container counts across the other nodes yet, though. I’ll check how the workloads are distributed to see whether 08 is carrying significantly more than the others and whether rebalancing would help.
