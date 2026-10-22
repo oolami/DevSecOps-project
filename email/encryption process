@@ -1,9 +1,10 @@
 Hi Mike,
 
-During our DR server validation, I identified an expired BeyondTrust AD Bridge (PBIS) license on one of the IWS Linux servers.
+During our DR server validation, I identified an expired BeyondTrust AD Bridge (PBIS) license on one of the IWS Linux servers in the Common Services DR account.
 
 Server: cs-prd-l-iwsdwc-002
 IP Address: 10.130.154.97
+AWS Account: Common Services DR (636561167788)
 
 The expired license is preventing SSH authentication using domain credentials. The error displayed is ERROR_EVALUATION_EXPIRATION.
 
@@ -13,3 +14,7 @@ Thank you for your help!
 
 Best regards,
 Olamide
+
+
+
+Expired PBIS License – cs-prd-l-iwsdwc-002
