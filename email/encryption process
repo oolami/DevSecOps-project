@@ -1,14 +1,1 @@
-Hi Dennis, I’m working on recycling the portal.silacins.com certificate under the existing DigiCert order #1507159471. However, I’m not seeing the Reissue option under Certificate Actions, and attempting to access the reissue page gives me an Invalid Access error.
-
-Could this be a permissions issue with my DigiCert account? Do I need additional access to reissue certificates?
-
-
-
-
-Hi EAG team, could someone please help check my DigiCert CertCentral permissions?
-
-I’m working on reissuing the SSL certificate for portal.silacins.com under the existing order #1507159471. However, the Reissue option isn’t available under Certificate Actions, and attempting to access the reissue page returns an “Invalid Access” error.
-
-Could someone review my account permissions and confirm whether I have the required access to reissue certificates?
-
-Thanks!
+One of the IWS servers ([server name] – 10.130.154.97) has an expired PBIS license, which is preventing SSH access. Could someone assist with updating the license?
