@@ -14,3 +14,8 @@ The certificate expires on November 7, 2026, so assistance before the expiration
 Thank you!
 
 
+
+Hi Dmytro, I reviewed the WHC-2912 Pre-Prod and Prod PRs. The Sentry sampling changes look consistent, but I noticed the Pre-Prod PR also includes changes to 10.windapi-base.sh for Redis Sentinel, which aren’t included in the Prod PR. Is that intentional, or are those changes already in Prod?
+
+
+
