@@ -1,1 +1,11 @@
+
+
+Hi Kishore, I’m working on replicating the CS-PRD-FSX-BATCH FSx in the DR account and noticed that the HCLS-LEV.COM trust relationship is showing “Verify failed” in the DR Directory Service.
+
+Since the production FSx uses HCLS-LEV.COM as its self-managed AD domain, do we need to have the trust relationship established in DR for the FSx to be accessible during the exercise, or can we proceed with the existing configuration as long as the HCLS domain controllers are reachable?
+
+
+
+
+
 One of the IWS servers ([server name] – 10.130.154.97) has an expired PBIS license, which is preventing SSH access. Could someone assist with updating the license?
