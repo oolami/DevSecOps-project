@@ -1,25 +1,15 @@
-Thanks for clarifying, Dmytro! That makes sense. Would you like me to go ahead and approve and merge the Pre-Prod PR, or are you planning to make any additional changes first?
+Hi Mike,
 
+During our DR server validation, I identified an expired BeyondTrust AD Bridge (PBIS) license on one of the IWS Linux servers.
 
+Server: cs-prd-l-iwsdwc-002
+IP Address: 10.130.154.97
 
+The expired license is preventing SSH authentication using domain credentials. The error displayed is ERROR_EVALUATION_EXPIRATION.
 
-Summary: DigiCert CertCentral – Certificate Reissue Access Required
+This server is required for the upcoming Idaho DR exercise on Monday, October 26. Could you please assist with renewing or applying a valid PBIS license before the exercise so we can complete our server access validation?
 
-Description:
+Thank you for your help!
 
-I’m working on reissuing the SSL certificate for portal.silacins.com under the existing DigiCert order #1507159471.
-
-I can log into DigiCert CertCentral and view the certificate details, but the Reissue option is unavailable under Certificate Actions. Attempting to access the reissue page returns an “Invalid Access” error.
-
-Could the SYSADMIN team please review my DigiCert account permissions and grant the necessary access to reissue certificates?
-
-The certificate expires on November 7, 2026, so assistance before the expiration date would be appreciated.
-
-Thank you!
-
-
-
-Hi Dmytro, I reviewed the WHC-2912 Pre-Prod and Prod PRs. The Sentry sampling changes look consistent, but I noticed the Pre-Prod PR also includes changes to 10.windapi-base.sh for Redis Sentinel, which aren’t included in the Prod PR. Is that intentional, or are those changes already in Prod?
-
-
-
+Best regards,
+Olamide
