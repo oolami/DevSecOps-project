@@ -1,12 +1,5 @@
-Hi Tyler, the Job Dashboard PreProd deployment completed successfully, and I’ve confirmed the application is accessible.
+Hi Dennis, I’m working on recycling the portal.silacins.com certificate under the existing DigiCert order #1507159471. However, I’m not seeing the Reissue option under Certificate Actions, and attempting to access the reissue page gives me an Invalid Access error.
 
-Could you check the Entra ID sign-in logs to see if the application is authenticating successfully with the new client secret?
-
-Once we’ve confirmed that, we can proceed with the Production rotation.
+Could this be a permissions issue with my DigiCert account? Do I need additional access to reissue certificates?
 
 
-
-
-Thanks for checking, Tyler! That’s interesting. Since we’re only seeing user sign-ins, I’ll check the Job Dashboard configuration to confirm how the client secret is being used and whether it’s involved in the Microsoft Graph authentication flow.
-
-The PreProd deployment completed successfully, and the application is accessible, but I’d like to confirm the new secret is actually being used before we proceed with Production or remove the old one.
