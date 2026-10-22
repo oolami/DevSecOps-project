@@ -3,3 +3,12 @@ Hi Dennis, I’m working on recycling the portal.silacins.com certificate under 
 Could this be a permissions issue with my DigiCert account? Do I need additional access to reissue certificates?
 
 
+
+
+Hi EAG team, could someone please help check my DigiCert CertCentral permissions?
+
+I’m working on reissuing the SSL certificate for portal.silacins.com under the existing order #1507159471. However, the Reissue option isn’t available under Certificate Actions, and attempting to access the reissue page returns an “Invalid Access” error.
+
+Could someone review my account permissions and confirm whether I have the required access to reissue certificates?
+
+Thanks!
