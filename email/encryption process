@@ -1,5 +1,48 @@
-Hi Tyler, I have some time available to jump on a call and troubleshoot my DigiCert permissions.
+Summary: Publish stable Windapiauth NuGet package (3.0.1) without RC suffix
 
-For context, I’m receiving an “Invalid Access” error when attempting to reissue the certificate under the existing order. I’m also wondering whether this could be related to the fact that I wasn’t the original requester of the certificate.
+Issue Type: Task
 
-Let me know when you’re available. Thanks!
+Project: WHC – DevOps
+
+Description:
+
+DevSecOps was requested to assist with publishing a non-release-candidate NuGet package for SilacIns.WindApiAuth, following completion of testing for SCH-5323.
+
+Investigation Findings:
+
+* Reviewed the Windapiauth NuGet build configuration in TeamCity.
+* Confirmed TeamCity build #64 successfully published SilacIns.WindApiAuth.3.0.1-rc from branch bugfix/SCH-5323.
+* Identified that Build Step 4 automatically appends the -rc suffix to package versions built from branches other than master.
+* Confirmed the existing pipeline supports stable package publishing from master.
+* Konny confirmed completion of testing for SCH-5323 and requested production publication without the -rc suffix.
+* PR #33 was open against develop at the time of investigation.
+
+Scope of Work:
+
+1. Coordinate with Konny and Jeff to confirm the approved release approach.
+2. Verify whether stable NuGet version 3.0.1 already exists.
+3. Ensure the stable package contains the tested SCH-5323 changes.
+4. Publish the non-RC package through the approved TeamCity release process.
+5. Verify successful publication and package availability.
+6. Update the two downstream PRs referenced by Jeff to use the stable NuGet version.
+7. Validate the downstream builds and communicate completion.
+
+Acceptance Criteria:
+
+* SilacIns.WindApiAuth version 3.0.1 is published without the -rc suffix.
+* Published package includes the approved SCH-5323 changes.
+* Both downstream PRs reference the stable version.
+* Related build validations pass.
+* Existing NuGet release behavior remains intact unless a change is explicitly approved.
+
+Related Work: SCH-5323
+
+Status: In Progress
+
+
+
+
+
+
+
+Update the Windapiauth NuGet release process to publish a stable version (3.0.1) without the -rc suffix following completion of SCH-5323 testing. Verify successful publication and update the two related PRs to reference the stable package version.
