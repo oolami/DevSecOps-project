@@ -1,1 +1,5 @@
+Hey Konny, just to confirm, when you say deploy the Windapiauth library to production, do you mean promoting the tested SCH-5323 changes through the normal release process to master so TeamCity can publish the stable 3.0.1 NuGet package without the -rc suffix?
+
+
+
 I have over 6 years of hands-on experience managing Amazon EC2 instances and 8+ years of Linux administration experience, primarily with RHEL, CentOS, and Ubuntu. My responsibilities include EC2 provisioning, configuration, patching, security hardening, performance monitoring, troubleshooting, and infrastructure automation using Terraform, Ansible, and Bash. I have also supported production workloads, high availability, disaster recovery, and incident resolution. My experience with Ubuntu provides a strong foundation for administering Debian-based Linux environments.
