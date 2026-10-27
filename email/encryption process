@@ -44,5 +44,24 @@ Status: In Progress
 
 
 
+Title: Request DigiCert CertCentral Admin Access
+
+Description:
+
+Please update my DigiCert CertCentral account role from Finance Manager to Administrator.
+
+I am currently receiving an “Invalid Access” error when attempting to reissue SSL certificates under existing orders.
+
+Administrator access is needed to manage certificate reissuance and support ongoing SSL certificate renewals and automation.
+
+Account: Grace.Arolawun@silacins.com
+
+Business Justification: DevOps certificate lifecycle management and renewal automation.
+
+
+
+
+
+
 
 Update the Windapiauth NuGet release process to publish a stable version (3.0.1) without the -rc suffix following completion of SCH-5323 testing. Verify successful publication and update the two related PRs to reference the stable package version.
