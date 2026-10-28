@@ -1,11 +1,7 @@
-Hey Ryan, I’m working with Konny on releasing the Windapiauth NuGet package (SCH-5323) without the -rc suffix. She confirmed that the tested changes should be promoted to master for the stable release.
+I checked both tickets for MO (RITM0528406) and MO Provider+ (RITM0539020), and there hasn’t been any visible progress on either request.
 
-Since this is my first time handling this process, could you clarify the standard procedure for promoting changes from develop to master? Is that something DevOps typically handles, or does the development team own the merge while DevOps handles the NuGet publishing in TeamCity?
+Both tickets are still in the fulfillment stage, despite being submitted about a month ago. The MO ticket has previous comments indicating that the Platform Gainwell team needs to create the DRS replication subnet and complete the required network configuration, but there’s been no further update.
 
+The MO Provider+ request was submitted for Monique, but there are no activity updates indicating that anyone has started working on it.
 
-
-Hi Dennis, apologies for being away longer than expected. My appointment took much longer than anticipated. I was referred to another department and had to wait several hours before I was attended to. I’ll make sure to log the time I was away accordingly. Thanks for understanding!
-
-
-
-Yes, it went well, thankfully! My family recently moved to a new house in a different city, so I’ve had to transfer to new healthcare providers. The first visit was a bit complicated because everything seems to be handled by different departments, which meant a lot of back and forth and waiting. Hopefully, future visits will be much smoother. 😊
+At this point, we need to identify who owns the fulfillment tasks and get an ETA for both requests, especially with the upcoming DR exercise.
