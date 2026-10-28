@@ -1,1 +1,7 @@
-Hey Jeff, Konny has confirmed testing for SCH-5323 is complete and she’s ready for the stable 3.0.1 NuGet release. Since PR #33 targets develop and the stable version is generated from master, should we create a separate PR to promote the changes to master? Also, is this promotion typically handled by DevOps or the development team?
+Hey Jeff, Konny has confirmed testing for SCH-5323
+ is complete and she’s ready for the stable 3.0.1 NuGet release. Since PR #33 targets develop and the stable version is generated from master, should we create a separate PR to promote the changes to master? Also, is this promotion typically handled by DevOps or the development team?
+
+
+
+
+Hey Konny, Jeff confirmed we should coordinate the Windapiauth release promotion. Could you get PR #33 reviewed and merged into develop, then help prepare the promotion PR to master? I’ll work with you on the DevSecOps approval and TeamCity NuGet publishing once the changes are ready.
