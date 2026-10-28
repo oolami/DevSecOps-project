@@ -5,3 +5,10 @@ Both tickets are still in the fulfillment stage, despite being submitted about a
 The MO Provider+ request was submitted for Monique, but there are no activity updates indicating that anyone has started working on it.
 
 At this point, we need to identify who owns the fulfillment tasks and get an ETA for both requests, especially with the upcoming DR exercise.
+
+
+
+Hey Jeff, Konny has completed testing for SCH-5323 and confirmed she needs the stable 3.0.1 NuGet package. TeamCity currently publishes non-RC versions from master, but PR #33 is still open against develop. Could you clarify who should handle promoting the changes to master and whether there’s an established release process we should follow?
+
+
+Got it, thanks Ryan. I’ll check with Jeff on the expected release process before making any changes.
