@@ -5,3 +5,7 @@ Hey Jeff, Konny has confirmed testing for SCH-5323
 
 
 Hey Konny, Jeff confirmed we should coordinate the Windapiauth release promotion. Could you get PR #33 reviewed and merged into develop, then help prepare the promotion PR to master? I’ll work with you on the DevSecOps approval and TeamCity NuGet publishing once the changes are ready.
+
+
+
+Hey Konny, I confirmed SCH-5323 has been merged into develop. Could you create the promotion PR from develop to master for the stable 3.0.1 release? I’ll coordinate the DevSecOps review/approval and TeamCity NuGet publishing once it’s ready.
