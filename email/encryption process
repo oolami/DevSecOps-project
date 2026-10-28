@@ -1,3 +1,7 @@
 Hey Ryan, I’m working with Konny on releasing the Windapiauth NuGet package (SCH-5323) without the -rc suffix. She confirmed that the tested changes should be promoted to master for the stable release.
 
 Since this is my first time handling this process, could you clarify the standard procedure for promoting changes from develop to master? Is that something DevOps typically handles, or does the development team own the merge while DevOps handles the NuGet publishing in TeamCity?
+
+
+
+Hi Dennis, apologies for being away longer than expected. My appointment took much longer than anticipated. I was referred to another department and had to wait several hours before I was attended to. I’ll make sure to log the time I was away accordingly. Thanks for understanding!
