@@ -1,3 +1,8 @@
+Yes, we’ll proceed with the Production secret rotation while continuing to investigate whether the application actually consumes it.
+
+
+
+
 Hi Erik,
 
 We have the New York MALZ DR exercise scheduled for next week. As part of our DR readiness validation, I compared the IAM role configurations between the PROD and DR accounts and identified several missing permission policies in DR.
