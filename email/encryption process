@@ -46,4 +46,13 @@ Given the Production secret expires tomorrow, I’d recommend creating a replace
 
 
 
+Hey Konny, I reviewed PR #34 and the changes look good. Since DevSecOps only handles approvals and merges for wholeshestack, could you coordinate the review and merge of this PR into master? Once it’s merged, I’ll run the TeamCity pipeline to publish the stable 3.0.1 NuGet package.
+
+
+
+
+
+
+
+
 Hi Monique, I’m working on submitting the requests for the Missouri DR VPC creation and AWS DRS onboarding. I’ll share the ticket details with you as soon as the requests are submitted.
