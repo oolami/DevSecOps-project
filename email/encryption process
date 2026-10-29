@@ -42,3 +42,8 @@ Olamide
 I rotated the Job Dashboard client secret in PreProd last week and successfully redeployed the application. However, we haven’t been able to confirm whether the application actually consumes the secret.
 
 Given the Production secret expires tomorrow, I’d recommend creating a replacement and keeping the existing credential active while we verify the dependency. If confirmed, we can update TeamCity and coordinate the Production deployment.
+
+
+
+
+Hi Monique, I’m working on submitting the requests for the Missouri DR VPC creation and AWS DRS onboarding. I’ll share the ticket details with you as soon as the requests are submitted.
