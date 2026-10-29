@@ -1,6 +1,6 @@
 Yes, we’ll proceed with the Production secret rotation while continuing to investigate whether the application actually consumes it.
 
-
+Could you generate and securely share the new Production client secret? I’ll update TeamCity and coordinate the deployment.
 
 
 Hi Erik,
