@@ -1,58 +1,9 @@
-Yes, we’ll proceed with the Production secret rotation while continuing to investigate whether the application actually consumes it.
+Hey Konny, before I run the TeamCity pipeline to publish the stable Windapiauth 3.0.1 NuGet package, we need to complete a few steps:
 
-Could you generate and securely share the new Production client secret? I’ll update TeamCity and coordinate the deployment.
+1. Lower-environment validation: Can you confirm whether the previously published 3.0.1-rc package has been tested with the consuming APIs in Integration or another lower environment? If not, I’d recommend completing that validation first.
+2. Merge PR #34 into master: Once testing is confirmed, the approved promotion PR needs to be merged into master by Software Engineering.
+3. Verify the changes in master: After the merge, I’ll confirm that master contains the SCH-5323 changes and the correct 3.0.1 package version.
 
+The reason for these steps is that TeamCity generates stable NuGet packages without the -rc suffix only when building from master. Running the pipeline before the merge would build the previous 3.0.0 version instead of your updated 3.0.1 changes.
 
-Hi Erik,
-
-We have the New York MALZ DR exercise scheduled for next week. As part of our DR readiness validation, I compared the IAM role configurations between the PROD and DR accounts and identified several missing permission policies in DR.
-
-Account Details:
-
-* PROD – New York MALZ: 120300868807
-* DR – Immunization Registry PROD-DR: 629268855816
-
-IAM Role: custom-customer-mc-ec2-instance-profile-s3
-
-Policies missing in DR:
-
-1. AMSIInstanceProfileBYOIPSPolicy
-2. AMSIInstanceProfileLoggingPolicy
-3. AMSIInstanceProfileManagementPolicy
-4. AMSIInstanceProfileMonitoringPolicy
-5. AMSIInstanceProfilePatchPolicy
-6. CloudWatchAgentServerPolicy
-7. gms_ds_auto_join_domain_policy
-8. pfe-pg-120300868807-gbl-cm-… (platform policy)
-
-Could you please review and help update the missing IAM permissions in the DR account to ensure parity with PROD ahead of next week’s exercise?
-
-I’ve attached screenshots of both IAM roles for reference.
-
-Please let me know once completed so I can revalidate.
-
-Thank you,
-Olamide
-
-
-
-
-
-
-I rotated the Job Dashboard client secret in PreProd last week and successfully redeployed the application. However, we haven’t been able to confirm whether the application actually consumes the secret.
-
-Given the Production secret expires tomorrow, I’d recommend creating a replacement and keeping the existing credential active while we verify the dependency. If confirmed, we can update TeamCity and coordinate the Production deployment.
-
-
-
-
-Hey Konny, I reviewed PR #34 and the changes look good. Since DevSecOps only handles approvals and merges for wholeshestack, could you coordinate the review and merge of this PR into master? Once it’s merged, I’ll run the TeamCity pipeline to publish the stable 3.0.1 NuGet package.
-
-
-
-
-
-
-
-
-Hi Monique, I’m working on submitting the requests for the Missouri DR VPC creation and AWS DRS onboarding. I’ll share the ticket details with you as soon as the requests are submitted.
+Once the merge is complete and validation is confirmed, I’ll run the TeamCity pipeline, verify that 3.0.1 is successfully published to the NuGet feed, and let you know so you can update the consuming APIs and execute your tests.
