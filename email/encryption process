@@ -1,9 +1,34 @@
-Hey Konny, before I run the TeamCity pipeline to publish the stable Windapiauth 3.0.1 NuGet package, we need to complete a few steps:
+Requesting the creation of a new AWS Disaster Recovery (DR) VPC for the Missouri MO Provider+ production environment.
 
-1. Lower-environment validation: Can you confirm whether the previously published 3.0.1-rc package has been tested with the consuming APIs in Integration or another lower environment? If not, I’d recommend completing that validation first.
-2. Merge PR #34 into master: Once testing is confirmed, the approved promotion PR needs to be merged into master by Software Engineering.
-3. Verify the changes in master: After the merge, I’ll confirm that master contains the SCH-5323 changes and the correct 3.0.1 package version.
+Production VPC reference:
 
-The reason for these steps is that TeamCity generates stable NuGet packages without the -rc suffix only when building from master. Running the pipeline before the merge would build the previous 3.0.0 version instead of your updated 3.0.1 changes.
+* VPC ID: vpc-0b0e797e0d0336f21
+* VPC Name: pfe-pg-prd-us1-cm-vpc-mns
 
-Once the merge is complete and validation is confirmed, I’ll run the TeamCity pipeline, verify that 3.0.1 is successfully published to the NuGet feed, and let you know so you can update the consuming APIs and execute your tests.
+Requested activities:
+
+1. Create a new DR VPC based on the existing Missouri Production VPC architecture.
+2. Configure the required DR application subnets and an additional dedicated AWS DRS replication subnet.
+3. Configure the necessary route tables, network connectivity, and security configurations to support disaster recovery.
+4. Coordinate with the networking and DR teams to validate the appropriate DR account, AWS Region, VPC CIDR, and replication subnet CIDR before provisioning.
+
+Purpose: Establish the required AWS network infrastructure to support Missouri MO Provider+ disaster recovery onboarding.
+
+
+
+
+
+
+Requesting AWS Elastic Disaster Recovery (DRS) onboarding for the Missouri MO Provider+ production environment.
+
+Requested activities:
+
+1. Configure AWS DRS for the Missouri production environment.
+2. Establish replication from the production environment to the designated Missouri DR account and Region.
+3. Validate the DRS replication subnet, network connectivity, IAM permissions, and required security groups.
+4. Install and configure AWS DRS replication agents on the approved production servers.
+5. Verify that the onboarded source servers are reporting healthy replication status and are ready for recovery testing.
+
+Purpose: Enable continuous replication and disaster recovery readiness for Missouri MO Provider+ production workloads.
+
+Dependency: Completion and validation of the Missouri DR VPC and replication network configuration.
