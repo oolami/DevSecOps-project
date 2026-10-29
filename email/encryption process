@@ -1,36 +1,6 @@
-Short Description:
+Hi Monique, both ServiceNow requests have been submitted for the Missouri Provider+ DR setup:
 
-Onboard Missouri Production Environment to AWS Elastic Disaster Recovery (DRS)
+1. RITM0573976 – Missouri DR VPC Creation
+2. RITM0574089 – Missouri Production AWS DRS Onboarding
 
-Description:
-
-As part of the Missouri Provider+ Disaster Recovery implementation, please initiate the onboarding of the Missouri Production environment into AWS Elastic Disaster Recovery (DRS).
-
-The objective is to establish AWS DRS protection for the applicable Missouri Production servers and ensure replication is configured to support recovery operations in the designated Missouri DR environment.
-
-Requested Activities:
-
-1. Identify and confirm the Missouri Production EC2 instances requiring AWS DRS protection.
-2. Confirm the source AWS account, region, and applicable Production VPC.
-3. Configure AWS DRS replication settings in the designated DR account and region using the approved replication subnet.
-4. Coordinate installation and configuration of AWS DRS replication agents on the applicable Production servers.
-5. Validate network connectivity and required permissions for DRS replication.
-6. Verify that all applicable Production servers are successfully registered as DRS source servers and achieve healthy replication status.
-7. Configure and validate the recovery launch settings to use the newly provisioned Missouri DR VPC and appropriate recovery subnets.
-8. Confirm completion of onboarding and provide the list of protected servers and their replication status.
-
-Reference Information:
-
-* Project: Missouri Provider+ Disaster Recovery
-* Production VPC: vpc-0b0e797e0d0336f21
-* DR VPC: [Newly Created DR VPC ID]
-* Production AWS Account: [Account ID]
-* DR AWS Account: [Account ID]
-* Target RTO: 4 hours
-* Target RPO: 6 hours
-
-Dependencies:
-
-DR VPC creation, DRS replication subnet configuration, and required network connectivity must be completed or coordinated as part of onboarding.
-
-Please coordinate with the DR team and applicable infrastructure owners to complete the onboarding and validate successful replication.
+Both requests are currently open and pending fulfillment. I’ll continue tracking their progress and provide updates as they become available.
