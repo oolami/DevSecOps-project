@@ -1,11 +1,30 @@
-Hey Jeff, Konny has confirmed testing for SCH-5323
- is complete and she’s ready for the stable 3.0.1 NuGet release. Since PR #33 targets develop and the stable version is generated from master, should we create a separate PR to promote the changes to master? Also, is this promotion typically handled by DevOps or the development team?
+Hi Erik,
 
+We have the New York MALZ DR exercise scheduled for next week. As part of our DR readiness validation, I compared the IAM role configurations between the PROD and DR accounts and identified several missing permission policies in DR.
 
+Account Details:
 
+* PROD – New York MALZ: 120300868807
+* DR – Immunization Registry PROD-DR: 629268855816
 
-Hey Konny, Jeff confirmed we should coordinate the Windapiauth release promotion. Could you get PR #33 reviewed and merged into develop, then help prepare the promotion PR to master? I’ll work with you on the DevSecOps approval and TeamCity NuGet publishing once the changes are ready.
+IAM Role: custom-customer-mc-ec2-instance-profile-s3
 
+Policies missing in DR:
 
+1. AMSIInstanceProfileBYOIPSPolicy
+2. AMSIInstanceProfileLoggingPolicy
+3. AMSIInstanceProfileManagementPolicy
+4. AMSIInstanceProfileMonitoringPolicy
+5. AMSIInstanceProfilePatchPolicy
+6. CloudWatchAgentServerPolicy
+7. gms_ds_auto_join_domain_policy
+8. pfe-pg-120300868807-gbl-cm-… (platform policy)
 
-Hey Konny, I confirmed SCH-5323 has been merged into develop. Could you create the promotion PR from develop to master for the stable 3.0.1 release? I’ll coordinate the DevSecOps review/approval and TeamCity NuGet publishing once it’s ready.
+Could you please review and help update the missing IAM permissions in the DR account to ensure parity with PROD ahead of next week’s exercise?
+
+I’ve attached screenshots of both IAM roles for reference.
+
+Please let me know once completed so I can revalidate.
+
+Thank you,
+Olamide
