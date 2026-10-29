@@ -32,3 +32,13 @@ Requested activities:
 Purpose: Enable continuous replication and disaster recovery readiness for Missouri MO Provider+ production workloads.
 
 Dependency: Completion and validation of the Missouri DR VPC and replication network configuration.
+
+
+
+
+
+
+
+Please confirm the designated Missouri DR AWS account, target Region, and approved CIDR allocations before provisioning. The DR VPC should be configured to support AWS DRS onboarding and the required downstream DR infrastructure, including ElastiCache and EKS.
+
+Please coordinate the required networking and security configurations with the appropriate infrastructure teams.
