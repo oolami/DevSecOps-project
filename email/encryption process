@@ -1,59 +1,14 @@
-Hi Konny, I checked the Bravo environment in Docker Swarm.
+$services = @(
+    "wholeshestack_bravo_admin-api",
+    "wholeshestack_bravo_portal-api"
+)
 
-The admin service has Sentry environment variables configured (REACT_APP_SENTRY_DSN, REACT_APP_SENTRY_ENABLE, REACT_APP_SENTRY_ENV, REACT_APP_SENTRY_DEBUG, and REACT_APP_SENTRY_SAMPLE_RATE).
+foreach ($service in $services) {
+    Write-Host "`nService: $service"
 
-For portal-api, there are no Sentry-specific environment variables exposed directly. However, the service uses a Docker configuration file mounted at /app/config.json, which may contain its application-level Sentry settings.
-
-
-
-
-
-docker service ls --format "{{.Name}}" | Select-String "bravo"
-
-
-
-docker service ls --format "{{.Name}}" | Select-String "bravo.*(admin-api|portal-api)"
-
-
-
-docker service inspect <service-name> --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}'
-
-
-
-docker service inspect wholeshestack_bravo_admin --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' | ConvertFrom-Json | Where-Object { $_ -match 'SENTRY' }
-
-
-
-docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' |
-ConvertFrom-Json |
-ForEach-Object { ($_ -split '=',2)[0] }
-
-
-
-
-
-
-
-docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' | ConvertFrom-Json | Where-Object { $_ -match 'SENTRY' }
-
-
-
-
-
-
-docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}'
-
-
-
-docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Secrets}}'
-
-
-
-
-
-
-
-
-docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}' |
-ConvertFrom-Json |
-Select-Object ConfigName, @{Name='Target';Expression={$_.File.Name}}
+    docker service inspect $service `
+        --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}' |
+        ConvertFrom-Json |
+        Select-Object ConfigName,
+            @{Name='Target';Expression={$_.File.Name}}
+}
