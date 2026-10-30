@@ -15,3 +15,37 @@ docker service inspect wholeshestack_bravo_portal-api `
 
 docker service ls --format '{{.Name}}' |
   Select-String 'admin-api|portal-api'
+
+
+
+
+docker config inspect wholeshestack_bravo_portal-api-adf23d8f `
+  --format '{{.Spec.Data}}'
+
+
+
+
+docker config ls --format '{{.Name}}' |
+  Select-String 'bravo_portal-api'
+
+
+
+
+
+$configName = "wholeshestack_bravo_portal-api-adf23d8f"
+
+$encoded = docker config inspect $configName --format '{{.Spec.Data}}'
+
+$json = [System.Text.Encoding]::UTF8.GetString(
+    [System.Convert]::FromBase64String($encoded)
+)
+
+$json | ConvertFrom-Json | Format-List
+
+
+
+
+
+
+docker service ls --format '{{.Name}}' |
+  Select-String 'admin|apas|portal'
