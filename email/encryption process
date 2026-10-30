@@ -31,8 +31,13 @@ docker service inspect wholeshestack_bravo_apas-internal-api `
 
 
 
+Test-Path "$HOME\bravo-portal-api.json"
 
 
+
+
+Get-Content "$HOME\bravo-portal-api.json" -Raw |
+    ConvertFrom-Json | Out-Null
 
 
 
