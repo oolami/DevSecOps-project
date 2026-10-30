@@ -12,3 +12,12 @@ foreach ($service in $services) {
         Select-Object ConfigName,
             @{Name='Target';Expression={$_.File.Name}}
 }
+
+
+
+
+
+
+docker service inspect wholeshestack_bravo_admin --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' |
+ConvertFrom-Json |
+Where-Object { $_ -match 'API|URL|HOST|ENDPOINT' }
