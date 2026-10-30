@@ -7,3 +7,11 @@ If tca01 and tca03 now have compatible Node versions, we can revisit the restric
 
 
 Sure, Konny. Are you looking for specific environment variables for admin-api and portal-api in Bravo, or the complete environment configuration?
+
+
+
+
+
+Hi Dmytro, I also recall installing the .NET 9 SDK on tca02 for the Playwright builds, so the agent restriction may have been related to more than just the Node.js version.
+
+Before removing it, can we confirm whether tca01 and tca03 have the same required dependencies? If they do, we can test the Cypress builds on those agents and remove the restriction if everything works.
