@@ -25,3 +25,14 @@ ForEach-Object { ($_ -split '=',2)[0] }
 
 
 docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' | ConvertFrom-Json | Where-Object { $_ -match 'SENTRY' }
+
+
+
+
+
+
+docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}'
+
+
+
+docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Secrets}}'
