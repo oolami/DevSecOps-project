@@ -1,24 +1,22 @@
-Hi Konny, I checked the Bravo deployment configuration in TeamCity, Bitbucket, and Docker Swarm.
+$configName = "wholeshestack_bravo_portal-api-adf23d8f"
 
-Bravo deploys from the dev/deploy branch, and both Portal API and APAS Internal API use application configuration files from the configs/ directory.
+$base64 = docker config inspect $configName --format '{{.Spec.Data}}'
 
-In Docker Swarm, I confirmed that:
+$json = [System.Text.Encoding]::UTF8.GetString(
+    [Convert]::FromBase64String($base64.Trim())
+)
 
-* Portal API uses a Docker Config mounted at /app/config.json, along with Docker Secrets.
-* APAS Internal API also has Docker Configs and Secrets attached.
-* Both services have environment variables for feature flags and Kerberos-related settings.
-* The application JSON files in Bitbucket contain Sentry configuration sections.
-
-The complete application settings are therefore provided through a combination of Docker Configs, Secrets, and environment variables, rather than environment variables alone.
-
-I’ve confirmed the configuration sources and deployment setup, but I haven’t yet verified the effective Sentry values inside the deployed configuration files.
-
-Are there particular configuration values you need me to confirm for your investigation?
+$json | ConvertFrom-Json | ConvertTo-Json -Depth 100
 
 
 
 
+$json | Set-Content -Path "$HOME\bravo-portal-api.json" -Encoding utf8
 
-I agree, Dmytro. Since SysAdmin is planning to rebuild the agents on RHEL 9, it makes sense to standardize the required dependencies across all agents and document them.
 
-We should include the Node.js versions, .NET SDK, and any Playwright/Cypress dependencies required by our builds. Once we validate that the builds run successfully across the agents, we can remove the agent-specific restriction.
+
+
+docker service inspect wholeshestack_bravo_apas-internal-api `
+  --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}' |
+  ConvertFrom-Json |
+  Select-Object ConfigName, File
