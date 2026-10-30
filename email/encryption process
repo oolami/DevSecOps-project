@@ -1,21 +1,9 @@
-Hi Dmytro, I believe the agent requirement was added to keep the Cypress builds running on a compatible agent, particularly due to the Node.js version.
-
-If tca01 and tca03 now have compatible Node versions, we can revisit the restriction. I’d suggest validating a Cypress build on those agents first to confirm all dependencies are available before removing the requirement.
+docker service ls --format "{{.Name}}" | Select-String "bravo"
 
 
 
-
-
-Sure, Konny. Are you looking for specific environment variables for admin-api and portal-api in Bravo, or the complete environment configuration?
-
+docker service ls --format "{{.Name}}" | Select-String "bravo.*(admin-api|portal-api)"
 
 
 
-
-Hi Dmytro, I also recall installing the .NET 9 SDK on tca02 for the Playwright builds, so the agent restriction may have been related to more than just the Node.js version.
-
-Before removing it, can we confirm whether tca01 and tca03 have the same required dependencies? If they do, we can test the Cypress builds on those agents and remove the restriction if everything works.
-
-
-
-Thanks for clarifying, Konny. I’ll check the Bravo configurations for admin-api and portal-api, particularly the Sentry-related settings, and share what I find.
+docker service inspect <service-name> --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}'
