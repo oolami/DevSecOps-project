@@ -36,3 +36,14 @@ docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.Tas
 
 
 docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Secrets}}'
+
+
+
+
+
+
+
+
+docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}' |
+ConvertFrom-Json |
+Select-Object ConfigName, @{Name='Target';Expression={$_.File.Name}}
