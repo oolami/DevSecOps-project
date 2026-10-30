@@ -20,3 +20,45 @@ docker service inspect wholeshestack_bravo_apas-internal-api `
   --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}' |
   ConvertFrom-Json |
   Select-Object ConfigName, File
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$configName = "wholeshestack_bravo_portal-api-adf23d8f"
+
+$config = docker config inspect $configName | ConvertFrom-Json
+
+$config.Spec.Data.GetType().FullName
+
+
+
+
+$bytes = [Convert]::FromBase64String($config.Spec.Data)
+
+$json = [System.Text.Encoding]::UTF8.GetString($bytes)
+
+$json | ConvertFrom-Json | ConvertTo-Json -Depth 100
+
+
+
+
+
+
+$json | Set-Content "$HOME\bravo-portal-api.json" -Encoding utf8
