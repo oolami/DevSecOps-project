@@ -1,4 +1,30 @@
 $services = @(
+    "wholeshestack_bravo_apas-internal-api",
+    "wholeshestack_bravo_windapi"
+)
+
+foreach ($service in $services) {
+    Write-Host "`nService: $service"
+
+    docker service inspect $service `
+        --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}' |
+        ConvertFrom-Json |
+        Select-Object ConfigName,
+            @{Name="Target";Expression={$_.File.Name}}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+$services = @(
     "wholeshestack_bravo_admin-api",
     "wholeshestack_bravo_portal-api"
 )
