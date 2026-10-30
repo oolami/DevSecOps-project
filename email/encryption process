@@ -1,7 +1,17 @@
-docker service ls --format '{{.Name}}' | grep -E 'admin-api|portal-api'
+docker service inspect wholeshestack_bravo_portal-api `
+  --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}' |
+  ConvertFrom-Json |
+  Select-Object ConfigName, File
+
+
+
+docker service inspect wholeshestack_bravo_portal-api `
+  --format '{{json .Spec.TaskTemplate.ContainerSpec.Secrets}}' |
+  ConvertFrom-Json |
+  Select-Object SecretName, File
 
 
 
 
-docker service inspect <service_name> \
-  --format '{{json .Spec.TaskTemplate.ContainerSpec}}' | jq
+docker service ls --format '{{.Name}}' |
+  Select-String 'admin-api|portal-api'
