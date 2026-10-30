@@ -7,3 +7,13 @@ docker service ls --format "{{.Name}}" | Select-String "bravo.*(admin-api|portal
 
 
 docker service inspect <service-name> --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}'
+
+
+
+docker service inspect wholeshestack_bravo_admin --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' | ConvertFrom-Json | Where-Object { $_ -match 'SENTRY' }
+
+
+
+
+
+docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' | ConvertFrom-Json | Where-Object { $_ -match 'SENTRY' }
