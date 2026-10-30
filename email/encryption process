@@ -1,3 +1,18 @@
+docker service inspect wholeshestack_bravo_apas-internal-api `
+  --format '{{json .Spec.TaskTemplate.ContainerSpec}}' |
+ConvertFrom-Json |
+Select-Object Image, Command, Args, Configs, Secrets
+
+
+
+
+
+
+
+
+
+
+
 $services = @(
     "wholeshestack_bravo_apas-internal-api",
     "wholeshestack_bravo_windapi",
