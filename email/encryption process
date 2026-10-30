@@ -1,14 +1,9 @@
-Hi Monique, both ServiceNow requests have been submitted for the Missouri Provider+ DR setup:
+Hi Dmytro, I believe the agent requirement was added to keep the Cypress builds running on a compatible agent, particularly due to the Node.js version.
 
-1. RITM0573976 – Missouri DR VPC Creation
-2. RITM0574089 – Missouri Production AWS DRS Onboarding
-
-Both requests are currently open and pending fulfillment. I’ll continue tracking their progress and provide updates as they become available.
+If tca01 and tca03 now have compatible Node versions, we can revisit the restriction. I’d suggest validating a Cypress build on those agents first to confirm all dependencies are available before removing the requirement.
 
 
 
 
 
-Thanks for the clarification, Monique. I’ll use the Platform Enablement Support Request catalog going forward.
-
-For the two requests already submitted, would you recommend having them reassigned to the Platform Gainwell team, or should I submit new requests through the correct catalog?
+Sure, Konny. Are you looking for specific environment variables for admin-api and portal-api in Bravo, or the complete environment configuration?
