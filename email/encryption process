@@ -14,6 +14,14 @@ docker service inspect wholeshestack_bravo_admin --format '{{json .Spec.TaskTemp
 
 
 
+docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' |
+ConvertFrom-Json |
+ForEach-Object { ($_ -split '=',2)[0] }
+
+
+
+
+
 
 
 docker service inspect wholeshestack_bravo_portal-api --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' | ConvertFrom-Json | Where-Object { $_ -match 'SENTRY' }
