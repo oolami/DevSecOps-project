@@ -1,3 +1,9 @@
+No outstanding tasks from the DR team. Post-exercise cleanup has been completed, and no further action is required from our end.
+
+
+
+
+
 docker service ls --format '{{.Name}}' | Select-String 'apas-external-api'
 
 
