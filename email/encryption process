@@ -1,4 +1,8 @@
-No outstanding tasks from the DR team. Post-exercise cleanup has been completed, and no further action is required from our end.
+Completed the Job Dashboard application secret rotation for both Pre-prod and Production.
+
+The updated secrets have been applied successfully.
+
+A separate ticket, WHC-3656, has been created to remove the unused AzureAd.ClientSecret from the Job Dashboard deployment configurations, eliminating the need for future rotations once the dependency is fully removed.
 
 
 
@@ -20,7 +24,7 @@ docker service inspect <service-name> `
 
 
 
-Hi Dennis, just wanted to let you know I’m wrapping things up and planning to log off at 3 PM today. Thanks again!
+
 
 
 
