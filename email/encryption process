@@ -1,8 +1,28 @@
-Completed the Job Dashboard application secret rotation for both Pre-prod and Production.
+Hi Connie,
 
-The updated secrets have been applied successfully.
+Thank you for reaching out and considering my application for the AWS Cloud Engineer position. I appreciate the opportunity and am happy to provide my responses below.
 
-A separate ticket, WHC-3656, has been created to remove the unused AzureAd.ClientSecret from the Job Dashboard deployment configurations, eliminating the need for future rotations once the dependency is fully removed.
+1. Citizenship/Clearance: Yes, I am a U.S. citizen and eligible to obtain a Public Trust clearance.
+2. Work Schedule: Yes, I am comfortable working remotely from 8 AM to 5 PM Eastern Time.
+3. AWS/DevOps Experience: I would rate myself 8/10. I have extensive hands-on experience with AWS infrastructure, cloud automation, CI/CD pipelines, containerization, security, and infrastructure management.
+4. Scripting Experience: Yes, I have hands-on experience with Python and Bash scripting for automation, infrastructure management, and operational tasks. I also have experience using Ansible for configuration management, provisioning, and deployment automation.
+5. Monitoring and Observability: I am very familiar with AWS CloudWatch, Grafana, Prometheus, Splunk, and similar monitoring solutions. I have experience implementing monitoring, centralized logging, alerting, and troubleshooting infrastructure and application performance issues.
+6. Terraform Experience: I would rate myself 8/10. I have extensive experience using Terraform to provision and manage AWS infrastructure, develop reusable modules, maintain remote state, and integrate infrastructure deployments into CI/CD pipelines.
+7. Certifications:
+  • AWS Certified DevOps Engineer
+  • AWS Certified Solutions Architect – Associate
+  • CompTIA Security+
+  • CompTIA Linux+
+  • Certified Scrum Master (CSM)
+  • SAFe Scrum Master
+8. Motivation: I am seeking an opportunity to further leverage my AWS cloud engineering and DevOps expertise while taking on new technical challenges, contributing to impactful projects, and continuing my professional growth.
+9. Availability: I would be available to start within two weeks of accepting an offer.
+10. Salary Expectations: My target salary is $140,000–$150,000 annually, depending on the overall compensation package and responsibilities.
+
+Thank you again for your consideration. I look forward to learning more about the opportunity and discussing how my experience aligns with your team’s needs.
+
+
+
 
 
 
