@@ -1,3 +1,57 @@
+Hi Jim, below is the expected scope and deliverables for each ticket:
+
+1. RITM0537976 – Missouri DR VPC Creation
+
+* Create the new Missouri MO Provider+ DR VPC based on the existing Production VPC architecture.
+* Configure the required DR application subnets, route tables, and security configurations.
+* Confirm the DR AWS account, region, VPC CIDR, and subnet allocations.
+* Expected outcome: A provisioned DR VPC with foundational networking ready for DRS configuration.
+
+2. RITM0539020 – Platform Gainwell DRS Network Connectivity
+
+* Confirm the three Platform Gainwell Production VPCs (MO Provider+ Tenant, Provider+ Current/N-1, and Provider+ Release Back/N-1).
+* Establish the required connectivity between these Production VPCs and the designated DR VPC.
+* Configure the applicable VPC peering and routing.
+* Expected outcome: Network connectivity established to support DRS replication from the identified Production VPCs.
+
+3. RITM0528406 – DR Replication Subnet and Peering
+
+* Configure the dedicated DRS replication subnet in the appropriate DR VPC.
+* Create and associate the required route table.
+* Establish the Production-to-DR VPC peering and configure the necessary routes on both sides.
+* Confirm the approved replication CIDR before implementation.
+* Expected outcome: The DR replication subnet and network path are ready to receive replication traffic from Production.
+
+4. RITM0574089 – AWS DRS Onboarding
+
+* Identify the Missouri Production servers requiring DRS protection.
+* Configure AWS DRS replication settings in the designated DR account.
+* Install the AWS DRS agents on the applicable Production servers.
+* Validate connectivity, replication health, and recovery launch configurations.
+* Expected outcome: Missouri Production servers successfully onboarded into AWS DRS and replicating to the designated DR environment.
+
+Implementation order: RITM0537976 → RITM0539020 / RITM0528406 (coordinated networking activities) → RITM0574089.
+
+The networking tickets should be coordinated to ensure the correct Production and DR VPCs are used and that subnet, peering, and routing configurations are not duplicated.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 docker service ps hangfire_job-dashboard --no-trunc --format 'table {{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}'
 
 
