@@ -1,3 +1,53 @@
+$configs = @{
+    "apas-external-api" = "wholeshestack_pre_prod_apas-external-api-9480adb9"
+    "apas-internal-api" = "wholeshestack_pre_prod_apas-internal-api-cf42c6f0"
+    "portal-api" = "wholeshestack_pre_prod_portal-api-5d7a8231"
+}
+
+foreach ($name in $configs.Keys) {
+
+    $configName = $configs[$name]
+
+    $data = docker config inspect $configName --format '{{.Spec.Data}}'
+
+    $json = [System.Text.Encoding]::UTF8.GetString(
+        [Convert]::FromBase64String($data.Trim())
+    )
+
+    $json | ConvertFrom-Json | Out-Null
+
+    $filePath = "$HOME\preprod-$name.json"
+
+    $json | Set-Content $filePath -Encoding utf8
+
+    Write-Host "Saved: $filePath"
+}
+
+
+
+
+
+
+
+
+
+
+Get-ChildItem "$HOME\preprod-*.json"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 docker service ls --format '{{.Name}}' |
   Select-String 'portal-api|apas-internal-api|apas-external-api'
 
