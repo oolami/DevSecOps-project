@@ -1,3 +1,10 @@
+
+Got it, Dennis. Thanks for taking the lead on this! Hopefully, the fix is straightforward. 😊
+
+
+
+
+
 $configName = "wholeshestack_pre_prod_apas-external-api-9480adb9"
 
 $config = docker config inspect $configName | ConvertFrom-Json
