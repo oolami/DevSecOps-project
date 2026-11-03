@@ -1,22 +1,32 @@
-docker service logs --tail 100 --timestamps hangfire_job-dashboard
-
+docker service inspect hangfire_job-dashboard --format '{{json .UpdateStatus}}'
 
 
 docker service ps hangfire_job-dashboard --no-trunc
 
 
 
-RITM0537976: Provision the Missouri DR VPC.
-RITM0539020 and RITM0528406: Complete the respective Production and DR networking configurations, coordinating VPC peering and routing between both environments.
-RITM0574089: Complete DRS onboarding after the network dependencies are satisfied.
+docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' |
+ConvertFrom-Json |
+Where-Object { $_ -match 'JOB_DASHBOARD_ENTRA_ID_CLIENT' } |
+ForEach-Object { ($_ -split '=', 2)[0] }
 
 
 
 
-RITM0537976 DR Create the new Missouri DR VPC and foundational networking.
-RITM0539020 Platform Gainwell / MO Provider+ Configure DRS replication connectivity for the identified Platform Gainwell Production VPCs and the appropriate DR VPC.
-RITM0528406 Production-to-DR connectivity Configure the replication subnet, VPC peering and routing between Production and DR.
-RITM0574089 Production and DR Onboard Production servers into AWS DRS and configure replication to DR.
+
+
+
+
+
+
+
+
+docker service logs --tail 100 --timestamps hangfire_job-dashboard
+
+
+
+docker service ps hangfire_job-dashboard --no-trunc
+
 
 
 
