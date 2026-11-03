@@ -7,3 +7,12 @@ docker service inspect hangfire_job-dashboard --format '{{json .UpdateStatus}}'
 
 
 docker service ls --filter name=hangfire_job-dashboard
+
+docker service ps hangfire_job-dashboard --no-trunc --format "table {{.Name}}\t{{.CurrentState}}\t{{.Error}}"
+
+
+docker service logs hangfire_job-dashboard --tail 100 --timestamps
+
+
+
+docker service inspect hangfire_job-dashboard --format '{{json .UpdateStatus}}'
