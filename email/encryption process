@@ -6,7 +6,18 @@ docker service ps hangfire_job-dashboard --no-trunc
 
 
 
-Hi Jim, I don’t have the ticket number because I didn’t have access to edit the ticket at the time, but you were able to make the changes. It looks like the updates may not have been saved. I can put together the details of the required work if that would help.
+RITM0537976: Provision the Missouri DR VPC.
+RITM0539020 and RITM0528406: Complete the respective Production and DR networking configurations, coordinating VPC peering and routing between both environments.
+RITM0574089: Complete DRS onboarding after the network dependencies are satisfied.
+
+
+
+
+RITM0537976 DR Create the new Missouri DR VPC and foundational networking.
+RITM0539020 Platform Gainwell / MO Provider+ Configure DRS replication connectivity for the identified Platform Gainwell Production VPCs and the appropriate DR VPC.
+RITM0528406 Production-to-DR connectivity Configure the replication subnet, VPC peering and routing between Production and DR.
+RITM0574089 Production and DR Onboard Production servers into AWS DRS and configure replication to DR.
+
 
 
 
