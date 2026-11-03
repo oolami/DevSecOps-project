@@ -1,1 +1,9 @@
-Hi Konny, I confirmed that TeamCity build #66 ran successfully against master and published the stable SilacIns.WindapiAuth NuGet package version 3.0.2 without the -rc suffix. The package is now available in the internal NuGet feed, so you can proceed with updating the dependent projects and running your tests.
+docker service ps hangfire_job-dashboard --no-trunc
+
+
+
+docker service inspect hangfire_job-dashboard --format '{{json .UpdateStatus}}'
+
+
+
+docker service ls --filter name=hangfire_job-dashboard
