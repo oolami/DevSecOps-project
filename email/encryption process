@@ -1,3 +1,75 @@
+$configName = "wholeshestack_pre_prod_apas-external-api-9480adb9"
+
+$config = docker config inspect $configName | ConvertFrom-Json
+
+$data = $config.Spec.Data
+
+$json = [System.Text.Encoding]::UTF8.GetString(
+    [Convert]::FromBase64String($data)
+)
+
+$json | ConvertFrom-Json -ErrorAction Stop | Out-Null
+
+
+
+
+
+
+$json | Set-Content "$HOME\preprod-apas-external-api.json" -Encoding utf8
+
+
+
+Get-Item "$HOME\preprod-apas-external-api.json" |
+    Select-Object Name, Length
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 $configs = @{
     "apas-external-api" = "wholeshestack_pre_prod_apas-external-api-9480adb9"
     "apas-internal-api" = "wholeshestack_pre_prod_apas-internal-api-cf42c6f0"
