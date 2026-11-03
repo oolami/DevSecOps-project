@@ -1,3 +1,37 @@
+$configName = "wholeshestack_pre_prod_portal-api-5d7a8231"
+
+$data = docker config inspect $configName --format '{{.Spec.Data}}'
+
+$json = [System.Text.Encoding]::UTF8.GetString(
+    [Convert]::FromBase64String($data.Trim())
+)
+
+$json | Set-Content "$HOME\preprod-portal-api.json" -Encoding utf8
+
+
+
+
+
+
+
+
+
+docker service inspect wholeshestack_pre_prod_apas-internal-api `
+  --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 $configs = @{
     "apas-external-api" = "wholeshestack_pre_prod_apas-external-api-9480adb9"
     "apas-internal-api" = "wholeshestack_pre_prod_apas-internal-api-cf42c6f0"
