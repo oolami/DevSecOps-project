@@ -1,37 +1,3 @@
-$configName = "wholeshestack_pre_prod_portal-api-5d7a8231"
-
-$data = docker config inspect $configName --format '{{.Spec.Data}}'
-
-$json = [System.Text.Encoding]::UTF8.GetString(
-    [Convert]::FromBase64String($data.Trim())
-)
-
-$json | Set-Content "$HOME\preprod-portal-api.json" -Encoding utf8
-
-
-
-
-
-
-
-
-
-docker service inspect wholeshestack_pre_prod_apas-internal-api `
-  --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 $configs = @{
     "apas-external-api" = "wholeshestack_pre_prod_apas-external-api-9480adb9"
     "apas-internal-api" = "wholeshestack_pre_prod_apas-internal-api-cf42c6f0"
@@ -42,19 +8,20 @@ foreach ($name in $configs.Keys) {
 
     $configName = $configs[$name]
 
-    $data = docker config inspect $configName --format '{{.Spec.Data}}'
+    $config = docker config inspect $configName |
+        ConvertFrom-Json
 
-    $json = [System.Text.Encoding]::UTF8.GetString(
-        [Convert]::FromBase64String($data.Trim())
-    )
+    $bytes = [byte[]]$config.Spec.Data
 
-    $json | ConvertFrom-Json | Out-Null
+    $json = [System.Text.Encoding]::UTF8.GetString($bytes)
+
+    $json | ConvertFrom-Json -ErrorAction Stop | Out-Null
 
     $filePath = "$HOME\preprod-$name.json"
 
     $json | Set-Content $filePath -Encoding utf8
 
-    Write-Host "Saved: $filePath"
+    Write-Host "Successfully saved: $filePath"
 }
 
 
@@ -66,10 +33,9 @@ foreach ($name in $configs.Keys) {
 
 
 
-Get-ChildItem "$HOME\preprod-*.json"
 
-
-
+Get-ChildItem "$HOME\preprod-*.json" |
+    Select-Object Name, Length
 
 
 
