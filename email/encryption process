@@ -1,3 +1,19 @@
+docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplate.ContainerSpec.Secrets}}'
+
+
+docker service inspect hangfire_job-dashboard --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}'
+
+
+
+
+
+
+
+
+
+
+
+
 docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplate.ContainerSpec.Command}}'
 
 
