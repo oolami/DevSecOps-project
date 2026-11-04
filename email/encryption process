@@ -1,3 +1,11 @@
+docker service ps hangfire_job-dashboard --no-trunc
+
+
+
+
+
+
+
 
 
 docker service ps hangfire_job-dashboard --no-trunc --format 'table {{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}'
@@ -17,58 +25,3 @@ docker service inspect hangfire_job-dashboard --format '{{json .Spec.UpdateConfi
 
 
 
-
-docker service inspect hangfire_job-dashboard --format '{{json .UpdateStatus}}'
-
-
-docker service ps hangfire_job-dashboard --no-trunc
-
-
-
-docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}' |
-ConvertFrom-Json |
-Where-Object { $_ -match 'JOB_DASHBOARD_ENTRA_ID_CLIENT' } |
-ForEach-Object { ($_ -split '=', 2)[0] }
-
-
-
-
-Successfully published SilacIns.WindapiAuth version 3.0.2 (without the -rc suffix) from master through TeamCity build #66. Build and tests passed, and the package was published to the internal NuGet feed. Konny can proceed with updating dependent applications and validation.
-
-
-
-
-
-
-
-
-docker service logs --tail 100 --timestamps hangfire_job-dashboard
-
-
-
-docker service ps hangfire_job-dashboard --no-trunc
-
-
-
-
-
-
-
-docker service ps hangfire_job-dashboard --no-trunc
-
-
-
-docker service inspect hangfire_job-dashboard --format '{{json .UpdateStatus}}'
-
-
-
-docker service ls --filter name=hangfire_job-dashboard
-
-docker service ps hangfire_job-dashboard --no-trunc --format "table {{.Name}}\t{{.CurrentState}}\t{{.Error}}"
-
-
-docker service logs hangfire_job-dashboard --tail 100 --timestamps
-
-
-
-docker service inspect hangfire_job-dashboard --format '{{json .UpdateStatus}}'
