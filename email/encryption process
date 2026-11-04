@@ -5,7 +5,8 @@ docker service ps hangfire_job-dashboard --no-trunc
 docker service logs hangfire_job-dashboard --tail 100 --timestamps
 
 
-
+docker service logs hangfire_job-dashboard --since 30m --timestamps 2>&1 |
+    Select-String -Pattern 'SqlException|InnerException|Login failed|timeout|certificate|network-related' -Context 3,5
 
 
 
