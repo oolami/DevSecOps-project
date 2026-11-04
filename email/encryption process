@@ -4,4 +4,15 @@ docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplat
 Resolve-DnsName cl-sql01-prod.silacins.com
 
 
+
+
 Test-NetConnection cl-sql01-prod.silacins.com -Port 1433
+
+
+
+
+
+
+Thanks, Dennis. I’ve reviewed the Sentry issue, and it matches the SQL connectivity errors I found in the Prod Job Dashboard container logs. The Swarm service is running, but DNS resolution for the SQL hostname configured in TeamCity is failing.
+
+I’m checking whether this is related to the AOG migration. I may need assistance confirming the correct SQL endpoint if it has changed. I’ll keep you updated on what I find.
