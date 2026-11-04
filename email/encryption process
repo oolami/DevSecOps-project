@@ -2,6 +2,15 @@ docker service ps hangfire_job-dashboard --no-trunc
 
 
 
+docker service logs hangfire_job-dashboard --tail 100 --timestamps
+
+
+
+
+
+
+
+
 
 
 
