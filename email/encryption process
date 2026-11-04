@@ -1,3 +1,13 @@
 docker ps --filter "name=hangfire_job-dashboard"
 
 docker exec <container-id> sh -c 'ls -l /app/secrets.json'
+
+
+
+
+
+
+docker exec 251ad407d8a8 sh -c 'command -v python3; command -v jq'
+
+
+docker exec 251ad407d8a8 jq 'keys' /app/secrets.json
