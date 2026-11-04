@@ -1,8 +1,4 @@
-Hey team, I’ve been working on cleaning up the Job Dashboard across environments and noticed that the Production Job Dashboard is throwing an error. I haven’t deployed any of my changes to Prod yet.
-
-I’m currently troubleshooting, and the container logs are showing SQL Server connectivity errors (Microsoft.Data.SqlClient.SqlException). The Swarm service is running, but the dashboard is failing to load.
-
-Is anyone aware of any existing SQL connectivity issues in Prod or has anyone encountered this before?
+That could explain the SQL connectivity errors. I checked the Prod TeamCity configuration, and env.DB_HOST is currently pointing to cl-sql01-prod.silacins.com. I’m wondering whether the Job Dashboard configuration was updated as part of the AOG database migration. I’ll verify the expected SQL endpoint and connection settings before making any changes.
 
 
 
