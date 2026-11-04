@@ -1,3 +1,13 @@
+Hey team, I’ve been working on cleaning up the Job Dashboard across environments and noticed that the Production Job Dashboard is throwing an error. I haven’t deployed any of my changes to Prod yet.
+
+I’m currently troubleshooting, and the container logs are showing SQL Server connectivity errors (Microsoft.Data.SqlClient.SqlException). The Swarm service is running, but the dashboard is failing to load.
+
+Is anyone aware of any existing SQL connectivity issues in Prod or has anyone encountered this before?
+
+
+
+
+
 docker service ps hangfire_job-dashboard --no-trunc
 
 
