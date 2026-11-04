@@ -1,3 +1,12 @@
+Yes, that makes sense. We can look into enabling email sending in Lima for testing. I just want to verify how email is currently configured in Dev and ensure enabling it won’t trigger other application emails.
+
+I’ll check the configuration and let you know what needs to be updated.
+
+
+
+
+
+
 That could explain the SQL connectivity errors. I checked the Prod TeamCity configuration, and env.DB_HOST is currently pointing to cl-sql01-prod.silacins.com. I’m wondering whether the Job Dashboard configuration was updated as part of the AOG database migration. I’ll verify the expected SQL endpoint and connection settings before making any changes.
 
 
