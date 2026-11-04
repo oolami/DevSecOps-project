@@ -12,25 +12,16 @@ docker service logs hangfire_job-dashboard --since 30m --timestamps 2>&1 |
 
 
 
+docker service ps hangfire_job-dashboard --no-trunc
 
 
 
 
-
-
-docker service ps hangfire_job-dashboard --no-trunc --format 'table {{.Name}}\t{{.Node}}\t{{.CurrentState}}\t{{.Error}}'
-
-
-
-docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplate.ContainerSpec.Healthcheck}}'
-
-
-docker service inspect hangfire_job-dashboard --format '{{json .Spec.UpdateConfig}}'
+getent hosts cl-sql01-prod.silacins.com
 
 
 
-
-
+nc -vz -w 5 cl-sql01-prod.silacins.com 1433
 
 
 
