@@ -1,3 +1,20 @@
+Standup Update
+
+* Job Dashboard: Investigating SQL connectivity errors in Production. Reviewing the database endpoint configuration and checking whether the issue is related to the AOG database migration.
+* Dev Email Functionality: Reviewing email-sending functionality in the Dev environment and validating the configuration and requirements.
+* Agent Rewards: Working with Sergey to troubleshoot the Agent Rewards Docker build and resolve build-related issues.
+
+
+
+
+
+
+
+
+
+
+
+
 Service Desk ran a remediation package on my workstation earlier, which required a restart. That’s why I had to reboot. 😊
 
 
