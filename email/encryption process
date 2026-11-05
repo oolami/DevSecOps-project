@@ -1,12 +1,8 @@
-Hi Jim,
+Yes, Holly. SGs and LBs will still be relevant for Kubernetes/container workloads in DR. Kubernetes manages the containers and application services, but AWS networking components such as Security Groups, Load Balancers, and Target Groups are still needed to provide connectivity.
 
-I currently don’t have the required permissions to edit existing ServiceNow tickets. However, I can put together the additional details for steps 1 and 2 and share them with you for incorporation into the ticket and DRS onboarding documentation.
+The difference is that some of these resources can be automatically provisioned and managed through Kubernetes, depending on how the environment is configured.
 
-Alternatively, we can go over the updates together on a quick call if that works better for you.
-
-Thanks!
-
-
+We would need to confirm whether the DR Kubernetes environment is configured to recreate these resources automatically or whether SG/LB parity and target group configuration will require separate steps during recovery.
 
 
 
