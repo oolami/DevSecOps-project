@@ -1,8 +1,8 @@
-Standup Update
+Hi Jim,
 
-* Job Dashboard: Investigating SQL connectivity errors in Production. Reviewing the database endpoint configuration and checking whether the issue is related to the AOG database migration.
-* Dev Email Functionality: Reviewing email-sending functionality in the Dev environment and validating the configuration and requirements.
-* Agent Rewards: Working with Sergey to troubleshoot the Agent Rewards Docker build and resolve build-related issues.
+I currently don’t have the required permissions to edit existing ServiceNow (SNOW) tickets. However, I can put together the additional details for steps 1 and 2 and share them with you so they can be incorporated into the ticket and the DRS onboarding documentation.
+
+Thanks!
 
 
 
