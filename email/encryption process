@@ -23,6 +23,11 @@ If the endpoint is correct, we can engage SysAdmin/network to investigate DNS re
 
 
 
+Dennis, I’ve narrowed down the Production Job Dashboard issue to DNS resolution of the configured SQL endpoint, cl-sql01-prod.silacins.com. Since this could be related to the AOG migration, do you know who the appropriate DBA contact would be to confirm whether this is still the correct SQL listener?
+
+Once confirmed, I can continue troubleshooting from the DevOps side or coordinate with SysAdmin if DNS changes are needed.
+
+
 
 
 
