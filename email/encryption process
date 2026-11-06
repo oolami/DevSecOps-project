@@ -13,6 +13,11 @@ docker exec <container-id> sh -c 'ls -l /app/config.json /app/secrets.json /app/
 
 
 
+docker exec 251ad407d8a8 sh -c 'grep -n -E "Host|DatabaseName|Port|IntegratedSecurity" /app/config.json'
+
+
+
+
 
 
 
