@@ -5,6 +5,10 @@ docker exec 251ad407d8a8 sh -c 'command -v nc || command -v bash || command -v p
 
 
 
+docker exec 251ad407d8a8 sh -c 'getent ahostsv4 cl-sql01-prod.silacins.com; echo DNS_EXIT_CODE:$?'
+
+
+docker exec 251ad407d8a8 cat /etc/resolv.conf
 
 
 
