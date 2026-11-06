@@ -1,16 +1,1 @@
-Hi Sergey, I’ve completed the initial Agent Rewards Docker configuration in TeamCity and attached the correct VCS root.
-
-I also reviewed the Agent Rewards E2E repository and noticed it doesn’t currently contain the Dockerfile or Docker scripts used in the APAS setup.
-
-Could you confirm whether your team will be providing those files or if you’d like DevOps to handle the containerization? I’ll also need the required build arguments and Cypress-specific requirements to complete the configuration and testing.
-
-
-
-
-Hi Sergey, I’ve created the Agent Rewards Docker build configuration in TeamCity using APAS Docker as the reference, and updated the VCS root to the existing Agent Rewards E2E repository.
-
-I checked both the main branch and your current development branch, but I couldn’t find the Docker scripts referenced by the APAS configuration.
-
-Could you confirm whether you’ll be adding the Docker files to the Agent Rewards repository, or if you’d like me to handle that part?
-
-Also, please share the required build arguments and expected Docker image name so I can finish updating the TeamCity configuration and validate the build.
+Hi Stephen, this request is for the Missouri Provider+ DR environment in the West region (us-west-2, Oregon), supporting the Production environment in the East region (us-east-1, N. Virginia). The requested subnet allocation will be used for the DR infrastructure in us-west-2.
