@@ -1,3 +1,24 @@
+docker exec 251ad407d8a8 sh -c 'getent hosts cl-sql01-prod.silacins.com'
+
+
+docker exec 251ad407d8a8 sh -c 'command -v nc || command -v bash || command -v python3'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}'
 
 
