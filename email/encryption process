@@ -1,1 +1,22 @@
+docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}'
+
+
+docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplate.ContainerSpec.Mounts}}'
+
+
+
+docker ps --filter "name=hangfire_job-dashboard"
+
+
+docker exec <container-id> sh -c 'ls -l /app/config.json /app/secrets.json /app/appsettings*.json 2>/dev/null'
+
+
+
+
+
+
+
+
+
+
 Hi Stephen, this request is for the Missouri Provider+ DR environment in the West region (us-west-2, Oregon), supporting the Production environment in the East region (us-east-1, N. Virginia). The requested subnet allocation will be used for the DR infrastructure in us-west-2.
