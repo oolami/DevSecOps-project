@@ -1,3 +1,11 @@
+Thanks, Chandra! Would I be able to extend the reservation for the additional night when I check in, or would that need to be arranged in advance?
+
+
+
+
+
+
+
 Resolve-DnsName sqlPrd01RWList.silacins.com
 Test-NetConnection sqlPrd01RWList.silacins.com -Port 1433
 
