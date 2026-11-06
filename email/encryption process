@@ -1,30 +1,9 @@
-Yes, Holly. SGs and LBs will still be relevant for Kubernetes/container workloads in DR. Kubernetes manages the containers and application services, but AWS networking components such as Security Groups, Load Balancers, and Target Groups are still needed to provide connectivity.
+Hi Sergey, I’ve created the new Agent Rewards Docker build configuration in TeamCity by copying the existing APAS Docker setup and attaching the Agent Rewards E2E VCS root.
 
-The difference is that some of these resources can be automatically provisioned and managed through Kubernetes, depending on how the environment is configured.
+I’m currently reviewing the build steps and parameters to make sure they’re configured correctly for Agent Rewards.
 
-We would need to confirm whether the DR Kubernetes environment is configured to recreate these resources automatically or whether SG/LB parity and target group configuration will require separate steps during recovery.
+Could you confirm whether agent-rewards-e2e is the correct repository for the Docker build and whether the required Docker scripts are already available there?
 
+Also, could you share the Docker build arguments, expected image repository/name, and any other Agent Rewards-specific settings needed to complete the configuration?
 
-
-
-
-
-
-
-
-Service Desk ran a remediation package on my workstation earlier, which required a restart. That’s why I had to reboot. 😊
-
-
-docker ps --filter "name=hangfire_job-dashboard"
-
-docker exec <container-id> sh -c 'ls -l /app/secrets.json'
-
-
-
-
-
-
-docker exec 251ad407d8a8 sh -c 'command -v python3; command -v jq'
-
-
-docker exec 251ad407d8a8 jq 'keys' /app/secrets.json
+Thanks!
