@@ -1,3 +1,10 @@
+Resolve-DnsName sqlPrd01RWList.silacins.com
+Test-NetConnection sqlPrd01RWList.silacins.com -Port 1433
+
+
+
+
+
 docker exec 251ad407d8a8 sh -c 'getent hosts cl-sql01-prod.silacins.com'
 
 
