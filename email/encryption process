@@ -1,9 +1,16 @@
-Hi Sergey, I’ve created the new Agent Rewards Docker build configuration in TeamCity by copying the existing APAS Docker setup and attaching the Agent Rewards E2E VCS root.
+Hi Sergey, I’ve completed the initial Agent Rewards Docker configuration in TeamCity and attached the correct VCS root.
 
-I’m currently reviewing the build steps and parameters to make sure they’re configured correctly for Agent Rewards.
+I also reviewed the Agent Rewards E2E repository and noticed it doesn’t currently contain the Dockerfile or Docker scripts used in the APAS setup.
 
-Could you confirm whether agent-rewards-e2e is the correct repository for the Docker build and whether the required Docker scripts are already available there?
+Could you confirm whether your team will be providing those files or if you’d like DevOps to handle the containerization? I’ll also need the required build arguments and Cypress-specific requirements to complete the configuration and testing.
 
-Also, could you share the Docker build arguments, expected image repository/name, and any other Agent Rewards-specific settings needed to complete the configuration?
 
-Thanks!
+
+
+Hi Sergey, I’ve created the Agent Rewards Docker build configuration in TeamCity using APAS Docker as the reference, and updated the VCS root to the existing Agent Rewards E2E repository.
+
+I checked both the main branch and your current development branch, but I couldn’t find the Docker scripts referenced by the APAS configuration.
+
+Could you confirm whether you’ll be adding the Docker files to the Agent Rewards repository, or if you’d like me to handle that part?
+
+Also, please share the required build arguments and expected Docker image name so I can finish updating the TeamCity configuration and validate the build.
