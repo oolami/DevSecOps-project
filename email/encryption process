@@ -13,6 +13,12 @@ docker exec 251ad407d8a8 cat /etc/resolv.conf
 
 
 
+Dennis, I’ve narrowed down the Production Job Dashboard issue to DNS resolution of the configured SQL endpoint, cl-sql01-prod.silacins.com.
+
+The hostname fails to resolve from inside the running Docker container. Since this may be related to the AOG migration, should we engage the DBA team to confirm whether this is still the correct Production SQL listener?
+
+If the endpoint is correct, we can engage SysAdmin/network to investigate DNS resolution. I’ll handle any required Docker Swarm configuration updates and validation on the DevOps side.
+
 
 
 
