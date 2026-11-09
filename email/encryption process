@@ -1,11 +1,8 @@
-Hi Team, I’m looking into temporarily enabling email sending in our Lima Dev environment for testing.
+Thanks, Dmytro. According to Jose’s ticket, the Seriatim report email is sent through a Celery task in WinDapi using the django.core.mail package, and he specifically referenced the existing Office 365 SMTP configuration.
 
-I’ve confirmed that the SMTP settings are defined in Bitbucket, the credential parameters are configured in TeamCity, and the generated configuration and secret references are present in Mirantis.
+That’s why I started by investigating the SMTP settings in Bitbucket, TeamCity, and Mirantis.
 
-Could someone confirm whether SMTP authentication is permitted for portalrelay@silacins.com and PolicyEncryptEmail@silacins.com, and whether outbound connectivity from Lima to smtp.office365.com on port 587 is allowed?
-
-I’m investigating a Lima-specific configuration override and want to rule out any Microsoft 365 or network restrictions before proceeding.
-
+However, I haven’t verified the actual email delivery path in the application code yet. Do you know if this particular Celery task also routes through email-api, or if it uses SMTP directly?
 
 
 
