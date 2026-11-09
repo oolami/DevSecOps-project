@@ -1,3 +1,8 @@
+Thanks, Dennis. I just acknowledged the PagerDuty alert for portal.silacins.com and I’m looking into it now. Is this expected due to the ongoing production maintenance?
+
+
+
+
 docker service inspect hangfire_job-dashboard --format '{{json .Spec.TaskTemplate.ContainerSpec.Configs}}'
 
 
