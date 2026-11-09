@@ -10,11 +10,9 @@ sqlPrd01RWList.silacins.com
 
 
 
-Hi Jose, I’ve reviewed the Lima WinDapi and Celery configurations, including the SMTP settings and credentials configured through TeamCity. Everything appears to be provisioned already.
+Removed the unused AzureAd.ClientSecret configuration from the Job Dashboard deployment settings in TeamCity. The updated configuration was deployed successfully to Production, and the Hangfire Job Dashboard was verified accessible and functioning as expected.
 
-Since email sending is currently disabled across Dev, do you know whether this is controlled by an application-level setting or disabled through the email-sending code? I’m trying to identify the correct way to enable it specifically for Lima without affecting the other Dev environments.
-
-
+No issues observed during deployment. Closing the ticket.
 
 
 
@@ -22,47 +20,4 @@ Since email sending is currently disabled across Dev, do you know whether this i
 
 
 
-Summary: Update Production Job Dashboard Database Hostname and Validate Deployment
 
-Issue Type: Task
-
-Environment: Production
-
-Component: DevOps / TeamCity / Docker Swarm
-
-Description
-
-Update the database hostname configuration for the production Hangfire Job Dashboard to ensure the application connects to the correct SQL Server instance.
-
-The change involves updating the database host parameter in TeamCity, deploying the updated configuration to the production Docker Swarm service, and validating application functionality.
-
-Implementation Steps
-
-1. Review the existing Job Dashboard configuration in TeamCity under Deployments-Prod → Job-Dashboard.
-2. Identify and update the env.DB_HOST parameter with the required production SQL Server hostname.
-3. Save the updated configuration directly in TeamCity.
-4. Execute a dry-run deployment to validate the deployment configuration.
-5. Review the dry-run logs for errors.
-6. Execute the production deployment with Dry Run set to No.
-7. Verify the Docker Swarm service update completes successfully.
-8. Access the production Hangfire Job Dashboard to validate connectivity and functionality.
-
-Validation Results
-
-* Dry Run: Build #5 — Successful
-* Production Deployment: Build #6 — Successful
-* Docker Swarm: Service updated successfully (1/1)
-* Application: Production Hangfire Dashboard accessible
-* Database: SQL Server storage information displayed in the dashboard
-* Additional Validation: Verify Jobs and Servers pages and confirm no application errors
-
-Acceptance Criteria
-
-* [x]	Production database hostname updated in TeamCity.
-* [x]	Dry-run deployment completed successfully.
-* [x]	Production deployment completed successfully.
-* [x]	Docker Swarm service updated successfully.
-* [x]	Hangfire Dashboard accessible after deployment.
-* [ ]	Final Jobs/Servers functionality and application log verification completed.
-
-Implementation Notes: Configuration was updated directly in TeamCity. Build #6 successfully deployed the updated Job Dashboard service to production.
