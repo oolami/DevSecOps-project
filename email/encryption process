@@ -1,9 +1,10 @@
-Thanks, Dmytro. According to Jose’s ticket, the Seriatim report email is sent through a Celery task in WinDapi using the django.core.mail package, and he specifically referenced the existing Office 365 SMTP configuration.
+Hi Jose, I’ve reviewed the SMTP settings in Bitbucket, TeamCity, and Mirantis, and the configuration and credential references are already in place.
 
-That’s why I started by investigating the SMTP settings in Bitbucket, TeamCity, and Mirantis.
+After further investigation with Dmytro, we found that WinDapi uses a custom Django email backend (EmailServiceBackend) that routes most emails through email-api, rather than SMTP directly.
 
-However, I haven’t verified the actual email delivery path in the application code yet. Do you know if this particular Celery task also routes through email-api, or if it uses SMTP directly?
+I’m now investigating the email-api configuration to identify how email sending is disabled in Dev and determine whether we can temporarily enable it for the selected environment without affecting the other Dev environments.
 
+I’ll keep you updated as I make progress.
 
 
 
