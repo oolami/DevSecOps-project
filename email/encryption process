@@ -1,6 +1,19 @@
-Hi Jose, I think implementing a Lima-specific configuration override would be a better approach than introducing another SMTP server, since the existing SMTP settings and credentials are already provisioned.
+Hi Team, I’m looking into temporarily enabling email sending in our Lima Dev environment for testing.
 
-I’m looking into implementing the override without affecting the other Dev environments. I’ll also verify that the current SMTP configuration supports email delivery before proceeding with testing.
+The SMTP configuration and credentials are already provisioned through TeamCity and Mirantis, using smtp.office365.com on port 587 with TLS.
+
+Could someone confirm whether SMTP authentication is enabled for portalrelay@silacins.com and PolicyEncryptEmail@silacins.com, and whether outbound SMTP traffic from Lima is permitted?
+
+I’m planning a Lima-specific configuration override and want to verify there are no existing Microsoft 365 or network restrictions before proceeding.
+
+
+
+
+
+
+
+
+
 
 
 
