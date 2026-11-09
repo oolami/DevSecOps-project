@@ -1,4 +1,6 @@
-Thanks, Dennis. I just acknowledged the PagerDuty alert for portal.silacins.com and I’m looking into it now. Is this expected due to the ongoing production maintenance?
+Hi Jose, I think implementing a Lima-specific configuration override would be a better approach than introducing another SMTP server, since the existing SMTP settings and credentials are already provisioned.
+
+I’m looking into implementing the override without affecting the other Dev environments. I’ll also verify that the current SMTP configuration supports email delivery before proceeding with testing.
 
 
 
