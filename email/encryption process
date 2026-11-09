@@ -10,13 +10,11 @@ sqlPrd01RWList.silacins.com
 
 
 
-Removed the unused AzureAd.ClientSecret configuration from the Job Dashboard deployment settings in TeamCity. The updated configuration was deployed successfully to Production, and the Hangfire Job Dashboard was verified accessible and functioning as expected.
+Yes, Jose, that’s an option. We could potentially configure Lima to use a different SMTP server without affecting the other Dev environments.
 
-No issues observed during deployment. Closing the ticket.
+However, we’d need to confirm whether there’s an approved alternative SMTP relay available and verify its authentication and connectivity requirements.
 
-
-
-
+The current SMTP settings are inherited from the shared Dev configuration, so I’d need to implement a Lima-specific override. I’ll check with SysAdmin about the available options before making any changes.
 
 
 
