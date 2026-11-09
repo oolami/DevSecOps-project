@@ -1,10 +1,10 @@
 Hi Team, I’m looking into temporarily enabling email sending in our Lima Dev environment for testing.
 
-The SMTP configuration and credentials are already provisioned through TeamCity and Mirantis, using smtp.office365.com on port 587 with TLS.
+I’ve confirmed that the SMTP settings are defined in Bitbucket, the credential parameters are configured in TeamCity, and the generated configuration and secret references are present in Mirantis.
 
-Could someone confirm whether SMTP authentication is enabled for portalrelay@silacins.com and PolicyEncryptEmail@silacins.com, and whether outbound SMTP traffic from Lima is permitted?
+Could someone confirm whether SMTP authentication is permitted for portalrelay@silacins.com and PolicyEncryptEmail@silacins.com, and whether outbound connectivity from Lima to smtp.office365.com on port 587 is allowed?
 
-I’m planning a Lima-specific configuration override and want to verify there are no existing Microsoft 365 or network restrictions before proceeding.
+I’m investigating a Lima-specific configuration override and want to rule out any Microsoft 365 or network restrictions before proceeding.
 
 
 
