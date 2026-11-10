@@ -1,10 +1,25 @@
-Hi Jose, I’ve reviewed the SMTP settings in Bitbucket, TeamCity, and Mirantis, and the configuration and credential references are already in place.
+git checkout develop
+git pull origin develop
+git checkout -b feature/WHC-3656-remove-unused-client-secret
 
-After further investigation with Dmytro, we found that WinDapi uses a custom Django email backend (EmailServiceBackend) that routes most emails through email-api, rather than SMTP directly.
 
-I’m now investigating the email-api configuration to identify how email sending is disabled in Dev and determine whether we can temporarily enable it for the selected environment without affecting the other Dev environments.
+cicd/deployment/scripts/services/job-dashboard.sh
 
-I’ll keep you updated as I make progress.
+
+
+
+
+
+bash -n cicd/deployment/scripts/services/job-dashboard.sh
+
+git diff
+git add cicd/deployment/scripts/services/job-dashboard.sh
+git commit -m "WHC-3656 Remove unused AzureAd client secret"
+
+
+
+git push -u origin feature/WHC-3656-remove-unused-client-secret
+
 
 
 
@@ -23,17 +38,4 @@ docker config ls
 
 
 sqlPrd01RWList.silacins.com
-
-
-
-
-
-Yes, Jose, that’s an option. We could potentially configure Lima to use a different SMTP server without affecting the other Dev environments.
-
-However, we’d need to confirm whether there’s an approved alternative SMTP relay available and verify its authentication and connectivity requirements.
-
-The current SMTP settings are inherited from the shared Dev configuration, so I’d need to implement a Lima-specific override. I’ll check with SysAdmin about the available options before making any changes.
-
-
-
 
