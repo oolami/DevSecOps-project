@@ -1,3 +1,20 @@
+bash -n cicd/deployment/scripts/services/job-dashboard.sh
+
+git grep -n -E 'secrets\.json|JOB_DASHBOARD_ENTRA_ID_CLIENT_SECRET|AzureAd\.ClientSecret'
+
+git diff --check
+git diff
+
+
+
+
+
+
+
+
+
+
+
 git checkout develop
 git pull origin develop
 git checkout -b feature/WHC-3656-remove-unused-client-secret
