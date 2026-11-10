@@ -1,3 +1,17 @@
+bash -n cicd/deployment/scripts/services/job-dashboard.sh
+
+
+git diff -- cicd/deployment/scripts/services/job-dashboard.sh
+
+
+
+
+
+
+
+
+
+
 secrets_file="./secrets/${service}.json"
 mkdir -p ./secrets
 echo '{}' > "$secrets_file"
