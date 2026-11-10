@@ -1,3 +1,25 @@
+secrets_file="./secrets/${service}.json"
+mkdir -p ./secrets
+echo '{}' > "$secrets_file"
+echo "$secrets_file file prepared"
+
+
+
+git show develop:cicd/deployment/scripts/services/job-dashboard.sh
+
+
+git fetch origin
+git show origin/develop:cicd/deployment/scripts/services/job-dashboard.sh
+
+
+
+
+
+
+
+
+
+
 bash -n cicd/deployment/scripts/services/job-dashboard.sh
 
 git grep -n -E 'secrets\.json|JOB_DASHBOARD_ENTRA_ID_CLIENT_SECRET|AzureAd\.ClientSecret'
