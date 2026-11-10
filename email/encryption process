@@ -1,3 +1,14 @@
+Hi Holly, I reviewed the open tickets for the Missouri Provider+ DR onboarding. The IPAM request has been completed, and the /26 CIDR block (10.134.116.0/26) has been assigned for the DR VPC in us-west-2.
+
+I also checked the other open tickets covering the DR VPC creation, replication subnet, and network connectivity, but I didn’t see any new comments or status updates indicating progress on those tasks.
+
+At this point, the IPAM allocation is the only confirmed progress I have. The remaining infrastructure and networking tasks still need follow-up with the respective teams to confirm their current status.
+
+
+
+
+
+
 bash -n cicd/deployment/scripts/services/job-dashboard.sh
 
 
