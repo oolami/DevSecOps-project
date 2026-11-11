@@ -1,17 +1,14 @@
-Hi team, I’ve updated the Admin-API MSAL client secret in the Pre-Prod TeamCity Wholeshestack configuration.
-
-I’m preparing to redeploy the stack to apply the updated secret, but the custom build requires Docker image tags for multiple services.
-
-Since this is a secret rotation and no application version changes are intended, can someone confirm whether I should use the currently deployed image tags for each service or if there’s an established process for redeploying the existing stack without changing image versions?
-
-I want to ensure we don’t unintentionally deploy different application versions.
+docker service inspect wholeshestack_pre_prod_admin --format '{{json .Version}}'
 
 
+docker service inspect wholeshestack_pre_prod_admin --format '{{json .}}'
+
+
+docker service inspect wholeshestack_pre_prod_admin --format '{{.UpdatedAt}}'
 
 
 
-
-
+docker service ps wholeshestack_pre_prod_admin
 
 
 
