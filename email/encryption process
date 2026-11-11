@@ -1,3 +1,12 @@
+docker service inspect wholeshestack_pre_prod_admin --format '{{.UpdatedAt}}'
+
+
+docker service inspect wholeshestack_pre_prod_admin --format '{{json .UpdateStatus}}'
+
+
+
+
+
 docker service inspect wholeshestack_pre_prod_admin --format '{{json .Version}}'
 
 
