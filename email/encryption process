@@ -1,3 +1,12 @@
+Hi team, we’ve had multiple PagerDuty alerts for high disk-read activity across the Pre-prod Swarm nodes this morning. I checked Prometheus and confirmed significant disk I/O spikes. I also checked Docker Swarm; all 9 nodes are Ready/Active, but I noticed recent container task replacements and a few failed tasks. I haven’t identified the root cause yet and can’t SSH into the nodes at the moment. Is anyone aware of any recent deployments, scheduled jobs, or other activity that might explain the spikes?
+
+
+
+
+
+
+
+
 docker service inspect wholeshestack_pre_prod_admin --format '{{.UpdatedAt}}'
 
 
