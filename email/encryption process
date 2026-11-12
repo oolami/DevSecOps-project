@@ -1,4 +1,6 @@
-Confirmed with Jose that the Seriatim email functionality was successfully tested using an alternative approach. No additional SMTP or TeamCity configuration changes were required. Related application changes are tracked through the submitted Bitbucket PRs.
+Investigated the email configuration in Bitbucket, TeamCity, and Mirantis. Applied a Lima-specific TeamCity override to enable email sending; however, testing confirmed that email delivery was unsuccessful.
+
+Jose subsequently validated the Seriatim email functionality using an alternative approach. No additional SMTP configuration changes were required for that test.
 
 
 
