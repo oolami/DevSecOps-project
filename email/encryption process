@@ -1,3 +1,13 @@
+Confirmed with Jose that the Seriatim email functionality was successfully tested using an alternative approach. No additional SMTP or TeamCity configuration changes were required. Related application changes are tracked through the submitted Bitbucket PRs.
+
+
+
+
+
+
+
+
+
 Removed the unused AzureAD.ClientSecret configuration from the Job Dashboard deployment script. Changes were merged and successfully deployed to Dev and Pre-Prod. Both TeamCity builds completed successfully. Closing the ticket.
 
 
