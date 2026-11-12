@@ -1,4 +1,19 @@
-Good morning, team. I forgot to mention yesterday that I have a doctor’s appointment this morning. I’m heading out now and should be back shortly.
+Removed the unused AzureAD.ClientSecret configuration from the Job Dashboard deployment script. Changes were merged and successfully deployed to Dev and Pre-Prod. Both TeamCity builds completed successfully. Closing the ticket.
+
+
+Created the Agent Rewards Docker build configuration in TeamCity using APAS Docker as the reference and configured the Agent Rewards VCS root.
+
+The remaining Docker scripts and build-specific parameters have not been provided or validated. Per Sergey’s confirmation following discussion with Alex, no further work is required at this time. Closing the ticket.
+
+
+
+
+
+
+
+
+
+
 
 
 
