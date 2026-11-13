@@ -1,6 +1,4 @@
-Thanks for the update, Holly! Glad to hear we’re making progress on the MO Provider+ DR infrastructure.
-
-With the VPC work moving forward, do you think the DR VPC, replication subnet, and required network connectivity will be ready by next week? I’m hoping to begin the AWS DRS configuration once those dependencies are in place.
+That’s interesting, Holly. It would be good to confirm whether MO PBA and MO Provider+ are sharing just the same production AWS account or also the underlying VPC infrastructure, so we can make sure the DR onboarding and replication configurations are aligned with the intended architecture.
 
 
 
