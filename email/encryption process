@@ -1,4 +1,6 @@
-That’s interesting. It would be good to confirm whether MO PBA and MO Provider+ are sharing only the same production AWS account or also the underlying VPC infrastructure. I would expect them to have separate VPCs, but it’s worth verifying so we can ensure the DRS configuration and networking are set up correctly for both environments.
+That’s interesting. It would be good to confirm whether MO PBA and MO Provider+ are sharing only the same production AWS account or also the underlying VPC infrastructure.
+
+Also, is the DR Engineering team expected to support MO PBA’s disaster recovery activities as well, or is our current scope limited to MO Provider+?
 
 
 
