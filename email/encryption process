@@ -1,7 +1,8 @@
-That’s interesting. It would be good to confirm whether MO PBA and MO Provider+ are sharing only the same production AWS account or also the underlying VPC infrastructure.
+Sunday, I don’t think sharing the same production AWS account would necessarily be an issue for DR onboarding, provided MO PBA and MO Provider+ have separate VPCs and network configurations.
 
-Also, is the DR Engineering team expected to support MO PBA’s disaster recovery activities as well, or is our current scope limited to MO Provider+?
+We should be able to configure the required VPC peering and routing for each production VPC independently, without interfering with the other, assuming there are no overlapping CIDRs or routing conflicts.
 
+Since the AWS account structure is managed by the account owners, I think we can keep the DR onboarding workstreams separate while confirming the network requirements for each environment.
 
 
 
