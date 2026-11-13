@@ -1,4 +1,6 @@
-That’s interesting, Holly. It would be good to confirm whether MO PBA and MO Provider+ are sharing just the same production AWS account or also the underlying VPC infrastructure, so we can make sure the DR onboarding and replication configurations are aligned with the intended architecture.
+That’s interesting. It would be good to confirm whether MO PBA and MO Provider+ are sharing only the same production AWS account or also the underlying VPC infrastructure. I would expect them to have separate VPCs, but it’s worth verifying so we can ensure the DRS configuration and networking are set up correctly for both environments.
+
+
 
 
 
