@@ -1,1 +1,7 @@
-Good morning, could someone from SE please approve the queued Prod Wholestack deployment? This is to apply the updated Admin client secret. No application version changes are intended.
+Hi Holly,
+
+I attempted to review the vulnerability ticket (VUL0027662), but I do not have the required permissions to access it in ServiceNow.
+
+Could you please share the vulnerability details and affected resources so I can investigate and determine if a DRS agent update is required?
+
+Thanks!
