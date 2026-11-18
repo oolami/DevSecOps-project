@@ -1,4 +1,6 @@
-https://teamcity.silacins.com/viewLog.html?buildId=409257
+Sure, Holly. I received an update yesterday on RITM0528406 indicating that the DRS replication subnet is scheduled to be implemented today, pending successful completion of the Cloud WAN attachment.
+
+I’ll follow up on the implementation, identify the remaining steps for MO Provider+, and document the onboarding process, including the ticket requirements, dependencies, and configurations, so we can replicate the process for MO PBA, TN Provider+, and TN PBA.
 
 
 
