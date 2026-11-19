@@ -1,5 +1,1 @@
-Hey Dmytro, I’m looking to pick up WHC-3685. Before I proceed, I just wanted to clarify a few things.
-
-Has a request already been submitted to the DBA team for the required permissions, or should I initiate one? Also, could you confirm the existing domain accounts to be used and whether the changes are required across all environments?
-
-My understanding is that once the DB permissions are in place, the remaining DevOps effort would be updating the connection strings in wholestack, deploying and validating the changes. Is that correct?
+Hi Chandra, the outbound flight looks good. However, I would prefer the return flight to be on Saturday, December 12th, as previously discussed. Thank you!
