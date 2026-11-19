@@ -1,6 +1,5 @@
-Sure, Holly. I received an update yesterday on RITM0528406 indicating that the DRS replication subnet is scheduled to be implemented today, pending successful completion of the Cloud WAN attachment.
+Hey Dmytro, I’m looking to pick up WHC-3685. Before I proceed, I just wanted to clarify a few things.
 
-I’ll follow up on the implementation, identify the remaining steps for MO Provider+, and document the onboarding process, including the ticket requirements, dependencies, and configurations, so we can replicate the process for MO PBA, TN Provider+, and TN PBA.
+Has a request already been submitted to the DBA team for the required permissions, or should I initiate one? Also, could you confirm the existing domain accounts to be used and whether the changes are required across all environments?
 
-
-
+My understanding is that once the DB permissions are in place, the remaining DevOps effort would be updating the connection strings in wholestack, deploying and validating the changes. Is that correct?
