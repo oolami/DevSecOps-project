@@ -1,5 +1,7 @@
-Successfully renewed both SILAC-SubCA wildcard certificates (*.apps-corp.silacins.com and *.apps-pre-prod.silacins.com) using the TeamCity internal certificate renewal automation.
+Sure, Holly. I’ll update the document to capture all the steps completed so far, along with the remaining DRS onboarding and replication connectivity requirements.
 
-Both certificates were issued, uploaded to NSX-ALB, and successfully assigned to their respective Virtual Services. Verified the updated expiration dates and certificate status in NSX-ALB.
+I can also begin the onboarding process for MO PBA, TN Provider+, and TN PBA.
 
-Renewals completed successfully. Closing ticket.
+Do you happen to have the AWS account IDs, VPC details, and designated DR regions for these environments? That would help me identify the networking requirements and initiate the necessary requests.
+
+Also, are we planning to standardize on a /26 CIDR allocation for the DR VPCs across all Platform Gainwell accounts, or should the CIDR sizing be determined separately for each environment?
