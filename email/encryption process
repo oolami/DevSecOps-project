@@ -1,7 +1,4 @@
-Sure, Holly. I’ll update the document to capture all the steps completed so far, along with the remaining DRS onboarding and replication connectivity requirements.
+Good morning, Tyler! Yes, the unused AzureAD.ClientSecret configuration was removed from the Job Dashboard deployment settings in TeamCity, and the changes were successfully deployed and validated. You can proceed with the Azure secret cleanup. Thanks!
 
-I can also begin the onboarding process for MO PBA, TN Provider+, and TN PBA.
 
-Do you happen to have the AWS account IDs, VPC details, and designated DR regions for these environments? That would help me identify the networking requirements and initiate the necessary requests.
 
-Also, are we planning to standardize on a /26 CIDR allocation for the DR VPCs across all Platform Gainwell accounts, or should the CIDR sizing be determined separately for each environment?
