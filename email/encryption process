@@ -1,24 +1,5 @@
-Thanks, Tyler! I think it would be best if you could reach out and include me. I’d be happy to join the call to discuss the invoicing setup and automation requirements. Thanks!
+Hi Jim,
 
+It’s been a pleasure working with you. Thank you for your support, guidance, and valuable contributions to the DR Engineering team. You will certainly be missed.
 
-
-
-
-
-
-Hi Tyler, just following up on our previous discussion about switching DigiCert from credit card prepayments to invoicing. Have we been able to arrange a call with the DigiCert account manager? I’d like to get this moving so we can proceed with the end-to-end certificate renewal automation. Thanks!
-
-
-
-Thanks, Kishore and Holly.
-
-I’ll verify the replication subnet and networking configuration for MO Provider+, then proceed with the S3 Gateway, EC2 Interface, and DRS Interface endpoints as outlined. I’ll also reference the Ohio and Indiana DR configurations and document the steps for future onboarding.
-
-For MO PBA, I’ll confirm the production VPC details and the corresponding DR network requirements. Since MO PBA and MO Provider+ share the same production AWS account, we can evaluate their VPC configurations independently while maintaining the required network isolation.
-
-I agree that we should determine the appropriate CIDR allocation based on the expected number of recovery servers and network resources rather than automatically applying /26 across all accounts.
-
-I’ll update the onboarding document accordingly.
-
-
-
+Wishing you and your family all the best in this next chapter. Enjoy the well-deserved time with your loved ones!
