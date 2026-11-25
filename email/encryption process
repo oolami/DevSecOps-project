@@ -1,1 +1,1 @@
-I believe there’s already a release template that can be updated to reflect the scope of each release. A thorough review beforehand should help prevent these issues.
+Hi Raul, Option 1 aligns with the approach we previously used for .NET 9. We also restricted the ARC Hub-Business build to tca02 at the time. I’ll confirm that the agent restriction is still in place and check the availability of the .NET 10 SDK in our configured repositories. Could you please create a ticket for this?
